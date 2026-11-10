@@ -179,9 +179,9 @@ export function render(){
   for(let n=drawDist-1;n>0;n--){
     const s=G.segs[(base.index+n)%N],a=Math.max(.12,s.fog);
     if(s.hz)drawHazard(s,a);
-    for(const sp of s.sprites){const sc=s.p1.s;if(n<pN&&sp.spr.ww*sc*G.K>G.W*.45)continue;drawSprite(sp.spr.img,sp.spr.ww,sc,s.p1.sx+sc*sp.off*G.roadW*G.K,s.p1.sy,s.clip,a,0);}
+    // cars and couriers inside this segment are farther than its edge sprites (barriers, poles), so draw them first, far to near
     const b=B[n];
-    if(b)for(const o of b){
+    if(b){if(b.length>1)b.sort((p,q)=>q.pct-p.pct);for(const o of b){
       const sc=lerp(s.p1.s,s.p2.s,o.pct),ox=lerp(s.p1.sx,s.p2.sx,o.pct)+sc*o.x*G.roadW*G.K,oy=lerp(s.p1.sy,s.p2.sy,o.pct);
       drawSprite(o.img,o.ww,sc,ox,oy,s.clip,a,o.rot);
       if(o.warn&&oy<=s.clip){
@@ -196,7 +196,8 @@ export function render(){
         ctx.globalAlpha=1;
       }
       if(o.blink&&Math.floor(G.clock*3)%2&&oy<=s.clip){const dw=o.ww*sc*G.K,dh=dw*o.img.height/o.img.width;ctx.globalAlpha=a;ctx.fillStyle='#ffa31a';ctx.fillRect(ox+o.blink*dw*.38-dw*.06,oy-dh*o.by,dw*.12,dw*.07);ctx.globalAlpha=1;}
-    }
+    }}
+    for(const sp of s.sprites){const sc=s.p1.s;if(n<pN&&sp.spr.ww*sc*G.K>G.W*.45)continue;drawSprite(sp.spr.img,sp.spr.ww,sc,s.p1.sx+sc*sp.off*G.roadW*G.K,s.p1.sy,s.clip,a,0);}
   }
   drawPlayer(pSeg,pp);
   if(rain())drawRain();

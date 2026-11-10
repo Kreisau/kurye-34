@@ -128,16 +128,16 @@ export function landHit(best,wp,g){
   {
     best.hp-=wp.pow;best.wind=0;G.shakeT=.15;sfx('impact',{w:wp.id,pan:clamp((best.x-G.playerX)*1.5,-1,1)});
     if(best.hp<=0){
-      sfx('down',{pan:clamp((best.x-G.playerX)*1.5,-1,1)});best.down=best.p.id==='orange'?3:5;best.speed*=.5;best.fall=0;best.kick=0;
+      sfx('down',{pan:clamp((best.x-G.playerX)*1.5,-1,1)});best.vx=G.kickSide*.6;best.down=best.p.id==='orange'?3:5;best.speed*=.5;best.fall=0;best.kick=0;
       const add=Math.round((15+best.p.hp*10)*(g?2:1));G.bonus+=add;toast(best.p.n+' kurye yerde!  +'+add+' TL');
-    }else{best.speed*=.8;best.x=clamp(best.x+G.kickSide*.2,-.95,.95);best.cool=Math.max(best.cool,1.2);toast(best.p.n+' kurye sendeledi');}
+    }else{best.speed*=.8;best.vx=(best.vx||0)+G.kickSide*(.9+.3*wp.pow);best.stun=.45;best.shoved=2.5;best.cool=Math.max(best.cool,1.2);toast(best.p.n+' kurye sendeledi');}
   }
 }
 export function bgScroll(seg,dz){G.farOff+=.0015*seg.curve*dz/segL;G.nearOff+=.003*seg.curve*dz/segL;}
 
 export function update(dt){
   G.clock+=dt;
-  const pSeg=findSeg(G.pos+playerZ),startPos=G.pos;
+  const pSeg=findSeg(G.pos+playerZ),startPos=G.pos,px0=G.playerX;
   G.flashT=Math.max(0,G.flashT-dt);G.shakeT=Math.max(0,G.shakeT-dt);
   if(G.state==='menu'){
     G.speed=maxSpeed*.32;G.pos+=G.speed*dt;G.playerX=lerp(G.playerX,0,dt*2);G.lean=lerp(G.lean,0,dt*4);G.kickT=0;G.offroad=false;
@@ -202,6 +202,7 @@ export function update(dt){
     }
   }
   G.speed=clamp(G.speed,0,maxSpeed);G.playerX=clamp(G.playerX,-1.3,1.3);
+  G.pvx=dt>0?(G.playerX-px0)/dt:0;   // lateral speed, used for shoulder-checks
   G.inv=Math.max(0,G.inv-dt);G.kickT=Math.max(0,G.kickT-dt);G.graceT=Math.max(0,G.graceT-dt);G.bumpT=Math.max(0,G.bumpT-dt);
   updateCars(dt);if(G.cars.some(c=>c.dead))G.cars=G.cars.filter(c=>!c.dead);
   for(const r of G.rivals)updateRival(r,dt);

@@ -5,7 +5,7 @@ import { demoTrack, newShift, startMission } from './game.js';
 import { clearInput, input } from './input.js';
 import { rateDelivery, starStr } from './rating.js';
 import { save } from './save.js';
-import { SPR } from './sprites.js';
+import { newRival } from './rivals.js';
 import { goMenu, hideGameUI, renderResult, showGarage } from './ui.js';
 
 /* ---------- tutorial: "İlk gün" ---------- */
@@ -37,7 +37,7 @@ const STEPS = [
     txt: ['Aynada rakip! Yanına gelince VUR.', 'Aynaya bak: rakip geliyor. Yanına gelince Boşluk ile vur!'],
     enter: T => {
       const p = RIVALS.find(r => r.id === 'green');
-      T.rival = { p, hp: p.hp, z: pz() - 900, x: G.playerX > 0 ? -.5 : .5, speed: G.speed, down: 0, kick: 0, wind: 0, kside: 1, cutT: 2.5, cutCd: 8, dodge: 0, dsd: 1, blk: 0, cool: 3, fall: 0, spr: SPR.rv[p.id] };
+      T.rival = newRival(p, pz() - 900, G.playerX > 0 ? -.5 : .5, G.speed, 3);
       G.rivals = [T.rival];
     },
     check: T => {
