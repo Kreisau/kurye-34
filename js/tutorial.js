@@ -21,20 +21,20 @@ function markAhead() {
 
 const STEPS = [
   { target: '#joyBase', minT: 1.5,
-    txt: ['Gaz otomatik. Sol yarıda parmağını sürükle, sağa sola kay.', 'Gaz otomatik. ← → ile sağa sola kay.'],
+    txt: ['Solda sürükle, sağa sola kay.', 'Gaz otomatik. ← → ile sağa sola kay.'],
     check: (T, dt) => (T.acc += (Math.abs(input.steer || 0) > .25 || input.left || input.right) ? dt : 0) > 1 },
   { target: '[data-k="brake"]', minT: 1.5,
-    txt: ['Önün kalabalıksa FREN’e bas. Basılı tut, yavaşla.', '↓ ile fren yap. Basılı tut, yavaşla.'],
+    txt: ['FREN’e basılı tut, yavaşla.', '↓ tuşunu basılı tut, yavaşla.'],
     check: (T, dt) => (T.acc += input.brake ? dt : 0) > .6 },
   { target: null, minT: 1.5, maxT: 35, enter: markAhead,
-    txt: ['Öndeki arabayı yanından sollayıp geç. Arkadan çarparsan paket hasar alır.'],
+    txt: ['Öndeki arabayı sollayıp geç.'],
     check: () => { if (!G.cars.some(c => c.tutA)) markAhead(); return G.cars.some(c => c.tutA && c.z < pz() - 80); },
     exit: () => { for (const c of G.cars) delete c.tutA; } },
   { target: null, minT: 5.5,
-    txt: ['Çukur, tümsek ve yere dökülen yağa dikkat. Her darbe paketi ezer; durumu sağ üstte, PAKET çubuğunda.'],
+    txt: ['Çukur ve yağa dikkat, paket ezilir.'],
     check: () => true },
   { target: '[data-k="kick"]', minT: 2, maxT: 50,
-    txt: ['Arkadan rakip kurye geliyor, üstteki aynalardan izle. Yanına gelince VUR’a bas.', 'Arkadan rakip kurye geliyor, üstteki aynalardan izle. Yanına gelince Boşluk ile vur.'],
+    txt: ['Aynada rakip! Yanına gelince VUR.', 'Aynaya bak: rakip geliyor. Yanına gelince Boşluk ile vur!'],
     enter: T => {
       const p = RIVALS.find(r => r.id === 'green');
       T.rival = { p, hp: p.hp, z: pz() - 900, x: G.playerX > 0 ? -.5 : .5, speed: G.speed, down: 0, kick: 0, wind: 0, kside: 1, cutT: 2.5, cutCd: 8, dodge: 0, dsd: 1, blk: 0, cool: 3, fall: 0, spr: SPR.rv[p.id] };
@@ -47,11 +47,11 @@ const STEPS = [
       return false;
     } },
   { target: '#nitroBtn', minT: 1.5, maxT: 30,
-    txt: ['Sana bir NİTRO verdim. Düz yolda bas: kısa bir hız patlaması.', 'Sana bir NİTRO verdim. Düz yolda N’ye bas: kısa bir hız patlaması.'],
+    txt: ['Bir NİTRO verdim. Düz yolda bas.', 'Bir NİTRO verdim. Düz yolda N’ye bas.'],
     enter: () => { G.nitroN = 1; const nb = $('nitroBtn'); nb.hidden = false; nb.textContent = 'NİTRO ×1'; nb.classList.remove('used'); },
     check: () => G.nitroT > 0 },
   { target: null, minT: 0,
-    txt: ['Gerisi sende. Normalde her siparişin süresi var, bugün yok. Paketi adrese götür.'],
+    txt: ['Bugün süre yok. Adrese git.'],
     check: () => false },
 ];
 
@@ -60,12 +60,24 @@ function setPulse(sel) {
   if (sel) { const e = document.querySelector(sel); if (e) e.classList.add('pulse'); }
 }
 
+// The radio sits in the gap between the two rear-view mirrors (same band, never over the road).
+function placeRadio() {
+  const r = $('radio'), M = G.MIR;
+  if (!M || r.hidden) return;
+  const s = G.W / innerWidth, gap = 8;
+  const x0 = (M.l + M.w) / s + gap, x1 = M.r / s - gap, w = Math.min(420, x1 - x0);
+  r.style.left = (x0 + (x1 - x0 - w) / 2) + 'px'; r.style.width = w + 'px'; r.style.top = (M.y / s - (w < 260 ? 10 : 0)) + 'px';
+  r.classList.toggle('compact', w < 260);
+}
+addEventListener('resize', () => setTimeout(placeRadio, 0));
+
 function showStep() {
   const T = G.tut, st = STEPS[T.step];
   $('radio').classList.remove('done');
   $('radioStep').textContent = (T.step + 1) + '/' + STEPS.length;
   $('radioTxt').textContent = st.txt[TOUCH ? 0 : st.txt.length - 1];
   setPulse(st.target);
+  placeRadio();
 }
 
 function nextStep() {
@@ -88,6 +100,7 @@ export function startTutorial() {
   $('route').textContent = 'İLK GÜN · Moda → Yeldeğirmeni';
   $('radio').hidden = false;
   nextStep();
+  placeRadio();
 }
 
 export function tutTick(dt) {
