@@ -4,10 +4,12 @@ import { G } from './g.js';
 import { clearInput, input } from './input.js';
 import { layoutMirrors } from './render.js';
 import { spawnRivals, updateRival } from './rivals.js';
+import { payLabel, payMult, ratingLabel } from './rating.js';
 import { curBike, curWpn, stats, ups } from './save.js';
 import { SPR, bikeSprites, setTheme } from './sprites.js';
 import { buildTrack, closureAt, findSeg } from './track.js';
 import { spawnAmb, spawnCars, updateCars } from './traffic.js';
+import { tutTick } from './tutorial.js';
 import { finish, keepAwake, showScreen, toast } from './ui.js';
 
 /* ---------- state ---------- */
@@ -32,11 +34,11 @@ export function makeOffer(kind){
   const ev=Math.random()<chance?pick(Math.random,Object.keys(EVENTS)):null;
   const pool=D.pool.slice(),a=pool.splice(Math.floor(Math.random()*pool.length),1)[0],b=pick(Math.random,pool);
   return{D,kind:kind.k,rest:pick(Math.random,RESTS),from:a,to:b,A:prof(a),B:prof(b),len,time,curv:D.curv*(1+loop*.15),hill:D.hill,up:D.up,
-    pay:Math.round((40+d*18)*kind.pay*(ev?1.2:1)*(1+.25*card('bahsis'))),d,ev,seed:(Math.random()*1e9)|0};
+    pay:Math.round((40+d*18)*kind.pay*(ev?1.2:1)*(1+.25*card('bahsis'))*payMult()),d,ev,seed:(Math.random()*1e9)|0};
 }
 export function prepDelivery(){
   const offers=KINDS.map(makeOffer);
-  $('bEyebrow').textContent='VARDİYA #'+(G.shift.L+1)+' · TESLİMAT '+(G.shift.i+1)+'/3 · '+curBike().n;
+  $('bEyebrow').textContent='VARDİYA #'+(G.shift.L+1)+' · TESLİMAT '+(G.shift.i+1)+'/3 · '+curBike().n+' · PUAN '+ratingLabel()+(payLabel()?' · '+payLabel():'');
   const box=$('offers');box.textContent='';
   for(const o of offers){
     const b=el('button','order');b.type='button';
@@ -61,7 +63,7 @@ export function startMission(){
   setTheme(G.route.D);
   buildTrack(G.route,G.route.seed);
   G.ST=stats(b,ups(b.id),G.shift.cards);G.PSPR=bikeSprites(b,G.S.wpn);
-  G.slipT=0;G.bumpT=0;G.graceT=0;G.ambT=15+Math.random()*20;G.pos=0;G.playerX=0;G.speed=0;G.lean=0;G.crashT=0;G.inv=0;G.kickT=0;G.cond=100;G.bonus=0;G.timeLeft=G.route.time;G.flashT=0;G.shakeT=0;
+  G.slipT=0;G.bumpT=0;G.graceT=0;G.ambT=15+Math.random()*20;G.pos=0;G.playerX=0;G.speed=0;G.lean=0;G.crashT=0;G.inv=0;G.kickT=0;G.cond=100;G.hits=0;G.bonus=0;G.timeLeft=G.route.time;G.flashT=0;G.shakeT=0;
   G.playerX=(G.route.side0||1)*.72;G.nitroN=ups(b.id)[4]||0;G.nitroT=0;G.arriveT=0;
   spawnCars();spawnRivals();
   clearInput();G.paused=false;
@@ -84,7 +86,7 @@ export function demoTrack(){
 export function damage(a,msg){
   if(G.graceT>0)return;G.graceT=.8;
   const n=Math.max(1,Math.round(a*G.ST.dmg));
-  G.cond=Math.max(0,G.cond-n);G.flashT=.25;G.shakeT=.25;sfx('hit');
+  G.cond=Math.max(G.tut?30:0,G.cond-n);G.hits++;G.flashT=.25;G.shakeT=.25;sfx('hit');
   toast(msg+'  −'+n+'% paket');
   if(G.cond<=0){
     if(card('sigorta')>0){G.shift.cards.sigorta--;G.cond=30;toast('Sigorta devrede: paket %30');}
@@ -212,8 +214,9 @@ export function update(dt){
       if(r.blk>.8){r.blk=0;r.cutT=0;r.cutCd=8;r.dodge=1;r.dsd=r.x>=G.playerX?1:-1;r.speed=Math.max(r.speed,G.speed);}
     }else r.blk=Math.max(0,r.blk-dt);
   }
+  if(G.tut)tutTick(dt);
   if(G.state!=='play')return;
-  G.timeLeft-=dt;
+  if(!G.tut)G.timeLeft-=dt;
   if(G.pos+playerZ>=G.finishZ-segL*10){G.state='arrive';G.arriveT=1.6;clearInput();toast('Adrese vardın');}
   else if(G.timeLeft<=0){G.timeLeft=0;finish(false,'time');}
   bgScroll(pSeg,G.pos-startPos);

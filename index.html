@@ -46,6 +46,10 @@
 <div class="toast" id="toast"></div>
 <div class="cd" id="cd" hidden></div>
 <div class="hint" id="rivalHint" hidden>RAKİP ARKADA</div>
+<div class="radio" id="radio" hidden>
+  <div class="rhead"><span class="rdot"></span>USTA · TELSİZ<span class="rstep" id="radioStep"></span><button class="rskip" id="tutSkip" type="button">ATLA</button></div>
+  <p id="radioTxt"></p>
+</div>
 
 <div class="controls" id="controls" hidden>
   <div class="joyzone" id="joy" aria-label="Yön: sürükle">
@@ -61,11 +65,12 @@
 
 <div class="screen" id="menu">
   <div class="card">
-    <div class="eyebrow">İSTANBUL · MOTO KURYE · PROTOTİP 0.15</div>
+    <div class="eyebrow">İSTANBUL · MOTO KURYE · PROTOTİP 0.16</div>
     <h1>KURYE <span class="plate">34</span></h1>
     <p class="lede">Mobiletle başla, kazandıkça garajı büyüt. Her vardiya 3 teslimat; aralarda kart seç, bir teslimatı kaçırırsan vardiya biter ama para cebinde kalır.</p>
     <dl class="facts">
       <dt>KASA</dt><dd id="mMoney">0 TL</dd>
+      <dt>PUAN</dt><dd id="mRating">Henüz yok</dd>
       <dt>MOTOR</dt><dd id="mBike">Mobilet 50</dd>
       <dt>SIRADAKİ</dt><dd id="mShift">Vardiya #1 · Kadıköy</dd>
     </dl>
@@ -74,6 +79,22 @@
     <div class="row">
       <button class="cta" id="startBtn" type="button">VARDİYAYA BAŞLA</button>
       <button class="ghost" id="garageBtn" type="button">GARAJ</button>
+      <div class="pair">
+        <button class="ghost" id="tutBtn" type="button">EĞİTİM</button>
+        <button class="ghost" id="storyBtn" type="button">HİKÂYE</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="screen story" id="story" hidden>
+  <div class="card">
+    <canvas id="sCan" width="720" height="420" aria-hidden="true"></canvas>
+    <p class="stxt" id="sTxt"></p>
+    <div class="sdots" id="sDots"></div>
+    <div class="row">
+      <button class="cta" id="sNext" type="button">DEVAM</button>
+      <button class="ghost" id="sSkip" type="button">ATLA</button>
     </div>
   </div>
 </div>

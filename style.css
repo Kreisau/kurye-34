@@ -164,3 +164,33 @@ h3{font:700 13px/1 var(--ui);letter-spacing:.16em;color:var(--muted)}
 .btn.used{opacity:.35}
 @media (max-height:500px){.cd{top:calc(env(safe-area-inset-top,0px) + 50px);font-size:76px}.btn.nitro{width:56px;height:36px;font-size:10px}}
 @media (prefers-reduced-motion:reduce){.toast{transition:none}}
+
+/* Customer rating */
+.facts dd.stars,.facts dt.stars{color:var(--taxi)}
+.facts dd.stars{letter-spacing:.12em}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+/* Tutorial radio: dispatcher messages above the thumb controls */
+.radio{position:fixed;left:50%;transform:translateX(-50%);top:calc(env(safe-area-inset-top,0px) + 168px);z-index:3;width:min(92vw,420px);background:var(--card);border:1px solid var(--ember);border-radius:14px;padding:10px 12px 12px;pointer-events:none;box-shadow:0 6px 24px var(--shadow)}
+.radio.done{border-color:var(--good)}
+.rhead{display:flex;align-items:center;gap:8px;font:700 11px/1 var(--ui);letter-spacing:.14em;color:var(--ember)}
+.rdot{width:8px;height:8px;border-radius:50%;background:var(--bad);animation:blink 1s steps(2) infinite}
+.rstep{color:var(--muted);margin-left:auto}
+.rskip{pointer-events:auto;appearance:none;background:transparent;border:1px solid var(--line);border-radius:8px;color:var(--paper);font:700 11px/1 var(--ui);letter-spacing:.1em;padding:6px 8px}
+.radio p{margin:8px 0 0;font:600 16px/1.35 var(--ui);color:var(--paper)}
+.pulse{animation:pulse 1s ease-in-out infinite}
+.joybase.idle.pulse{opacity:1}
+@keyframes pulse{50%{box-shadow:0 0 0 8px var(--hot);border-color:var(--taxi)}}
+@keyframes blink{50%{opacity:.2}}
+
+/* Story intro */
+.story{background:#07050d}
+.story .card{background:transparent;border:0;padding:0;max-width:520px;gap:14px}
+#sCan{width:100%;height:auto;aspect-ratio:12/7;border-radius:12px;background:#000;display:block}
+.stxt{margin:0;min-height:5.6em;font:500 18px/1.45 var(--ui);color:var(--paper);animation:fadein .6s ease both}
+.stxt b{color:var(--taxi);font-weight:800}
+.sdots{display:flex;gap:6px;justify-content:center}
+.sdots i{width:7px;height:7px;border-radius:50%;background:var(--rail)}
+.sdots i.on{background:var(--taxi)}
+@keyframes fadein{from{opacity:0;transform:translateY(6px)}}
+@media (prefers-reduced-motion:reduce){.stxt,.rdot,.pulse{animation:none}}

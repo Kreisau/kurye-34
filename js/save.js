@@ -2,7 +2,7 @@ import { BIKES, WPN, clamp } from './config.js';
 import { G } from './g.js';
 
 /* ---------- save ---------- */
-G.S={money:0,owned:['mob'],cur:'mob',up:{},shifts:0,best:0,weapons:['kick'],wpn:'kick'};
+G.S={money:0,owned:['mob'],cur:'mob',up:{},shifts:0,best:0,weapons:['kick'],wpn:'kick',ratings:[],tut:0,story:0};
 export function load(){try{const d=JSON.parse(localStorage.getItem('kurye34')||'{}');
   G.S.money=Math.max(0,d.money|0);
   if(Array.isArray(d.owned))G.S.owned=d.owned.filter(id=>BIKES.some(b=>b.id===id));
@@ -13,6 +13,8 @@ export function load(){try{const d=JSON.parse(localStorage.getItem('kurye34')||'
   if(Array.isArray(d.weapons))G.S.weapons=d.weapons.filter(id=>WPN.some(w=>w.id===id));
   if(!G.S.weapons.includes('kick'))G.S.weapons.unshift('kick');
   if(d.wpn&&G.S.weapons.includes(d.wpn))G.S.wpn=d.wpn;
+  if(Array.isArray(d.ratings))G.S.ratings=d.ratings.map(n=>n|0).filter(n=>n>=1&&n<=5).slice(-20);
+  G.S.tut=d.tut?1:0;G.S.story=d.story?1:0;
 }catch(e){}}
 export function save(){try{localStorage.setItem('kurye34',JSON.stringify(G.S));}catch(e){}}
 export const ups=id=>G.S.up[id]||(G.S.up[id]=[0,0,0,0,0]);

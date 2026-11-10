@@ -5,9 +5,20 @@ import { demoTrack, newShift, update } from './game.js';
 import { QUAL, render, resize } from './render.js';
 import { load, save } from './save.js';
 import { initSprites } from './sprites.js';
+import { showStory } from './story.js';
+import { startTutorial } from './tutorial.js';
 import { goMenu, hudTick, keepAwake, showGarage, showScreen, togglePause, updateMenu } from './ui.js';
 
-$('startBtn').addEventListener('click',()=>{audioInit();keepAwake();newShift();});
+// First start: story, then the tutorial for new players; returning players go straight to a shift.
+function startFlow(){
+  const fresh=!G.S.tut&&G.S.shifts===0;
+  const go=()=>fresh?startTutorial():newShift();
+  if(G.S.story)go();
+  else showStory(()=>{G.S.story=1;save();go();},fresh?'İLK GÜNE BAŞLA':'VARDİYAYA BAŞLA');
+}
+$('startBtn').addEventListener('click',()=>{audioInit();keepAwake();startFlow();});
+$('tutBtn').addEventListener('click',()=>{audioInit();keepAwake();startTutorial();});
+$('storyBtn').addEventListener('click',()=>{audioInit();showStory(goMenu,'MENÜYE DÖN');});
 $('garageBtn').addEventListener('click',()=>{audioInit();showGarage();});
 $('gBack').addEventListener('click',goMenu);
 $('abandonBtn').addEventListener('click',goMenu);

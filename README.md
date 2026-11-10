@@ -24,8 +24,12 @@ Derleme yok; düz ES modülleri.
 | `js/ui.js` | HUD, menüler, garaj, sonuç ekranı |
 | `js/input.js` | Joystick, dokunmatik butonlar, klavye |
 | `js/audio.js` | WebAudio motor/siren/korna/efekt |
+| `js/rating.js` | Müşteri puanı (1-5 yıldız), bahşiş, ortalama puana göre ücret ±%10 |
+| `js/tutorial.js` | Eğitim rotası "İlk gün", Usta'nın telsiz mesajları |
+| `js/story.js` | Hikâye girişi (6 sahne, canvas çizimleri) |
 | `sw.js`, `manifest.webmanifest`, `icons/` | PWA |
 | `legacy/index.html` | Modüllere bölünmeden önceki tek dosya sürüm (referans) |
+| `tools/play_tutorial.py` | Bot: hikâye → eğitim → ilk teslimat, ekran görüntüleriyle |
 | `tools/parity.py` | Eski ve yeni sürümü aynı seed/girdiyle çalıştırıp kare kare karşılaştırır |
 
 ## Lokal çalıştırma

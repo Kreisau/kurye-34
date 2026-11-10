@@ -1,14 +1,14 @@
 // Kurye 34 service worker: offline app shell + font cache.
 // Same-origin files: served from cache, refreshed in the background (new version shows on next launch).
 // Bump VERSION to force a clean cache after structural changes.
-const VERSION = 'v1';
+const VERSION = 'v2';
 const SHELL = 'kurye34-shell-' + VERSION;
 const FONTS = 'kurye34-fonts';
 const FILES = [
   './', 'index.html', 'style.css', 'manifest.webmanifest',
   'icons/icon-192.png', 'icons/icon-512.png', 'icons/apple-touch-icon.png',
   'js/main.js', 'js/g.js', 'js/config.js', 'js/sprites.js', 'js/save.js', 'js/track.js', 'js/game.js',
-  'js/traffic.js', 'js/rivals.js', 'js/render.js', 'js/ui.js', 'js/input.js', 'js/audio.js',
+  'js/traffic.js', 'js/rivals.js', 'js/render.js', 'js/ui.js', 'js/input.js', 'js/audio.js', 'js/rating.js', 'js/tutorial.js', 'js/story.js',
 ];
 
 self.addEventListener('install', e => {

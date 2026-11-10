@@ -4,7 +4,9 @@ import { G } from './g.js';
 import { card, demoTrack, newShift, prepDelivery, unlocked } from './game.js';
 import { clearInput } from './input.js';
 import { curBike, save, stats, upCost, ups } from './save.js';
+import { rateDelivery, ratingLabel, recordRating, starStr } from './rating.js';
 import { bikeSprites } from './sprites.js';
+import { tutFinish, tutStop } from './tutorial.js';
 
 /* ---------- HUD & UI ---------- */
 export const hudCache={};
@@ -12,7 +14,7 @@ export function setText(id,v){if(hudCache[id]!==v){hudCache[id]=v;$(id).textCont
 export function distStr(){const m=Math.max(0,(G.finishZ-G.pos-playerZ)/segL*M_PER_SEG);return m>=1000?(m/1000).toFixed(1)+' km':Math.round(m/10)*10+' m';}
 export function hudTick(){
   if($('hud').hidden)return;
-  setText('time',G.timeLeft.toFixed(1));
+  setText('time',G.tut?'—':G.timeLeft.toFixed(1));
   $('time').classList.toggle('warn',G.timeLeft<10);
   $('prog').style.width=(clamp((G.pos+playerZ)/G.finishZ,0,1)*100).toFixed(1)+'%';
   setText('dist',distStr());
@@ -25,13 +27,14 @@ export function hudTick(){
 }
 G.toastTimer=0;
 export function toast(msg,ms,big){const t=$('toast');t.textContent=msg;t.classList.toggle('big',!!big);t.classList.add('show');clearTimeout(G.toastTimer);G.toastTimer=setTimeout(()=>t.classList.remove('show'),ms||1300);}
-export function showScreen(id){for(const s of['menu','garage','brief','result','pause'])$(s).hidden=s!==id;}
+export function showScreen(id){for(const s of['menu','garage','brief','result','pause','story'])$(s).hidden=s!==id;}
 export function updateMenu(){
   $('mMoney').textContent=fmt(G.S.money);
   $('mBike').textContent=curBike().n;
+  $('mRating').textContent=ratingLabel();
   $('mShift').textContent='Vardiya #'+(G.S.shifts+1)+' · '+unlocked()+'/6 bölge açık';
 }
-export function hideGameUI(){$('cd').hidden=true;$('hud').hidden=true;$('controls').hidden=true;$('keyhint').hidden=true;$('rivalHint').hidden=true;}
+export function hideGameUI(){$('cd').hidden=true;$('hud').hidden=true;$('controls').hidden=true;$('keyhint').hidden=true;$('rivalHint').hidden=true;$('radio').hidden=true;}
 export function renderResult(o){
   $('resEyebrow').textContent=o.eyebrow;$('resTitle').textContent=o.title;$('resSub').textContent=o.sub;
   const rows=$('resRows');rows.textContent='';
@@ -56,13 +59,15 @@ export function drawCards(){
 export function finish(ok,why){
   if(G.state!=='play'&&G.state!=='arrive')return;
   G.state='result';clearInput();hideGameUI();
+  if(G.tut){tutFinish();return;}
+  const rt=rateDelivery(ok,why),to=G.route.to;recordRating(rt.stars);
   const eyebrow='VARDİYA #'+(G.shift.L+1)+' · TESLİMAT '+(G.shift.i+1)+'/3';
   const endButtons=[{t:'GARAJA GİT',cls:'cta',fn:showGarage},{t:'YENİ VARDİYA',cls:'ghost',fn:()=>{audioInit();newShift();}},{t:'MENÜ',cls:'ghost',fn:goMenu}];
   if(ok){
-    const pay=Math.round(G.route.pay*G.cond/100),tb=Math.round(G.timeLeft*1.5),total=pay+tb+G.bonus;
+    const pay=Math.round(G.route.pay*G.cond/100),tb=Math.round(G.timeLeft*1.5),total=pay+tb+G.bonus+rt.tip;
     G.S.money+=total;G.shift.earned+=total;
-    const rows=[['Taşıma ücreti ('+G.cond+'%)',fmt(pay)],['Süre bonusu ('+G.timeLeft.toFixed(1)+' sn)',fmt(tb)],['Rakip bonusu',fmt(G.bonus)],['BU TESLİMAT',fmt(total),'total']];
-    const sub=G.cond>=80?'Müşteri memnun, paket sapasağlam.':G.cond>=50?'Müşteri paketi biraz ezik buldu.':'Müşteri paketin haline şaşırdı ama teslim aldı.';
+    const rows=[['Müşteri puanı',starStr(rt.stars),'stars'],['Taşıma ücreti ('+G.cond+'%)',fmt(pay)],['Süre bonusu ('+G.timeLeft.toFixed(1)+' sn)',fmt(tb)],['Bahşiş',fmt(rt.tip)],['Rakip bonusu',fmt(G.bonus)],['BU TESLİMAT',fmt(total),'total']];
+    const sub='“'+rt.comment+'” · '+to;
     sfx('go');
     if(G.shift.i<2){
       rows.push(['KASA',fmt(G.S.money)]);save();
@@ -70,18 +75,18 @@ export function finish(ok,why){
     }else{
       const sb=50+G.shift.L*25;G.S.money+=sb;G.shift.earned+=sb;G.S.shifts++;G.S.best=Math.max(G.S.best,G.S.shifts);save();
       rows.push(['Vardiya bonusu',fmt(sb)],['VARDİYA TOPLAMI',fmt(G.shift.earned),'total'],['KASA',fmt(G.S.money)]);
-      renderResult({eyebrow,title:'VARDİYA TAMAM',sub:'Üç teslimat da yerine ulaştı.'+(1+G.S.shifts<DISTRICTS.length?' Yeni bölge açıldı: '+DISTRICTS[1+G.S.shifts].name+'.':''),rows,buttons:endButtons});
+      renderResult({eyebrow,title:'VARDİYA TAMAM',sub:sub+'. Üç teslimat da yerine ulaştı.'+(1+G.S.shifts<DISTRICTS.length?' Yeni bölge açıldı: '+DISTRICTS[1+G.S.shifts].name+'.':''),rows,buttons:endButtons});
       G.shift=null;
     }
   }else{
     save();
     renderResult({eyebrow,title:'VARDİYA BİTTİ',
-      sub:(why==='time'?'Süre doldu, müşteri siparişi iptal etti.':'Paket dağıldı, müşteri siparişi reddetti.')+' Bu vardiyada kazandığın para kasada.',
-      rows:[['Kalan mesafe',distStr()],['Paket durumu',G.cond+'%'],['Vardiya kazancı',fmt(G.shift.earned),'total'],['KASA',fmt(G.S.money)]],buttons:endButtons});
+      sub:(why==='time'?'Süre doldu, sipariş iptal. ':'Paket dağıldı. ')+'“'+rt.comment+'” · '+to+'. Bu vardiyada kazandığın para kasada.',
+      rows:[['Müşteri puanı',starStr(rt.stars),'stars'],['Kalan mesafe',distStr()],['Paket durumu',G.cond+'%'],['Vardiya kazancı',fmt(G.shift.earned),'total'],['KASA',fmt(G.S.money)]],buttons:endButtons});
     G.shift=null;
   }
 }
-export function goMenu(){G.state='menu';G.paused=false;G.shift=null;hideGameUI();demoTrack();updateMenu();showScreen('menu');}
+export function goMenu(){tutStop();G.state='menu';G.paused=false;G.shift=null;hideGameUI();demoTrack();updateMenu();showScreen('menu');}
 export function togglePause(force){
   if(G.state!=='play'&&G.state!=='count')return;
   G.paused=force!==undefined?force:!G.paused;
