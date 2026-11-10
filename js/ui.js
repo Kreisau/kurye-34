@@ -1,4 +1,4 @@
-import { audioInit, sfx } from './audio.js';
+import { audioInit, sfx, sfxStars } from './audio.js';
 import { $, BIKES, CARDS, DISTRICTS, KMH, M_PER_SEG, UPG, WPN, clamp, el, fmt, maxSpeed, playerZ, segL } from './config.js';
 import { G } from './g.js';
 import { card, demoTrack, newShift, prepDelivery, unlocked } from './game.js';
@@ -27,7 +27,7 @@ export function hudTick(){
 }
 G.toastTimer=0;
 export function toast(msg,ms,big){const t=$('toast');t.textContent=msg;t.classList.toggle('big',!!big);t.classList.add('show');clearTimeout(G.toastTimer);G.toastTimer=setTimeout(()=>t.classList.remove('show'),ms||1300);}
-export function showScreen(id){for(const s of['menu','garage','brief','result','pause','story'])$(s).hidden=s!==id;}
+export function showScreen(id){for(const s of['menu','garage','brief','result','pause','story','settings'])$(s).hidden=s!==id;}
 export function updateMenu(){
   $('mMoney').textContent=fmt(G.S.money);
   $('mBike').textContent=curBike().n;
@@ -68,7 +68,7 @@ export function finish(ok,why){
     G.S.money+=total;G.shift.earned+=total;
     const rows=[['Müşteri puanı',starStr(rt.stars),'stars'],['Taşıma ücreti ('+G.cond+'%)',fmt(pay)],['Süre bonusu ('+G.timeLeft.toFixed(1)+' sn)',fmt(tb)],['Bahşiş',fmt(rt.tip)],['Rakip bonusu',fmt(G.bonus)],['BU TESLİMAT',fmt(total),'total']];
     const sub='“'+rt.comment+'” · '+to;
-    sfx('go');
+    sfxStars(rt.stars);if(rt.tip&&G.AC)sfx('cash',{t:G.AC.currentTime+.25+rt.stars*.16});
     if(G.shift.i<2){
       rows.push(['KASA',fmt(G.S.money)]);save();
       renderResult({eyebrow,title:'TESLİM EDİLDİ',sub,rows,picks:drawCards(),buttons:[]});
@@ -79,7 +79,7 @@ export function finish(ok,why){
       G.shift=null;
     }
   }else{
-    save();
+    save();sfx('fail');
     renderResult({eyebrow,title:'VARDİYA BİTTİ',
       sub:(why==='time'?'Süre doldu, sipariş iptal. ':'Paket dağıldı. ')+'“'+rt.comment+'” · '+to+'. Bu vardiyada kazandığın para kasada.',
       rows:[['Müşteri puanı',starStr(rt.stars),'stars'],['Kalan mesafe',distStr()],['Paket durumu',G.cond+'%'],['Vardiya kazancı',fmt(G.shift.earned),'total'],['KASA',fmt(G.S.money)]],buttons:endButtons});
@@ -116,7 +116,7 @@ export function renderGarage(){
     const btn=el('button','buy');btn.type='button';
     if(lv>=3){btn.textContent='MAKS';btn.disabled=true;}
     else{const c=upCost(b,lv);btn.textContent=fmt(c);btn.disabled=G.S.money<c;
-      btn.addEventListener('click',()=>{if(G.S.money<c)return;G.S.money-=c;u[k]=lv+1;save();sfx('go');toast(up.n+' seviye '+u[k]);renderGarage();});}
+      btn.addEventListener('click',()=>{if(G.S.money<c)return;G.S.money-=c;u[k]=lv+1;save();sfx('cash');toast(up.n+' seviye '+u[k]);renderGarage();});}
     row.append(info,btn);ul.append(row);
   });
   const wl=$('gWpn');wl.textContent='';
@@ -127,7 +127,7 @@ export function renderGarage(){
     if(sel){btn.className='buy alt';btn.textContent='KUŞANILDI';btn.disabled=true;}
     else if(own){btn.className='buy alt';btn.textContent='KUŞAN';btn.addEventListener('click',()=>{G.S.wpn=wp.id;save();renderGarage();});}
     else{btn.textContent=fmt(wp.price);btn.disabled=G.S.money<wp.price;
-      btn.addEventListener('click',()=>{if(G.S.money<wp.price)return;G.S.money-=wp.price;G.S.weapons.push(wp.id);G.S.wpn=wp.id;save();sfx('go');toast(wp.n+' alındı');renderGarage();});}
+      btn.addEventListener('click',()=>{if(G.S.money<wp.price)return;G.S.money-=wp.price;G.S.weapons.push(wp.id);G.S.wpn=wp.id;save();sfx('cash');toast(wp.n+' alındı');renderGarage();});}
     row.append(info,btn);wl.append(row);
   }
   const bl=$('gBikes');bl.textContent='';
@@ -138,7 +138,7 @@ export function renderGarage(){
     if(sel){btn.className='buy alt';btn.textContent='SEÇİLİ';btn.disabled=true;}
     else if(own){btn.className='buy alt';btn.textContent='SEÇ';btn.addEventListener('click',()=>{G.S.cur=bk.id;save();renderGarage();});}
     else{btn.textContent=fmt(bk.price);btn.disabled=G.S.money<bk.price;
-      btn.addEventListener('click',()=>{if(G.S.money<bk.price)return;G.S.money-=bk.price;G.S.owned.push(bk.id);G.S.cur=bk.id;save();sfx('go');toast(bk.n+' garajda');renderGarage();});}
+      btn.addEventListener('click',()=>{if(G.S.money<bk.price)return;G.S.money-=bk.price;G.S.owned.push(bk.id);G.S.cur=bk.id;save();sfx('cash');toast(bk.n+' garajda');renderGarage();});}
     row.append(info,btn);bl.append(row);
   }
   G.PSPR=bikeSprites(b,G.S.wpn);

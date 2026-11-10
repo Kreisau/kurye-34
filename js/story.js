@@ -1,4 +1,5 @@
 import { $, el, rng } from './config.js';
+import { storySfx, storyStop } from './audio.js';
 import { showScreen } from './ui.js';
 
 /* ---------- story intro ---------- */
@@ -142,9 +143,10 @@ function show(i) {
   const d = $('sDots'); d.textContent = '';
   SCENES.forEach((_, k) => d.append(el('i', k === i ? 'on' : null)));
   $('sNext').textContent = i === SCENES.length - 1 ? last : 'DEVAM';
+  storySfx(i);
 }
 function close() {
-  cancelAnimationFrame(raf); raf = 0;
+  cancelAnimationFrame(raf); raf = 0; storyStop();
   const f = onDone; onDone = null; if (f) f();
 }
 

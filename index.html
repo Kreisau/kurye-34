@@ -82,6 +82,7 @@
       <div class="pair">
         <button class="ghost" id="tutBtn" type="button">EĞİTİM</button>
         <button class="ghost" id="storyBtn" type="button">HİKÂYE</button>
+        <button class="ghost" id="sndBtn" type="button">SES</button>
       </div>
     </div>
   </div>
@@ -140,12 +141,26 @@
   </div>
 </div>
 
+<div class="screen" id="settings" hidden>
+  <div class="card">
+    <div class="eyebrow">AYARLAR</div>
+    <h2>SES</h2>
+    <div class="vols">
+      <label for="v-music">Müzik</label><input type="range" id="v-music" min="0" max="100" step="5"><output id="v-music-n"></output>
+      <label for="v-sfx">Efektler ve motor</label><input type="range" id="v-sfx" min="0" max="100" step="5"><output id="v-sfx-n"></output>
+      <label for="v-amb">Ortam (şehir, yağmur, martı)</label><input type="range" id="v-amb" min="0" max="100" step="5"><output id="v-amb-n"></output>
+    </div>
+    <button class="cta" id="setBack" type="button">TAMAM</button>
+  </div>
+</div>
+
 <div class="screen" id="pause" hidden>
   <div class="card">
     <div class="eyebrow">MOLA</div>
     <h2>DURAKLATILDI</h2>
     <div class="row">
       <button class="cta" id="resumeBtn" type="button">DEVAM</button>
+      <button class="ghost" id="pSndBtn" type="button">SES AYARLARI</button>
       <button class="ghost" id="quitBtn" type="button">VARDİYAYI BIRAK</button>
     </div>
   </div>

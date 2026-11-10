@@ -15,6 +15,7 @@ export function load(){try{const d=JSON.parse(localStorage.getItem('kurye34')||'
   if(d.wpn&&G.S.weapons.includes(d.wpn))G.S.wpn=d.wpn;
   if(Array.isArray(d.ratings))G.S.ratings=d.ratings.map(n=>n|0).filter(n=>n>=1&&n<=5).slice(-20);
   G.S.tut=d.tut?1:0;G.S.story=d.story?1:0;
+  if(d.vol&&typeof d.vol==='object'){G.S.vol={music:.7,sfx:.85,amb:.6};for(const k in G.S.vol)if(typeof d.vol[k]==='number')G.S.vol[k]=clamp(d.vol[k],0,1);}
 }catch(e){}}
 export function save(){try{localStorage.setItem('kurye34',JSON.stringify(G.S));}catch(e){}}
 export const ups=id=>G.S.up[id]||(G.S.up[id]=[0,0,0,0,0]);

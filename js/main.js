@@ -1,4 +1,4 @@
-import { audioInit, audioTick } from './audio.js';
+import { applyVol, audioInit, audioTick, setMuted, sfx, vol } from './audio.js';
 import { $, STEP } from './config.js';
 import { G } from './g.js';
 import { demoTrack, newShift, update } from './game.js';
@@ -25,7 +25,23 @@ $('abandonBtn').addEventListener('click',goMenu);
 $('resumeBtn').addEventListener('click',()=>{audioInit();togglePause(false);});
 $('quitBtn').addEventListener('click',()=>{save();goMenu();});
 $('pauseBtn').addEventListener('click',()=>togglePause(true));
-$('muteBtn').addEventListener('click',()=>{G.muted=!G.muted;$('muteBtn').textContent=G.muted?'SESSİZ':'SES';});
+$('muteBtn').addEventListener('click',()=>{setMuted(!G.muted);$('muteBtn').textContent=G.muted?'SESSİZ':'SES';});
+// Audio needs a user gesture (iOS); the first tap or key anywhere starts it, so the menu music can play.
+for(const ev of ['pointerdown','keydown'])addEventListener(ev,()=>audioInit(),true);
+document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('button');if(b&&!b.closest('.controls'))sfx('click');},true);
+
+/* ---------- sound settings ---------- */
+let setFrom='menu';
+function openSettings(from){
+  setFrom=from;const v=vol();
+  for(const k of ['music','sfx','amb']){const r=$('v-'+k);r.value=Math.round(v[k]*100);$('v-'+k+'-n').textContent=r.value;}
+  showScreen('settings');
+}
+for(const k of ['music','sfx','amb'])$('v-'+k).addEventListener('input',e=>{vol()[k]=e.target.value/100;$('v-'+k+'-n').textContent=e.target.value;applyVol();});
+$('v-sfx').addEventListener('change',()=>sfx('cash'));
+$('sndBtn').addEventListener('click',()=>{audioInit();openSettings('menu');});
+$('pSndBtn').addEventListener('click',()=>openSettings('pause'));
+$('setBack').addEventListener('click',()=>{save();showScreen(setFrom);});
 
 load();resize();initSprites();demoTrack();updateMenu();showScreen('menu');
 G.last=performance.now();G.acc=0;

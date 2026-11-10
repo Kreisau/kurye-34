@@ -95,19 +95,19 @@ export function damage(a,msg){
 }
 export function crash(msg,dmg){
   if(G.inv>0||G.crashT>0)return;
-  G.crashT=G.ST.crashT;G.crashSide=Math.sign(G.playerX)||1;G.speed*=.3;
+  G.crashT=G.ST.crashT;G.crashSide=Math.sign(G.playerX)||1;G.speed*=.3;sfx('crash');
   damage(dmg,msg);
 }
 export function hitHazard(h){
   const rel=G.speed/Math.max(1,G.ST.top*maxSpeed);
-  if(h.t==='bump'){G.bumpT=.35;G.speed*=.85;if(rel>.8)damage(5,'Tümseğe hızlı girdin');else G.shakeT=.12;}
-  else if(h.t==='pot'){G.bumpT=.3;G.speed*=.72;damage(5,'Çukura girdin');}
-  else if(h.t==='junk'){G.bumpT=.3;G.speed*=.6;damage(6,'Yola düşen eşyaya çarptın');}
-  else{G.slipT=rain()?1.3:.9;G.slipDir=Math.random()<.5?-1:1;toast('Yağa bastın!');sfx('whoosh');}
+  if(h.t==='bump'){sfx('bump');G.bumpT=.35;G.speed*=.85;if(rel>.8)damage(5,'Tümseğe hızlı girdin');else G.shakeT=.12;}
+  else if(h.t==='pot'){sfx('pot');G.bumpT=.3;G.speed*=.72;damage(5,'Çukura girdin');}
+  else if(h.t==='junk'){sfx('junk');G.bumpT=.3;G.speed*=.6;damage(6,'Yola düşen eşyaya çarptın');}
+  else{G.slipT=rain()?1.3:.9;G.slipDir=Math.random()<.5?-1:1;toast('Yağa bastın!');sfx('oil');}
 }
 export function doNitro(){
   if(G.state!=='play'||G.nitroN<=0||G.nitroT>0||G.crashT>0)return;
-  G.nitroN--;G.nitroT=2.5;sfx('whoosh');toast('NİTRO!');
+  G.nitroN--;G.nitroT=2.5;sfx('nitro');toast('NİTRO!');
   const nb=$('nitroBtn');nb.textContent='NİTRO ×'+G.nitroN;if(!G.nitroN)nb.classList.add('used');
 }
 export function doKick(){
@@ -115,7 +115,7 @@ export function doKick(){
   const wp=curWpn(),pz=G.pos+playerZ;let best=null,bd=1e9;
   for(const r of G.rivals){if(r.down>0)continue;const s=Math.abs(r.z-pz)+Math.abs(r.x-G.playerX)*400;if(s<bd){bd=s;best=r;}}
   G.kickSide=best&&Math.abs(best.z-pz)<600?(Math.sign(best.x-G.playerX)||1):((input.left||input.steer<-.2)?-1:(input.right||input.steer>.2)?1:G.kickSide);
-  G.kickT=wp.id==='kick'?.35:.45;G.hitT=.15;sfx('whoosh');
+  G.kickT=wp.id==='kick'?.35:.45;G.hitT=.15;sfx('swing',{w:wp.id,pan:G.kickSide*.4});
 }
 export function tryHit(){
   const wp=curWpn(),g=card('eldiven')>0,zb=wp.zb*(g?1.3:1),za=wp.za*(g?1.3:1),lmax=wp.lmax*(g?1.2:1),pz=G.pos+playerZ;
@@ -126,9 +126,9 @@ export function tryHit(){
 }
 export function landHit(best,wp,g){
   {
-    best.hp-=wp.pow;best.wind=0;G.shakeT=.15;sfx('hit');
+    best.hp-=wp.pow;best.wind=0;G.shakeT=.15;sfx('impact',{w:wp.id,pan:clamp((best.x-G.playerX)*1.5,-1,1)});
     if(best.hp<=0){
-      best.down=best.p.id==='orange'?3:5;best.speed*=.5;best.fall=0;best.kick=0;
+      sfx('down',{pan:clamp((best.x-G.playerX)*1.5,-1,1)});best.down=best.p.id==='orange'?3:5;best.speed*=.5;best.fall=0;best.kick=0;
       const add=Math.round((15+best.p.hp*10)*(g?2:1));G.bonus+=add;toast(best.p.n+' kurye yerde!  +'+add+' TL');
     }else{best.speed*=.8;best.x=clamp(best.x+G.kickSide*.2,-.95,.95);best.cool=Math.max(best.cool,1.2);toast(best.p.n+' kurye sendeledi');}
   }
@@ -217,7 +217,7 @@ export function update(dt){
   if(G.tut)tutTick(dt);
   if(G.state!=='play')return;
   if(!G.tut)G.timeLeft-=dt;
-  if(G.pos+playerZ>=G.finishZ-segL*10){G.state='arrive';G.arriveT=1.6;clearInput();toast('Adrese vardın');}
+  if(G.pos+playerZ>=G.finishZ-segL*10){G.state='arrive';G.arriveT=1.6;clearInput();toast('Adrese vardın');sfx('bell');}
   else if(G.timeLeft<=0){G.timeLeft=0;finish(false,'time');}
   bgScroll(pSeg,G.pos-startPos);
 }

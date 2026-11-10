@@ -1,5 +1,6 @@
 import { PW, RIVALS, clamp, lerp, maxSpeed, playerZ } from './config.js';
 import { G } from './g.js';
+import { sfx } from './audio.js';
 import { card, damage } from './game.js';
 import { SPR } from './sprites.js';
 import { closureAt } from './track.js';
@@ -37,5 +38,5 @@ export function updateRival(r,dt){
   if(r.wind>0){
     r.wind-=dt;
     if(r.wind<=0){r.kick=.3;if(inWin&&G.crashT<=0&&G.inv<=0&&(Math.sign(G.playerX-r.x)||1)===r.kside){G.playerX+=r.kside*p.push;G.speed*=.88;damage(p.dmg,p.n+' kurye vurdu');}}
-  }else if(G.crashT<=0&&r.cool<=0&&inWin&&Math.random()<dt*1.4*p.aggr){r.wind=.3;r.kside=Math.sign(G.playerX-r.x)||1;r.cool=(1.8+Math.random()*1.5)/p.aggr;}
+  }else if(G.crashT<=0&&r.cool<=0&&inWin&&Math.random()<dt*1.4*p.aggr){r.wind=.3;r.kside=Math.sign(G.playerX-r.x)||1;sfx('swing',{pan:clamp((r.x-G.playerX)*1.5,-1,1)});r.cool=(1.8+Math.random()*1.5)/p.aggr;}
 }

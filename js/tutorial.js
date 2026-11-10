@@ -1,4 +1,4 @@
-import { audioInit, sfx } from './audio.js';
+import { audioInit, sfx, sfxStars } from './audio.js';
 import { $, DISTRICTS, RIVALS, fmt, playerZ, prof, segL } from './config.js';
 import { G } from './g.js';
 import { demoTrack, newShift, startMission } from './game.js';
@@ -126,6 +126,7 @@ export function tutFinish() {
   const rt = rateDelivery(true);
   G.S.money += PAY + rt.tip; G.S.tut = 1; save();
   tutStop(); G.shift = null;
+  sfxStars(rt.stars); if (rt.tip && G.AC) sfx('cash', { t: G.AC.currentTime + .25 + rt.stars * .16 });
   renderResult({
     eyebrow: 'İLK GÜN · EĞİTİM', title: 'İLK TESLİMAT',
     sub: '“' + rt.comment + '” · Yeldeğirmeni. Usta: “' + (rt.stars >= 4 ? 'İyi iş.' : rt.stars === 3 ? 'Fena değil.' : 'Paketi hırpaladın ama ilk gün sayılır.') + ' Müşteriler seni 1-5 yıldızla puanlar; puanın yüksek kaldıkça siparişler daha iyi öder. Gerçek vardiyada süre işler.”',

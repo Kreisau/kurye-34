@@ -168,7 +168,13 @@ h3{font:700 13px/1 var(--ui);letter-spacing:.16em;color:var(--muted)}
 /* Customer rating */
 .facts dd.stars,.facts dt.stars{color:var(--taxi)}
 .facts dd.stars{letter-spacing:.12em}
-.pair{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.pair{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+
+/* Sound settings */
+.vols{display:grid;grid-template-columns:minmax(0,1fr) 3ch;gap:6px 12px;align-items:center}
+.vols label{grid-column:1/-1;font:700 13px/1.2 var(--ui);letter-spacing:.06em;color:var(--muted);margin-top:6px}
+.vols input{width:100%;accent-color:var(--taxi);touch-action:manipulation;height:28px}
+.vols output{font:800 15px/1 var(--display);text-align:right;font-variant-numeric:tabular-nums}
 
 /* Tutorial radio: dispatcher messages above the thumb controls */
 .radio{position:fixed;z-index:3;box-sizing:border-box;background:var(--card);border:1px solid var(--ember);border-radius:12px;padding:8px 10px 9px;pointer-events:none;box-shadow:0 4px 16px var(--shadow)}
