@@ -29,7 +29,7 @@ RIDE = """
 const {A,sfx,horn,engineSet,loadTrack,playTrack}=X;
 await loadTrack('ride'); await loadTrack('tense');
 const r=playTrack('ride',0,1,.8), te=playTrack('tense',0,0,.01);
-A.bed.gain.value=.25; A.hush.gain.value=.045;
+A.bed.gain.value=.2; A.hush.gain.value=.03;
 // Mobilet 50: pull away, cruise, brake, pull away again
 const dt=.02; let t=0;
 const run=(sec,p,geared,f)=>{ for(let k=0;k<sec/dt;k++,t+=dt){ const s=f(k*dt/sec); let rpm;

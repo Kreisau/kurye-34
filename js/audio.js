@@ -6,8 +6,9 @@ import { curBike } from './save.js';
 /* ---------- audio ---------- */
 // Everything is synthesized except the music (Gemini/Lyria tracks in music/, pre-looped by tools/make_loops.py).
 // Graph: music / sfx (engine, horns, hits) / amb (city, rain, gulls, ferry) buses -> master -> compressor -> out.
-const VOL_DEF = { music: .7, sfx: .85, amb: .6 };
-const LEVEL = { music: .55, sfx: 1, amb: .8 };
+const VOL_DEF = { music: .5, sfx: .8, amb: .5 };
+const LEVEL = { music: .4, sfx: 1, amb: .6 };
+const MASTER = 1.6;
 const TRACKS = {
   menu: { url: 'music/menu.mp3', ls: .5, le: 70.4966 },
   ride: { url: 'music/ride.mp3', ls: .5, le: 96.4913 },
@@ -21,7 +22,7 @@ G.AC = null; G.muted = false;
 function build(ctx) {
   const a = { ctx, bus: {}, lastImpact: -9, buf: {}, loading: {}, mv: {}, mMode: null, hornGap: 0, ahT: 6, gullT: 3, ferryT: 14, lastT: 0, story: null };
   a.comp = ctx.createDynamicsCompressor();
-  a.comp.threshold.value = -12; a.comp.knee.value = 8; a.comp.ratio.value = 4; a.comp.attack.value = .003; a.comp.release.value = .25;
+  a.comp.threshold.value = -6; a.comp.knee.value = 10; a.comp.ratio.value = 3; a.comp.attack.value = .003; a.comp.release.value = .25;
   a.master = ctx.createGain(); a.master.connect(a.comp); a.comp.connect(ctx.destination);
   for (const k of ['music', 'sfx', 'amb']) { const g = ctx.createGain(); g.gain.value = 0; g.connect(a.master); a.bus[k] = g; }
   const sr = ctx.sampleRate;
@@ -30,6 +31,10 @@ function build(ctx) {
   a.brown = ctx.createBuffer(1, sr * 4, sr);
   { const d = a.brown.getChannelData(0); let l = 0; for (let i = 0; i < d.length; i++) { l = (l + .02 * (Math.random() * 2 - 1)) / 1.02; d[i] = l * 3.5; }
     const drift = d[d.length - 1] - d[0]; for (let i = 0; i < d.length; i++) d[i] -= drift * i / d.length; }
+  a.echo = ctx.createGain(); a.echo.gain.value = .22;
+  { const d = ctx.createDelay(.5), fb = ctx.createGain(), lp = ctx.createBiquadFilter();
+    d.delayTime.value = .085; fb.gain.value = .28; lp.type = 'lowpass'; lp.frequency.value = 2200;
+    a.echo.connect(d); d.connect(lp); lp.connect(fb); fb.connect(d); lp.connect(a.bus.sfx); }
   A = a; buildEngine(); buildAmb();
   return a;
 }
@@ -171,12 +176,12 @@ export function engineSet(t, on, rpm, load, nitro, p) {
   const f = (32 + 100 * rpm) * p * (nitro ? 1.08 : 1);
   e.a.frequency.setTargetAtTime(f, t, k); e.b.frequency.setTargetAtTime(f, t, k); e.sub.frequency.setTargetAtTime(f / 2, t, k);
   e.lfo.frequency.setTargetAtTime(f / 2, t, k);
-  const depth = (.2 + .55 * ts) * (1 - rpm * .5);
+  const depth = (.12 + .35 * ts) * (1 - rpm * .6);
   e.lfoG.gain.setTargetAtTime(depth / 2, t, k); e.putt.gain.setTargetAtTime(1 - depth / 2, t, k);
   e.gs.gain.setTargetAtTime(.3 + .5 * (1 - ts), t, k);
-  e.lp.frequency.setTargetAtTime((320 + 2300 * rpm * (.4 + .6 * load)) * (1 + .4 * (1 - ts)) + (nitro ? 1500 : 0), t, k);
-  e.hg.gain.setTargetAtTime(on ? .015 + .05 * rpm * load : 0, t, k);
-  e.out.gain.setTargetAtTime(on ? (.05 + .05 * rpm) * (.6 + .4 * load) * (nitro ? 1.3 : 1) : 0, t, .08);
+  e.lp.frequency.setTargetAtTime((260 + 1400 * rpm * (.4 + .6 * load)) * (1 + .3 * (1 - ts)) + (nitro ? 900 : 0), t, k);
+  e.hg.gain.setTargetAtTime(on ? .006 + .02 * rpm * load : 0, t, k);
+  e.out.gain.setTargetAtTime(on ? (.04 + .04 * rpm) * (.6 + .4 * load) * (nitro ? 1.25 : 1) : 0, t, .08);
 }
 function engineTick(t) {
   const st = G.state, on = !G.paused && (st === 'play' || st === 'count' || st === 'arrive');
@@ -191,19 +196,41 @@ function engineTick(t) {
 }
 
 /* ---------- horns & siren ---------- */
+// Car horns are a pair of electric disc horns a minor/major third apart; buses use air horns.
+// res = diaphragm/bell resonances, drive = how hard the signal is clipped (rasp).
 const HORNS = {
-  taxi: { f: [415, 523], type: 'square', pat: [[0, .11], [.17, .13]], lp: 1800 },
-  dolmus: { f: [470, 592], type: 'square', pat: [[0, .09], [.14, .09], [.28, .24]], lp: 2000 },
-  bus: { f: [185, 233], type: 'sawtooth', pat: [[0, .75]], lp: 1300, att: .06 },
-  lux: { f: [349, 440], type: 'sawtooth', pat: [[0, .55]], lp: 2400 },
-  ticari: { f: [370, 466], type: 'square', pat: [[0, .3]], lp: 1600 },
-  eco: { f: [523, 554], type: 'square', pat: [[0, .16], [.24, .16]], lp: 1400 },
-  car: { f: [400, 500], type: 'square', pat: [[0, .28]], lp: 1800 },
+  taxi: { f: [415, 494], pat: [[0, .12], [.2, .14]], res: [1250, 2500], drive: 5 },
+  dolmus: { f: [440, 554], pat: [[0, .1], [.16, .1], [.32, .3]], res: [1300, 2700], drive: 6 },
+  bus: { f: [262, 330], pat: [[0, .9]], res: [800, 1700], drive: 8, att: .06, air: 1 },
+  lux: { f: [370, 466], pat: [[0, .6]], res: [1100, 2300], drive: 3 },
+  ticari: { f: [392, 466], pat: [[0, .35]], res: [1200, 2400], drive: 6 },
+  eco: { f: [500], pat: [[0, .18], [.27, .18]], res: [1400, 2900], drive: 9 },
+  car: { f: [415, 494], pat: [[0, .32]], res: [1250, 2500], drive: 5 },
 };
-export function horn(cat, t, v, pan) {
+let hornCurve = null;
+function hornVoice(t, f, hold, v, pan, h, far) {
+  const c = A.ctx, a = h.att || .012, end = t + a + hold + .1;
+  const o1 = c.createOscillator(), o2 = c.createOscillator();
+  o1.type = 'sawtooth'; o2.type = 'square'; o2.detune.value = h.air ? 14 : 6;
+  for (const o of [o1, o2]) { o.frequency.setValueAtTime(f * .93, t); o.frequency.exponentialRampToValueAtTime(f, t + .035); }
+  const pre = c.createGain(); pre.gain.value = h.drive * .25;
+  const sh = c.createWaveShaper();
+  if (!hornCurve) { hornCurve = new Float32Array(1024); for (let i = 0; i < 1024; i++) { const x = i / 511.5 - 1; hornCurve[i] = Math.tanh(3 * x); } }
+  sh.curve = hornCurve;
+  o1.connect(pre); o2.connect(pre); pre.connect(sh);
+  const g = c.createGain(), out = c.createBiquadFilter();
+  out.type = 'lowpass'; out.frequency.value = far ? 1800 : 5200;
+  for (const [i, rf] of h.res.entries()) { const b = c.createBiquadFilter(); b.type = 'peaking'; b.frequency.value = rf; b.Q.value = 2.5; b.gain.value = i ? 6 : 10; sh.connect(b); b.connect(out); }
+  const hp = c.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = h.air ? 140 : 260; out.connect(hp); hp.connect(g);
+  const rough = c.createOscillator(), rg = c.createGain(); rough.frequency.value = h.air ? 31 : 47; rg.gain.value = v * .12; rough.connect(rg); rg.connect(g.gain);
+  g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(v, t + a); g.gain.setValueAtTime(v, t + a + hold); g.gain.exponentialRampToValueAtTime(.0001, end);
+  const d = dest({ pan }); g.connect(d); g.connect(A.echo);
+  for (const o of [o1, o2, rough]) { o.start(t); o.stop(end + .02); }
+}
+export function horn(cat, t, v, pan, far) {
   if (!A || G.muted) return;
   const h = HORNS[cat] || HORNS.car;
-  for (const [o, d] of h.pat) for (const f of h.f) tone(t + o, { f, type: h.type, hold: d, dur: .06, v: v * .5, att: h.att || .01, lp: h.lp, pan });
+  for (const [o, d] of h.pat) for (const f of h.f) hornVoice(t + o, f, d, v * .14 / h.f.length * 2, pan, h, far);
 }
 function hornTick(t, dt) {
   if (G.state !== 'play' || G.paused) return;
@@ -213,18 +240,18 @@ function hornTick(t, dt) {
     c.hcd = (c.hcd || 0) - dt;
     if (c.amb || c.hcd > 0 || A.hornGap > 0) continue;
     const dz = c.z - pz, dx = Math.abs(c.x - G.playerX), near = (c.hit + PW) / 2;
-    const cutIn = dz < -60 && dz > -900 && dx < near + .05 && c.speed > G.speed * 1.05;   // you're slow in front of it
-    const brush = Math.abs(dz) < 220 && dx < near + .14 && G.speed > c.speed;            // you squeeze past it
+    const cutIn = dz < -60 && dz > -500 && dx < near && c.speed > G.speed * 1.15;   // you're slow in front of it
+    const brush = Math.abs(dz) < 150 && dx < near + .06 && G.speed > c.speed * 1.1;            // you squeeze past it
     if (cutIn || brush) {
       horn(c.cat, t, .22 * clamp(1 - Math.abs(dz) / 3000, .3, 1), clamp((c.x - G.playerX) * 1.3, -1, 1));
-      c.hcd = rnd(5, 9); A.hornGap = .4; break;
+      c.hcd = rnd(10, 16); A.hornGap = rnd(2.5, 4); break;
     }
   }
   A.ahT -= dt;   // distant traffic honking now and then
   if (A.ahT <= 0) {
-    A.ahT = (G.route && G.route.ev === 'trafik' ? 3 : 7) + rnd(0, 8);
+    A.ahT = (G.route && G.route.ev === 'trafik' ? 8 : 16) + rnd(0, 12);
     const far = G.cars.filter(c => !c.amb && c.z - pz > 800);
-    if (far.length) { const c = far[Math.floor(Math.random() * far.length)]; horn(c.cat, t, .07, clamp((c.x - G.playerX) * 1.3, -1, 1)); }
+    if (far.length) { const c = far[Math.floor(Math.random() * far.length)]; if (A.hornGap <= 0) horn(c.cat, t, .05, clamp((c.x - G.playerX) * 1.3, -1, 1), 1); }
   }
 }
 function sirenTick(t) {
@@ -269,12 +296,12 @@ const seaRoute = () => { const r = G.route; return !!(r && ((r.A && r.A.sea) || 
 function ambTick(t, dt) {
   const ride = G.state === 'play' || G.state === 'count' || G.state === 'arrive', story = !!A.story;
   const k = .4;
-  A.bed.gain.setTargetAtTime(story ? 0 : ride ? .25 : .18, t, k);
-  A.hush.gain.setTargetAtTime(story ? 0 : ride ? .035 + .02 * Math.min(1, G.speed / maxSpeed) : .025, t, k);
+  A.bed.gain.setTargetAtTime(story ? 0 : ride ? .2 : .14, t, k);
+  A.hush.gain.setTargetAtTime(story ? 0 : ride ? .02 + .015 * Math.min(1, G.speed / maxSpeed) : .015, t, k);
   A.rain.gain.setTargetAtTime(!story && G.route && G.route.ev === 'yagmur' && G.state !== 'menu' ? .18 : 0, t, k);
   if (story || G.paused || !seaRoute()) return;
   A.gullT -= dt; A.ferryT -= dt;
-  if (A.gullT <= 0) { A.gullT = rnd(5, 14); gull(t, .045, rnd(-.8, .8)); }
+  if (A.gullT <= 0) { A.gullT = rnd(9, 20); gull(t, .035, rnd(-.8, .8)); }
   if (A.ferryT <= 0) { A.ferryT = rnd(50, 100); ferry(t, .06); }
 }
 
@@ -350,7 +377,10 @@ function musicTick(t) {
   if (want === 'ride' && !A.mv.ride && A.buf.ride && A.buf.tense) { A.mv.ride = playTrack('ride', t, 1, .8); A.mv.tense = playTrack('tense', t, 0, .01); }
   if (want === 'ride' && A.mv.ride) {
     const pz = G.pos + playerZ;
-    const tense = G.state === 'play' && ((!G.tut && G.timeLeft <= 12) || G.rivals.some(r => r.down <= 0 && Math.abs(r.z - pz) < 700));
+    const fight = G.rivals.some(r => r.down <= 0 && Math.abs(r.z - pz) < 400);
+    A.fightT = fight ? (A.fightT || 0) + (t - (A.fightLast || t)) : 0; A.fightLast = t;
+    if (G.state === 'play' && ((!G.tut && G.timeLeft <= 12) || A.fightT > 1.5)) A.tenseUntil = t + 6;
+    const tense = G.state === 'play' && t < (A.tenseUntil || 0);
     A.mv.ride.g.gain.setTargetAtTime(tense ? .2 : 1, t, .45);
     A.mv.tense.g.gain.setTargetAtTime(tense ? 1 : 0, t, .45);
   }
@@ -360,7 +390,7 @@ function musicTick(t) {
 export function applyVol() {
   if (!A) return;
   const v = vol(), t = now(), duck = G.paused ? .35 : 1;
-  A.master.gain.setTargetAtTime(G.muted ? 0 : 1, t, .03);
+  A.master.gain.setTargetAtTime(G.muted ? 0 : MASTER, t, .03);
   A.bus.music.gain.setTargetAtTime(v.music * LEVEL.music * duck, t, .1);
   A.bus.sfx.gain.setTargetAtTime(v.sfx * LEVEL.sfx, t, .05);
   A.bus.amb.gain.setTargetAtTime(v.amb * LEVEL.amb * duck, t, .1);
@@ -390,7 +420,7 @@ document.addEventListener('visibilitychange', () => {
 // Builds a separate graph on an OfflineAudioContext, lets fn schedule into it, renders, restores the live graph.
 export async function renderOffline(seconds, fn) {
   const live = A, off = new OfflineAudioContext(2, Math.ceil(44100 * seconds), 44100);
-  build(off); A.master.gain.value = 1;
+  build(off); A.master.gain.value = MASTER;
   const v = vol(); A.bus.music.gain.value = v.music * LEVEL.music; A.bus.sfx.gain.value = v.sfx * LEVEL.sfx; A.bus.amb.gain.value = v.amb * LEVEL.amb;
   try {
     await fn({ A, sfx, sfxStars, engineSet, horn, gull, ferry, storySfx, loadTrack, playTrack, setStoryOff: () => { A.story = null; } });
