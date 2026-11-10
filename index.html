@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Kurye 34</title>
+<meta name="theme-color" content="#120d22">
+<meta name="description" content="İstanbul'da motor kuryeliği: trafik, rakipler, teslimat.">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Kurye 34">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:wght@500;700;800;900&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="game"><canvas id="c" aria-label="Kurye 34 oyun alanı"></canvas></div>
+
+<div class="hud" id="hud" hidden>
+  <div class="stat">
+    <span class="lbl">SÜRE</span>
+    <span class="val" id="time">00.0</span>
+    <div class="sys">
+      <button class="mini" id="pauseBtn" type="button" aria-label="Duraklat">II</button>
+      <button class="mini" id="muteBtn" type="button">SES</button>
+    </div>
+  </div>
+  <div class="mid">
+    <div class="route" id="route"></div>
+    <div class="track"><div class="fill" id="prog"></div><div class="pin"></div></div>
+    <div class="sub"><span id="dist">0 m</span><span id="kmh">0 km/sa</span></div>
+  </div>
+  <div class="stat r">
+    <span class="lbl">KASA</span>
+    <span class="val" id="money">0 TL</span>
+    <span class="lbl" style="margin-top:6px">PAKET</span>
+    <div class="pbar"><i id="pkg"></i></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<div class="cd" id="cd" hidden></div>
+<div class="hint" id="rivalHint" hidden>RAKİP ARKADA</div>
+
+<div class="controls" id="controls" hidden>
+  <div class="joyzone" id="joy" aria-label="Yön: sürükle">
+    <div class="joybase idle" id="joyBase"><div class="joyknob" id="joyKnob"></div></div>
+  </div>
+  <div class="rpad">
+    <button class="btn kick" data-k="kick" type="button">VUR</button>
+    <button class="btn brake" data-k="brake" type="button">FREN</button>
+    <button class="btn nitro" data-k="nitro" id="nitroBtn" type="button" hidden>NİTRO</button>
+  </div>
+</div>
+<div class="keyhint" id="keyhint" hidden>Gaz otomatik · ← → yön · ↓ fren · Boşluk vur · N nitro · P duraklat</div>
+
+<div class="screen" id="menu">
+  <div class="card">
+    <div class="eyebrow">İSTANBUL · MOTO KURYE · PROTOTİP 0.15</div>
+    <h1>KURYE <span class="plate">34</span></h1>
+    <p class="lede">Mobiletle başla, kazandıkça garajı büyüt. Her vardiya 3 teslimat; aralarda kart seç, bir teslimatı kaçırırsan vardiya biter ama para cebinde kalır.</p>
+    <dl class="facts">
+      <dt>KASA</dt><dd id="mMoney">0 TL</dd>
+      <dt>MOTOR</dt><dd id="mBike">Mobilet 50</dd>
+      <dt>SIRADAKİ</dt><dd id="mShift">Vardiya #1 · Kadıköy</dd>
+    </dl>
+    <p class="how touch-only"><b>Gaz otomatik.</b> Sol yarıda parmağını sürükleyerek yön ver, sağda FREN ve VUR. Arkadan gelen kuryeleri üstteki aynalardan izle.</p>
+    <p class="how key-only"><b>Gaz otomatik.</b> ← → yön, ↓ fren, Boşluk vur, P duraklat. Arkadan gelen kuryeleri üstteki aynalardan izle.</p>
+    <div class="row">
+      <button class="cta" id="startBtn" type="button">VARDİYAYA BAŞLA</button>
+      <button class="ghost" id="garageBtn" type="button">GARAJ</button>
+    </div>
+  </div>
+</div>
+
+<div class="screen" id="garage" hidden>
+  <div class="card wide">
+    <div class="ghead"><h2>GARAJ</h2><span class="cash" id="gMoney">0 TL</span></div>
+    <div class="cur">
+      <canvas id="gPrev" width="180" height="172" aria-hidden="true"></canvas>
+      <div style="min-width:0">
+        <div class="nm" id="gName">Mobilet 50</div>
+        <div class="bars" id="gBars"></div>
+      </div>
+    </div>
+    <h3>PARÇALAR</h3>
+    <div class="list" id="gUps"></div>
+    <h3>TEÇHİZAT</h3>
+    <div class="list" id="gWpn"></div>
+    <h3>MOTORLAR</h3>
+    <div class="list" id="gBikes"></div>
+    <button class="ghost" id="gBack" type="button">GERİ</button>
+  </div>
+</div>
+
+<div class="screen" id="brief" hidden>
+  <div class="card wide">
+    <div class="ghead"><h2>SİPARİŞLER</h2><span class="online">● ÇEVRİMİÇİ</span></div>
+    <div class="eyebrow" id="bEyebrow"></div>
+    <div class="list" id="offers"></div>
+    <div id="bCardsWrap" class="row" hidden><h3>KARTLARIN</h3><div class="chips" id="bCards"></div></div>
+    <button class="ghost" id="abandonBtn" type="button">VARDİYAYI BIRAK</button>
+  </div>
+</div>
+
+<div class="screen" id="result" hidden>
+  <div class="card">
+    <div class="eyebrow" id="resEyebrow"></div>
+    <h2 id="resTitle"></h2>
+    <p class="lede" id="resSub"></p>
+    <dl class="facts" id="resRows"></dl>
+    <div id="pickWrap" class="row" hidden><h3>BİR KART SEÇ</h3><div class="opts" id="picks"></div></div>
+    <div class="row" id="resBtns"></div>
+  </div>
+</div>
+
+<div class="screen" id="pause" hidden>
+  <div class="card">
+    <div class="eyebrow">MOLA</div>
+    <h2>DURAKLATILDI</h2>
+    <div class="row">
+      <button class="cta" id="resumeBtn" type="button">DEVAM</button>
+      <button class="ghost" id="quitBtn" type="button">VARDİYAYI BIRAK</button>
+    </div>
+  </div>
+</div>
+
+<script type="module" src="js/main.js"></script>
+<script>
+if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost'))addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+</script>
+</body>
+</html>
