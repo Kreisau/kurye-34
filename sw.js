@@ -1,7 +1,7 @@
 // Kurye 34 service worker: offline app shell + font cache.
 // Same-origin files: served from cache, refreshed in the background (new version shows on next launch).
 // Bump VERSION to force a clean cache after structural changes.
-const VERSION = 'v2';
+const VERSION = 'v3';
 const SHELL = 'kurye34-shell-' + VERSION;
 const FONTS = 'kurye34-fonts';
 const FILES = [
@@ -12,7 +12,7 @@ const FILES = [
 ];
 
 self.addEventListener('install', e => {
-  e.waitUntil(caches.open(SHELL).then(c => c.addAll(FILES)).then(() => self.skipWaiting()));
+  e.waitUntil(caches.open(SHELL).then(c => c.addAll(FILES.map(f => new Request(f, { cache: 'reload' })))).then(() => self.skipWaiting()));
 });
 
 self.addEventListener('activate', e => {
@@ -23,10 +23,11 @@ self.addEventListener('activate', e => {
   );
 });
 
-function staleWhileRevalidate(req, cacheName, opts) {
+// fresh: bypass the browser HTTP cache (revalidate with ETag) so a new deploy reaches the SW cache.
+function staleWhileRevalidate(req, cacheName, opts, fresh) {
   return caches.open(cacheName).then(cache =>
     cache.match(req, opts).then(hit => {
-      const net = fetch(req).then(res => {
+      const net = fetch(req, fresh ? { cache: 'no-cache' } : undefined).then(res => {
         if (res && (res.ok || res.type === 'opaque')) cache.put(req, res.clone());
         return res;
       }).catch(() => hit);
@@ -40,7 +41,7 @@ self.addEventListener('fetch', e => {
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
   if (url.origin === location.origin) {
-    e.respondWith(staleWhileRevalidate(req, SHELL, { ignoreSearch: true }));
+    e.respondWith(staleWhileRevalidate(req, SHELL, { ignoreSearch: true }, true));
   } else if (url.hostname === 'fonts.googleapis.com' || url.hostname === 'fonts.gstatic.com') {
     e.respondWith(staleWhileRevalidate(req, FONTS));
   }
