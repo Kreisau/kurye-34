@@ -1,7 +1,7 @@
 // Kurye 34 service worker: offline app shell + font cache.
 // Same-origin files: served from cache, refreshed in the background (new version shows on next launch).
 // Bump VERSION to force a clean cache after structural changes.
-const VERSION = 'v3';
+const VERSION = 'v4';
 const SHELL = 'kurye34-shell-' + VERSION;
 const FONTS = 'kurye34-fonts';
 const FILES = [
@@ -23,11 +23,11 @@ self.addEventListener('activate', e => {
   );
 });
 
-// fresh: bypass the browser HTTP cache (revalidate with ETag) so a new deploy reaches the SW cache.
+// fresh: rebuild the request by URL (navigate requests can't take init options) and bypass the browser HTTP cache (revalidate with ETag) so a new deploy reaches the SW cache.
 function staleWhileRevalidate(req, cacheName, opts, fresh) {
   return caches.open(cacheName).then(cache =>
     cache.match(req, opts).then(hit => {
-      const net = fetch(req, fresh ? { cache: 'no-cache' } : undefined).then(res => {
+      const net = fetch(fresh ? new Request(req.url, { cache: 'no-cache' }) : req).then(res => {
         if (res && (res.ok || res.type === 'opaque')) cache.put(req, res.clone());
         return res;
       }).catch(() => hit);
