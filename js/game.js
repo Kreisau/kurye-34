@@ -175,8 +175,11 @@ export function update(dt){
     else G.speed=Math.max(top,G.speed+DEC*.5*dt);
   }
   G.playerX-=dt*2.2*sp*sp*pSeg.curve*CENT*G.ST.cent*(rain()?1.35:1);
+  // Hills: uphill drag fades out at crawl speed, so even the Mobilet on Karaköy's steepest streets
+  // slows to a crawl instead of stalling at 0 km/h for good (it used to stop for slopes above ~1.1).
   const slope=(pSeg.p2.wy-pSeg.p1.wy)/segL;
-  G.speed-=slope*G.ST.top*maxSpeed*.22*dt;
+  const grav=slope*G.ST.top*maxSpeed*.22*(slope>0?Math.min(1,G.speed/(top*.4)):1);
+  G.speed-=grav*dt;
   G.offroad=Math.abs(G.playerX)>1;
   if(G.offroad){
     if(G.speed>OFFLIM)G.speed+=OFFDEC*dt;

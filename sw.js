@@ -1,7 +1,7 @@
 // Kurye 34 service worker: offline app shell + font cache.
 // Same-origin files: served from cache, refreshed in the background (new version shows on next launch).
 // Bump VERSION to force a clean cache after structural changes.
-const VERSION = 'v10';
+const VERSION = 'v11';
 const SHELL = 'kurye34-shell-' + VERSION;
 const FONTS = 'kurye34-fonts';
 const FILES = [
