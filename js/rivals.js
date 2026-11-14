@@ -17,10 +17,21 @@ import { toast } from './ui.js';
 // what they crashed into, as Turkish dative ("... çarptı")
 const CAR_NAME = { taxiY: 'taksiye', taxiT: 'taksiye', taxiV: 'taksiye', car: 'arabaya', lux: 'cipe', hafif: 'minivana', van: 'minibüse', klasik: 'eski sedana', hurda: 'kamyonete', dolmus: 'dolmuşa', bus: 'otobüse' };
 
+// Rivals come one at a time: the first starts just behind the line, the rest are queued and join about 16-22 s apart (never more than
+// two on the road), so they don't arrive as a pack. Count: 2, 3 from delivery 8, +1 for the crowd event, +1 for the Kabadayı card.
 export function spawnRivals(){
-  G.rivals=[];const quiet=card('sakin')>0,n=Math.min(4,2+((G.route.d||0)>=8?1:0)+(G.route.ev==='rakip2'?1:0)+(card('kabadayi')>0?1:0));
+  G.rivals=[];G.rivalWait=[];G.rivalT=0;G.rivalLast=0;
+  const quiet=card('sakin')>0,n=Math.min(4,2+((G.route.d||0)>=8?1:0)+(G.route.ev==='rakip2'?1:0)+(card('kabadayi')>0?1:0));
   const pool=RIVALS.slice();for(let i=pool.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[pool[i],pool[j]]=[pool[j],pool[i]];}
-  for(let i=0;i<n;i++){const p=pool[i];G.rivals.push(newRival(p,(quiet?-4200:-1000)-i*1500,i%2?-.55:.55,0,(quiet?7:3)+i*2));}
+  for(let i=0;i<n;i++){const p=pool[i],x=i%2?-.55:.55;
+    if(i===0)G.rivals.push(newRival(p,quiet?-4200:-1500,x,0,quiet?7:3));
+    else G.rivalWait.push({t:(quiet?30:16)+(i-1)*22,p,x});}
+}
+export function rivalTick(dt){
+  if(!G.rivalWait||!G.rivalWait.length)return;
+  G.rivalT+=dt;const w=G.rivalWait[0];if(G.rivalT<w.t||G.rivalT-G.rivalLast<16)return;   // at least 16 s between arrivals, even after a wait
+  if(G.rivals.filter(r=>!r.out&&!r.dead&&r.down<=0).length>=2)return;
+  G.rivalWait.shift();G.rivalLast=G.rivalT;G.rivals.push(newRival(w.p,G.pos+playerZ-3500,w.x,G.speed*.9,2));
 }
 export function newRival(p,z,x,speed,cool){
   return {p,hp:p.hp,z,x,vx:0,speed,down:0,kick:0,wind:0,kside:1,cutT:2.5,cutCd:8,dodge:0,dsd:1,blk:0,cool,fall:0,spr:SPR.rv[p.id],

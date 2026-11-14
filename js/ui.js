@@ -10,6 +10,7 @@ import { rateDelivery, ratingLabel, recordRating, starStr } from './rating.js';
 import { bikeSprites } from './sprites.js';
 import { bossEnd, dailyDone, dailyFinish, nextClue, showClue } from './meta.js';
 import { tutFinish, tutStop } from './tutorial.js';
+import { COP_LIMIT, copAhead } from './street.js';
 
 /* ---------- HUD & UI ---------- */
 export const hudCache={};
@@ -21,7 +22,12 @@ export function hudTick(){
   const tw=G.timeLeft<10;if(hudCache.tw!==tw){hudCache.tw=tw;$('time').classList.toggle('warn',tw);}
   const pw=(clamp((G.pos+playerZ)/G.finishZ,0,1)*100).toFixed(1)+'%';if(hudCache.pw!==pw){hudCache.pw=pw;$('prog').style.width=pw;}
   setText('dist',distStr());
-  setText('kmh',Math.round(G.speed/maxSpeed*KMH)+(isEN()?' km/h':' km/sa'));
+  // speedometer; when a police checkpoint is coming up it shows the limit and turns red above it
+  const kmh=Math.round(G.speed/maxSpeed*KMH),cop=G.state==='play'?copAhead():null,over=cop!==null&&kmh>COP_LIMIT;
+  if($('spd').hidden)$('spd').hidden=false;
+  setText('spdV',String(kmh));setText('spdU',isEN()?'km/h':'km/sa');
+  if(hudCache.cop!==(cop!==null)){hudCache.cop=cop!==null;$('spdLim').hidden=cop===null;$('copFx').classList.toggle('on',cop!==null);}
+  if(hudCache.over!==over){hudCache.over=over;$('spd').classList.toggle('over',over);$('spd').classList.toggle('ok',cop!==null&&!over);}
   setText('money',fmt(Math.max(0,(inPot()?G.shift.earned:G.S.money)+G.bonus-(G.fine||0))));
   if(hudCache.cond!==G.cond){hudCache.cond=G.cond;const p=$('pkg');p.style.width=G.cond+'%';p.classList.toggle('low',G.cond<40);}
   const cdv=G.state==='play'&&G.timeLeft<=10?Math.ceil(G.timeLeft):0,cd=$('cd');
@@ -47,7 +53,7 @@ export function updateMenu(){
   const ready=G.S.clues>=5&&!G.S.boss,cb=$('caseBtn');
   cb.textContent=ready?'HESAPLAŞMA':'DOSYA '+(G.S.boss?'✓':G.S.clues+'/5');cb.classList.toggle('hotb',ready);
 }
-export function hideGameUI(){$('cd').hidden=true;$('hud').hidden=true;$('controls').hidden=true;$('keyhint').hidden=true;$('rivalHint').hidden=true;$('radio').hidden=true;$('bossBar').hidden=true;radioReset();}
+export function hideGameUI(){$('spd').hidden=true;$('copFx').classList.remove('on');hudCache.cop=null;hudCache.over=null;$('cd').hidden=true;$('hud').hidden=true;$('controls').hidden=true;$('keyhint').hidden=true;$('rivalHint').hidden=true;$('radio').hidden=true;$('bossBar').hidden=true;radioReset();}
 export function renderResult(o){
   $('resEyebrow').textContent=o.eyebrow;$('resTitle').textContent=o.title;$('resSub').textContent=o.sub;
   const rows=$('resRows');rows.textContent='';

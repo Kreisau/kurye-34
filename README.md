@@ -45,6 +45,7 @@ Derleme yok; düz ES modülleri.
 | `tools/meta_test.py` | İpucu, hesaplaşma, günün siparişi, saf dışı, ayarlar testleri |
 | `tools/i18n_check.py` | İngilizcede çevrilmeden kalan metinleri listeler |
 | `tools/bike_vis_test.py` | Motorun her ekran boyutunda ve yokuşta ekranda kaldığını ölçer |
+| `tools/rival_spawn_test.py` | Rakipler tek tek gelir: ilk spawn, sıra, en az 16 sn aralık, aynı anda en fazla 2 |
 | `tools/camera_test.py` | Sabit ve dinamik kamerayı yokuşlu rotada karşılaştırır |
 | `tools/street_test.py` | Işık, yaya, çevirme, köpek, ters yön, ceza ve günün saati testleri |
 | `tools/shift_test.py` | Vardiya kuralları: 5 teslimat, vardiya kasası, kasayı alma, kaybedince kasanın gitmesi, kart açılması, lanetli kartlar, telsiz |

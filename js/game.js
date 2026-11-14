@@ -4,7 +4,7 @@ import { buzz, hitStop, sparks } from './fx.js';
 import { G } from './g.js';
 import { clearInput, input } from './input.js';
 import { layoutMirrors } from './render.js';
-import { spawnRivals, updateRival } from './rivals.js';
+import { rivalTick, spawnRivals, updateRival } from './rivals.js';
 import { payLabel, payMult, ratingLabel } from './rating.js';
 import { curBike, curWpn, stats, ups } from './save.js';
 import { oncHit, oncTarget, streetClear, streetSetup, streetTick } from './street.js';
@@ -120,7 +120,7 @@ export function crash(msg,dmg){
 export function hitHazard(h){
   const rel=G.speed/Math.max(1,G.ST.top*maxSpeed);
   if(h.t==='bump'){sfx('bump');G.bumpT=.35;G.speed*=.85;if(rel>.8)damage(5,'Tümseğe hızlı girdin');else G.shakeT=.12;}
-  else if(h.t==='pot'){sfx('pot');G.bumpT=.3;G.speed*=.72;damage(5,'Çukura girdin');}
+  else if(h.t==='pot'){sfx('pot');G.bumpT=.3;G.speed*=.72;damage(4,'Çukura girdin');}
   else if(h.t==='junk'){sfx('junk');G.bumpT=.3;G.speed*=.6;damage(6,'Yola düşen eşyaya çarptın');}
   else{G.slipT=rain()?1.3:.9;G.slipDir=Math.random()<.5?-1:1;toast('Yağa bastın!');sfx('oil');}
 }
@@ -260,6 +260,7 @@ export function update(dt){
   G.pvx=dt>0?(G.playerX-px0)/dt:0;   // lateral speed, used for shoulder-checks
   G.inv=Math.max(0,G.inv-dt);G.kickT=Math.max(0,G.kickT-dt);G.graceT=Math.max(0,G.graceT-dt);G.bumpT=Math.max(0,G.bumpT-dt);
   updateCars(dt);if(G.cars.some(c=>c.dead))G.cars=G.cars.filter(c=>!c.dead);
+  if(G.state==='play')rivalTick(dt);
   for(const r of G.rivals)updateRival(r,dt);
   if(G.rivals.some(r=>r.dead))G.rivals=G.rivals.filter(r=>!r.dead);
   streetTick(dt);

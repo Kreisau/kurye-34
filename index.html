@@ -33,7 +33,7 @@
   <div class="mid">
     <div class="route" id="route"></div>
     <div class="track"><div class="fill" id="prog"></div><div class="pin"></div></div>
-    <div class="sub"><span id="dist" data-noi18n>0 m</span><span id="kmh">0 km/sa</span></div>
+    <div class="sub"><span id="dist" data-noi18n>0 m</span></div>
   </div>
   <div class="stat r">
     <span class="lbl" id="moneyLbl">KASA</span>
@@ -43,6 +43,8 @@
   </div>
 </div>
 
+<div class="copfx" id="copFx"></div>
+<div class="spd" id="spd" hidden><b id="spdV" data-noi18n>0</b><small id="spdU">km/sa</small><span class="lim" id="spdLim" hidden>LİMİT 55</span></div>
 <div class="toast" id="toast"></div>
 <div class="cd" id="cd" hidden></div>
 <div class="hint" id="rivalHint" hidden>RAKİP ARKADA</div>
@@ -66,7 +68,7 @@
 
 <div class="screen" id="menu">
   <div class="card">
-    <div class="eyebrow">İSTANBUL · MOTO KURYE · PROTOTİP 0.32</div>
+    <div class="eyebrow">İSTANBUL · MOTO KURYE · PROTOTİP 0.33</div>
     <h1>KURYE <span class="plate">34</span></h1>
     <p class="lede">Her vardiya 5 teslimat. Kasayı al ya da riske gir. Sana çarpanı bul.</p>
     <dl class="facts">
@@ -174,6 +176,13 @@
       <button class="ghost" id="pSndBtn" type="button">SES AYARLARI</button>
       <button class="ghost" id="quitBtn" type="button">VARDİYAYI BIRAK</button>
     </div>
+    <h3>CEZALAR</h3>
+    <dl class="facts rules">
+      <dt>Kırmızıda geçmek</dt><dd>75 TL</dd>
+      <dt>Yayaya çarpmak</dt><dd>100 TL, −1 yıldız</dd>
+      <dt>Çevirmede 55 km/s üstü</dt><dd>150 TL</dd>
+      <dt>Ambulansa yol vermemek</dt><dd>paket hasarı</dd>
+    </dl>
   </div>
 </div>
 

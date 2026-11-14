@@ -40,6 +40,13 @@ with sync_playwright() as p:
       S.cops=[{n:0,z:pz()+600,side:1,warn:false,done:false}];for(let k=0;k<400&&!S.cops[0].done;k++){G.speed=C.maxSpeed*.2;GM.update(1/60);}return {fast:a,slow:G.fine-a};""")
     check('checkpoint: fast fined, slow not', r['fast']==150 and r['slow']==0, r)
     ev("G.pos=S.cops[0].z-C.playerZ-2600;G.playerX=0;GM.update(1/60);(await import('/js/render.js')).render();"); pg.wait_for_timeout(150); shot('cop')
+    # speedometer: limit tag and colour while a checkpoint is coming up, red-blue edge pulse
+    ev("G.paused=false;G.state='play';S.cops=[{n:0,z:pz()+9000,side:1,warn:true,done:false}];G.speed=C.maxSpeed*.5;"); pg.wait_for_timeout(250)
+    over=pg.evaluate("({cls:document.getElementById('spd').className,lim:!document.getElementById('spdLim').hidden,fx:document.getElementById('copFx').classList.contains('on'),v:document.getElementById('spdV').textContent})")
+    ev("G.speed=C.maxSpeed*.3;"); pg.wait_for_timeout(250)
+    under=pg.evaluate("document.getElementById('spd').className")
+    check('speedometer: red above the limit, green below, edge pulse', 'over' in over['cls'] and over['lim'] and over['fx'] and 'ok' in under and 'over' not in under, [over,under])
+    ev("S.cops=[];G.paused=true;")
     # dog
     r=ev("""G.fine=0;S.cops=[];G.slipT=0;G.cars=[];S.dogs=[{z0:pz()+500,z:pz()+500,x:1.08,side:1,st:'wait',t:0,nip:0}];G.playerX=.6;let slipped=false,st='';
       for(let k=0;k<200;k++){G.speed=C.maxSpeed*.25;GM.update(1/60);if(G.slipT>0)slipped=true;if(S.dogs[0])st=S.dogs[0].st;if(k===60){(await import('/js/render.js')).render();}}return {slipped,st};""")

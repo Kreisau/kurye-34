@@ -11,7 +11,7 @@ import { toast } from './ui.js';
 export const S = { lights: [], peds: [], dogs: [], cops: [], onc: [], oncT: 0 };
 let IMG = null;
 const CYCLE = 13, GREEN = 6.8, YELLOW = 8;   // seconds: green until 6.8, yellow until 8, red until 13
-const PED_FINE = 100, COP_FINE = 150, COP_LIMIT = 45, ONC_BONUS = 60, RED_FINE = 75;
+const PED_FINE = 100, COP_FINE = 150, COP_LIMIT = 55, ONC_BONUS = 60, RED_FINE = 75;
 
 function sprites() {
   if (IMG) return;
@@ -28,11 +28,11 @@ function sprites() {
       g.fillStyle = '#15111a'; rr(g, x - 20 * k, y, 40 * k, 104 * k, 8 * k); g.fill();
       [['#ff3b3b', 'red'], ['#ffc61a', 'yellow'], ['#3ddc84', 'green']].forEach(([c, n], i) => {
         const on = n === st, cy = y + (20 + i * 32) * k;
-        if (on) { g.globalAlpha = .4; g.fillStyle = c; g.beginPath(); g.arc(x, cy, 24 * k, 0, 7); g.fill(); g.globalAlpha = 1; }
+        if (on) { g.globalAlpha = .5; g.fillStyle = c; g.beginPath(); g.arc(x, cy, 32 * k, 0, 7); g.fill(); g.globalAlpha = 1; }
         g.fillStyle = on ? c : '#3a3344'; g.beginPath(); g.arc(x, cy, 12 * k, 0, 7); g.fill();
       });
     };
-    head(64, 40, 1); head(388, 236, .8);
+    head(64, 36, 1.3); head(388, 232, 1);   // bigger signal heads and a stronger halo: the lights have to be readable from far away
   });
   const ped = (coat, hair, f, flip) => mk(60, 150, g => {
     flipper(g, 60, flip);
@@ -134,6 +134,13 @@ export function streetSetup() {
   S.oncT = 20 + R() * 12;
 }
 export const lightsAhead = () => S.lights;
+export { COP_LIMIT };
+// distance to the next checkpoint once its warning has started (null when none is coming up)
+export function copAhead() {
+  const pz = G.pos + playerZ; let best = null;
+  for (const c of S.cops) { const dz = c.z - pz; if (!c.done && dz > 0 && c.warn && (best === null || dz < best)) best = dz; }
+  return best;
+}
 
 export function streetTick(dt) {
   if (!S.lights.length && !S.dogs.length && !S.cops.length && !S.onc.length && !(G.route && G.route.d >= 4 && G.shift && !G.shift.boss && !G.tut)) return;
@@ -165,10 +172,10 @@ export function streetTick(dt) {
   if (S.peds.length) S.peds = S.peds.filter(p => Math.abs(p.x) < 1.6 && p.z > pz - 2000);
   for (const c of S.cops) {
     const dz = c.z - pz;
-    if (!c.warn && dz > 0 && dz < Math.max(14000, G.speed * 4)) { c.warn = true; toast('İleride polis çevirmesi: yavaşla', 2000); sfx('whistle'); }
+    if (!c.warn && dz > 0 && dz < Math.max(14000, G.speed * 4)) { c.warn = true; toast('İleride polis çevirmesi: ' + COP_LIMIT + ' km/s altına yavaşla', 2600); sfx('whistle'); }
     if (!c.done && dz < 0) {
       c.done = true;
-      if (G.speed / maxSpeed * KMH > COP_LIMIT) { G.fine += COP_FINE; toast('Çevirmede yavaşlamadın: ' + COP_FINE + ' TL ceza', 2400); sfx('whistle'); }
+      if (G.speed / maxSpeed * KMH > COP_LIMIT) { G.fine += COP_FINE; toast('Çevirmede limit aşıldı (' + COP_LIMIT + ' km/s): ' + COP_FINE + ' TL ceza', 2600); sfx('whistle'); }
       else toast('Kontrol tamam, kask yerinde', 1600);
     }
   }

@@ -75,12 +75,12 @@ export function buildTrack(rt,seed){
     }
   }
   for(let n=50+Math.floor(SR()*40);n<fi-30;n+=110+Math.floor(SR()*60)){if(G.segs[n].cl!=null)continue;G.segs[n].sprites.push({spr:SPR.durak,off:1.18});G.stopsZ.push(n*segL);}
-  const dd=rt.d||0,wb=.12,wp=.45*D.pot,wo=.35*(rt.ev==='yagmur'?1.4:1),tot=wb+wp+wo;
+  const dd=rt.d||0,wb=.12,wp=.29*D.pot,wo=.23*(rt.ev==='yagmur'?1.4:1),tot=wb+wp+wo;
   for(let n=60+Math.floor(SR()*30);n<fi-20;){
     const r=SR()*tot,t=r<wb?'bump':r<wb+wp?'pot':'oil';
     if(t==='bump'){G.segs[n].hz={t,x:0,w:2.4,hit:false};G.segs[n-12].sprites.push({spr:SPR.sign,off:1.1});}
     else G.segs[n].hz={t,x:pick(SR,LANES)+(SR()-.5)*.2,w:t==='pot'?.24:.5,hit:false,r:SR()};
-    n+=Math.max(14,Math.round((32+SR()*50)/(1+Math.min(.6,dd*.03))/Math.sqrt(D.pot)));
+    n+=Math.max(20,Math.round(1.44*(32+SR()*50)/(1+Math.min(.6,dd*.03))/Math.sqrt(D.pot)));   // ~35% fewer potholes and oil, speed bumps as often as before
   }
   const ls0=G.segs[5].sea?-G.segs[5].sea:1,ls=G.segs[fi].sea?-G.segs[fi].sea:1;rt.side0=ls0;rt.side=ls;
   if(rt.rest){const rs=def(restSprite(rt.rest),2600);G.segs[5].sprites.push({spr:rs,off:ls0*(1.2+rs.half)});}

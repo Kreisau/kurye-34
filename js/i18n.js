@@ -149,12 +149,15 @@ const EN = {
   ' kurye vurdu': ' courier hit you', ' kurye sendeledi': ' courier staggered', ' kurye yerde!': ' courier is down!', ' kurye saf dışı!': ' courier is out!',
   'Kırmızı': 'Red', 'Yeşil': 'Green', 'Turuncu': 'Orange', 'Mor': 'Purple',
   // street life
-  'Yayaya çarptın': 'You hit a pedestrian', ' TL ceza, puan düştü': ' TL fine, rating down', 'İleride polis çevirmesi: yavaşla': 'Police checkpoint ahead: slow down',
-  'Çevirmede yavaşlamadın: ': 'You sped through the checkpoint: ', 'Kırmızıda geçtin: ': 'You ran a red light: ', 'Bariyere çarptın': 'You hit the barrier', 'Dubaları devirdin': 'You knocked over the cones', ' TL ceza': ' TL fine', 'Kontrol tamam, kask yerinde': 'Checkpoint cleared, helmet on',
+  'Yayaya çarptın': 'You hit a pedestrian', ' TL ceza, puan düştü': ' TL fine, rating down', 'İleride polis çevirmesi: ': 'Police checkpoint ahead: ', ' km/s altına yavaşla': ' km/h or below, slow down',
+  'Çevirmede limit aşıldı (': 'Checkpoint limit exceeded (', ' km/s): ': ' km/h): ', 'Kırmızıda geçtin: ': 'You ran a red light: ', 'Bariyere çarptın': 'You hit the barrier', 'Dubaları devirdin': 'You knocked over the cones', ' TL ceza': ' TL fine', 'Kontrol tamam, kask yerinde': 'Checkpoint cleared, helmet on',
   'Köpek peşinde!': 'A dog is chasing you!', 'Ters yönden gelen kuryeye çarptın': 'You hit a wrong-way courier', 'Ters yön kuryesini devirdin!': 'Wrong-way courier knocked down!', 'Cezalar': 'Fines',
   'SABAH': 'MORNING', 'ÖĞLEN': 'NOON', 'AKŞAM': 'EVENING', 'GECE': 'NIGHT',
   // results
   'GARAJA GİT': 'GO TO GARAGE', 'YENİ VARDİYA': 'NEW SHIFT', 'MENÜ': 'MENU', 'DEVAM': 'CONTINUE', 'TEKRAR DENE': 'TRY AGAIN',
+  'CEZALAR': 'FINES', 'Kırmızıda geçmek': 'Running a red light', 'Yayaya çarpmak': 'Hitting a pedestrian', '−1 yıldız': '−1 star',
+  'Çevirmede 55 km/s üstü': 'Over 55 km/h at a checkpoint', 'Ambulansa yol vermemek': 'Not giving way to an ambulance', 'paket hasarı': 'package damage',
+  'LİMİT 55': 'LIMIT 55',
   'Müşteri puanı': 'Customer rating', 'Taşıma ücreti': 'Delivery fee', 'Bahşiş': 'Tip', 'Rakip bonusu': 'Rival bonus', 'BU TESLİMAT': 'THIS DELIVERY',
   'TESLİM EDİLDİ': 'DELIVERED', 'Vardiya bonusu': 'Shift bonus', 'VARDİYA TOPLAMI': 'SHIFT TOTAL', 'VARDİYA TAMAM': 'SHIFT COMPLETE',
   '. Üç teslimat da yerine ulaştı.': '. All three deliveries made it.', ' Yeni bölge açıldı: ': ' New district unlocked: ',

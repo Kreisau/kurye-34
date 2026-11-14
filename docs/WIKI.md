@@ -261,11 +261,11 @@ Araç sayısı: `min(17, round((10 + min(4, d/3)) × (1,05 − 0,25 × motor hı
 | Tehlike | Etki | Hasar |
 |---|---|---|
 | Tümsek | Hız ×0,85; kısa sıçrama. Hızlıysan (motorun %80'inden fazlası) pakete hasar | 5 (yavaşsan 0) |
-| Çukur | Hız ×0,72 | 5 |
+| Çukur | Hız ×0,72 | 4 |
 | Yola düşen eşya | Hız ×0,6 | 6 |
 | Yağ lekesi | Kayma (0,9 sn, yağmurda 1,3 sn), rastgele yöne savrulma | 0 |
 
-Tehlike sıklığı bölgenin `pot` değeriyle artar (Fatih en yoğun). Teslimat ilerledikçe aralık biraz sıklaşır.
+Tehlike sıklığı bölgenin `pot` değeriyle artar (Fatih en yoğun). Teslimat ilerledikçe aralık biraz sıklaşır. Çukur ve yağ lekesi, tümsekten yaklaşık %35 daha seyrek çıkar (0.33'te azaltıldı).
 
 ### Yol çalışması ve park
 
@@ -279,7 +279,7 @@ Sokak olayları rotanın tohumuna göre yerleşir ve **olay bütçesi** uygulan�
 
 ### Trafik ışıkları ve yaya geçitleri
 
-- Köprü tipi (yolun üstünden geçen, direği boydan boya yanan) ışık. Döngü 13 sn: yeşil 6,8 sn, sarı 8 sn'ye kadar, kırmızı 13 sn'ye kadar.
+- Köprü tipi (yolun üstünden geçen, direği boydan boya yanan, uzaktan okunsun diye büyük lambalı ve parlak haleli) ışık. Döngü 13 sn: yeşil 6,8 sn, sarı 8 sn'ye kadar, kırmızı 13 sn'ye kadar.
 - Rotada 1 ışık, rota 1.400 segmentten uzunsa 2 ışık bulunur.
 - Kırmızıda araçlar durur, 2-4 yaya geçer. **Kırmızıda geçersen 75 TL ceza.**
 - Yayaya çarparsan **100 TL ceza, düşersin (18 hasar) ve o teslimatta −1 yıldız** alırsın.
@@ -287,7 +287,8 @@ Sokak olayları rotanın tohumuna göre yerleşir ve **olay bütçesi** uygulan�
 ### Polis çevirmesi
 
 - 3. teslimat sayacından sonra (d ≥ 3) %30 ihtimalle bir çevirme çıkar. Yaklaşık 4 saniye önceden uyarı verir.
-- Çevirmeden **45 km/s'den hızlı** geçersen **150 TL ceza**. Yavaş geçersen ceza yok.
+- Çevirmeden **55 km/s'den hızlı** geçersen **150 TL ceza**. Yavaş geçersen ceza yok. Konum ya da şerit fark etmez, çizgiyi geçerkenki hızına bakılır.
+- Çevirmeye yaklaşınca uyarı metni limiti söyler, ekranın kenarı kırmızı-mavi yanıp söner (Reduce Motion açıksa sabit mor ton) ve alttaki hız göstergesi limit etiketiyle birlikte limitin üstündeyken kırmızı, altındayken yeşil olur.
 
 ### Sokak köpekleri
 
@@ -316,7 +317,7 @@ Hasar = temel değer × motorun dayanıklılık çarpanı × çanta parçası ×
 | Ters yönden gelen kurye | 14 | Düşme |
 | Yaya | 18 | Düşme, 100 TL ceza, −1 yıldız |
 | Tümsek (hızlıyken) | 5 | Hız ×0,85 |
-| Çukur | 5 | Hız ×0,72 |
+| Çukur | 4 | Hız ×0,72 |
 | Yola düşen eşya | 6 | Hız ×0,6 |
 | Ambulansa yol vermemek | 8 | Bir kez |
 | Rakip kurye çarpması | 6-12 (rakibe göre) | |
@@ -329,9 +330,9 @@ Her hasardan sonra 0,8 sn dokunulmazlık vardır (arka arkaya hasar yemezsin). D
 |---|---|
 | Kırmızı ışıkta geçmek | 75 TL |
 | Yayaya çarpmak | 100 TL |
-| Çevirmede 45 km/s üstü | 150 TL |
+| Çevirmede 55 km/s üstü | 150 TL |
 
-Cezalar teslimat gelirinden düşer. Tanıdık Polis kartı cezaları yarıya indirir.
+Cezalar teslimat gelirinden düşer. Aynı liste oyun içinde duraklatma ekranında da yer alır. Tanıdık Polis kartı cezaları yarıya indirir.
 
 ## 14. Ambulans ve yol verme
 
@@ -345,7 +346,7 @@ Cezalar teslimat gelirinden düşer. Tanıdık Polis kartı cezaları yarıya in
 
 Rakipler aynı yolda sürer, trafiğe ve yol çalışmasına bakarak şerit seçer, düşerse o teslimat boyunca saf dışı kalır. Onları **vurarak ya da araca/duvara doğru iterek** düşürürsen bonus alırsın: `(15 + HP × 10) × 2 × çarpan` TL (Ağır El ×2, Kabadayı ×3).
 
-Rakip sayısı: 2 (d ≥ 8 olunca 3), KALABALIK olayı +1, Kabadayı kartı +1; en fazla 4. İlk rakip startın hemen gerisinde başlar, diğerleri arkasında sıralanır. Sessiz Egzoz kartıyla rakipler seni geç fark eder.
+Rakip sayısı: 2 (d ≥ 8 olunca 3), KALABALIK olayı +1, Kabadayı kartı +1; en fazla 4. Rakipler **tek tek** gelir: ilki startın hemen gerisinde başlar, diğerleri sırayla yaklaşık 16-22 sn arayla yolun gerisinden katılır; yolda aynı anda en fazla 2 canlı rakip bulunur. Sessiz Egzoz kartıyla rakipler seni geç fark eder.
 
 | Rakip | Etiket | Hız çarpanı | Saldırganlık | Hasar | Dayanıklılık (HP) | Şerit kesme | İtme gücü | Karakter |
 |---|---|---|---|---|---|---|---|---|
@@ -415,7 +416,7 @@ Menüden günün siparişine girilir. Tarihe göre sabit bir rota üretilir (UZA
 
 ## 20. Kontroller
 
-Gaz otomatiktir. Mobilde sol tarafta direksiyon joystick'i, sağ tarafta VUR, FREN ve (nitro hakkın varsa) NİTRO butonları bulunur; Ayarlar'dan sol el seçilirse yerleşim aynalanır. Masaüstünde klavye: sol/sağ ok ya da A/D ile direksiyon, aşağı ok ya da S ile fren, `Boşluk` veya `K` ile vur (tekme/silah), `N` veya sol `Shift` ile nitro, `P` veya `Esc` ile duraklatma. Sekme arka plana geçince oyun otomatik duraklar.
+Gaz otomatiktir. Ekranın alt ortasındaki **hız göstergesi** anlık hızı km/s olarak gösterir. Mobilde sol tarafta direksiyon joystick'i, sağ tarafta VUR, FREN ve (nitro hakkın varsa) NİTRO butonları bulunur; Ayarlar'dan sol el seçilirse yerleşim aynalanır. Masaüstünde klavye: sol/sağ ok ya da A/D ile direksiyon, aşağı ok ya da S ile fren, `Boşluk` veya `K` ile vur (tekme/silah), `N` veya sol `Shift` ile nitro, `P` veya `Esc` ile duraklatma. Sekme arka plana geçince oyun otomatik duraklar.
 
 Ayarlarda ses seviyeleri (müzik, efekt, ortam), dil (Türkçe / İngilizce) ve el seçimi bulunur. Yan aynalarda arkandaki araçlar ve kuryeler görünür.
 
