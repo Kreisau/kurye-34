@@ -148,6 +148,17 @@ export function drawPlayer(pSeg,pp){
     ctx.stroke();
   }
 }
+// Speed streaks: faint lines rushing out from the vanishing point along the sides, from ~75% of top speed; stronger on nitro.
+const STREAKS=Array.from({length:28},(_,i)=>{const side=i%2?1:-1,up=i%4<2;const a=up?(side<0?-Math.PI*(.62+((i*.37)%1)*.3):-Math.PI*(.08+((i*.37)%1)*.3)):(side<0?Math.PI*(.62+((i*.53)%1)*.3):Math.PI*(.08+((i*.53)%1)*.3));return{a,ph:(i*.618)%1,v:.8+((i*.29)%1)*.6};});
+export function drawSpeed(rel){
+  if(RM||G.crashT>0)return;
+  const k=Math.min(1,Math.max(0,(rel-.75)/.25))*.6+(G.nitroT>0?.5:0);if(k<=0)return;
+  ctx.strokeStyle='rgba(255,255,255,'+(.16*k).toFixed(3)+')';ctx.lineWidth=Math.max(1,G.K*.006);ctx.beginPath();
+  const cx=G.W/2,cy=G.HZ,R=Math.max(G.W,G.H);
+  for(const s of STREAKS){const u=(s.ph+G.clock*s.v*(1.2+k))%1,r0=R*(.18+u*.7),r1=r0+R*(.06+.12*k)*u;
+    ctx.moveTo(cx+Math.cos(s.a)*r0,cy+Math.sin(s.a)*r0*.7);ctx.lineTo(cx+Math.cos(s.a)*r1,cy+Math.sin(s.a)*r1*.7);}
+  ctx.stroke();
+}
 export function drawRain(){
   ctx.fillStyle='rgba(20,26,48,.28)';ctx.fillRect(0,0,G.W,G.H);
   ctx.strokeStyle='rgba(170,200,255,.5)';ctx.lineWidth=1.2;ctx.beginPath();
@@ -162,16 +173,17 @@ export function render(){
   // Dynamic camera: pulls back and rises with speed; looks down and lifts before a drop so the road
   // beyond a crest stays in view, looks up a little on climbs. Everything is eased.
   const look=G.segs[(pSeg.index+28)%N],slope=look.index>pSeg.index?Math.max(-1,Math.min(1,(look.p1.wy-G.playerY)/(28*segL))):0;
-  const ride=G.state==='play'||G.state==='arrive'||G.state==='count',tz=ride?Math.min(1,G.speed/maxSpeed):.3;
+  // speed feel is relative to the bike: a Mobilet flat out should feel fast too, not only the big bikes. Nitro goes past 1.
+  const ride=G.state==='play'||G.state==='arrive'||G.state==='count',rel=G.speed/Math.max(1,G.ST.top*maxSpeed),tz=ride?Math.min(1.25,.3*G.speed/maxSpeed+.7*rel):.3;
   G.camZ=G.camZ==null?tz:lerp(G.camZ,tz,.035);G.camP=G.camP==null?0:lerp(G.camP,slope,.05);
   if(RM){G.camZ=.4;G.camP=0;}
-  G.K=G.K0*(1.06-.13*G.camZ);
+  G.K=G.K0*(1.08-.2*G.camZ);   // wider view as speed builds: the camera pulls back
   G.HZ=Math.round(G.HZ0+G.camP*G.K0*.16);
   // going downhill the camera sits behind (uphill of) the rider: keep it above the road at its own position too,
   // otherwise it ends up under the tarmac and the bottom of the screen shows empty ground
   const baseY=lerp(base.p1.wy,base.p2.wy,bp),lift=Math.max(0,baseY-G.playerY);
   G.camL=G.camL==null?lift:Math.max(lift,lerp(G.camL,lift,.12));   // rise at once (the road is continuous), settle back smoothly
-  let camY=camH*(1+.15*G.camZ+Math.max(0,-G.camP)*.6)+G.camL;
+  let camY=camH*(1+.2*G.camZ+Math.max(0,-G.camP)*.6)+G.camL;
   if(G.camOff){G.K=G.K0;G.HZ=G.HZ0;camY=camH;G.camL=0;}   // fixed camera, for comparison in tools/camera_test.py
   ctx.save();
   if(G.shakeT>0&&!RM)ctx.translate(Math.round((Math.random()*2-1)*4),Math.round((Math.random()*2-1)*3));
@@ -223,6 +235,7 @@ export function render(){
     for(const sp of s.sprites){if(sp.back&&G.qi>=2)continue;   // the back row of buildings is the first thing to go on slow devices
       const sc=s.p1.s;if(n<pN&&sp.spr.ww*sc*G.K>G.W*.45)continue;drawSprite(sp.spr.img,sp.spr.ww,sc,s.p1.sx+sc*sp.off*G.roadW*G.K,s.p1.sy,s.clip,a,0);}
   }
+  if(ride)drawSpeed(rel);
   drawPlayer(pSeg,pp);
   fxDraw(ctx);
   if(rain())drawRain();

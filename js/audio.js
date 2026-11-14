@@ -361,27 +361,20 @@ function stopVoice(v, t, fade) {
   try { v.s.stop(t + fade + .05); } catch (e) { }
 }
 function musicTick(t) {
-  const ride = G.state === 'play' || G.state === 'count' || G.state === 'arrive';
-  const want = A.story ? 'off' : ride ? 'ride' : 'menu';
+  // The tense track is reserved for the showdown with Kara; every normal ride keeps the standard ride music.
+  const ride = G.state === 'play' || G.state === 'count' || G.state === 'arrive', boss = !!(G.shift && G.shift.boss);
+  const want = A.story ? 'off' : ride ? (boss ? 'boss' : 'ride') : 'menu';
   if (want !== A.mMode) {
     for (const v of Object.values(A.mv)) stopVoice(v, t, 1);
     A.mv = {}; A.mMode = want;
-    // keep only the buffers this mode needs: decoded music is large on phones
     // decoded tracks stay in memory: re-decoding at every ride start caused a hitch
-    if (want === 'ride') { loadTrack('ride'); loadTrack('tense'); }
+    if (want === 'ride') loadTrack('ride');
+    if (want === 'boss') loadTrack('tense');
     if (want === 'menu') loadTrack('menu');
   }
   if (want === 'menu' && !A.mv.menu && A.buf.menu) A.mv.menu = playTrack('menu', t, 1, 1.5);
-  if (want === 'ride' && !A.mv.ride && A.buf.ride && A.buf.tense) { A.mv.ride = playTrack('ride', t, 1, .8); A.mv.tense = playTrack('tense', t, 0, .01); }
-  if (want === 'ride' && A.mv.ride) {
-    const pz = G.pos + playerZ;
-    const fight = G.rivals.some(r => r.down <= 0 && Math.abs(r.z - pz) < 400);
-    A.fightT = fight ? (A.fightT || 0) + (t - (A.fightLast || t)) : 0; A.fightLast = t;
-    if (G.state === 'play' && ((!G.tut && G.timeLeft <= 12) || A.fightT > 1.5)) A.tenseUntil = t + 6;
-    const tense = G.state === 'play' && t < (A.tenseUntil || 0);
-    A.mv.ride.g.gain.setTargetAtTime(tense ? 0 : 1, t, .7);   // never both tracks at once: they are different songs
-    A.mv.tense.g.gain.setTargetAtTime(tense ? 1 : 0, t, .7);
-  }
+  if (want === 'ride' && !A.mv.ride && A.buf.ride) A.mv.ride = playTrack('ride', t, 1, .8);
+  if (want === 'boss' && !A.mv.tense && A.buf.tense) A.mv.tense = playTrack('tense', t, 1, .8);
 }
 
 /* ---------- public ---------- */
