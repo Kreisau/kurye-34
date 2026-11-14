@@ -21,7 +21,7 @@ G.route=null;G.state='menu';G.paused=false;G.shift=null;G.ST=stats(BIKES[0],[0,0
 G.pos=0;G.playerX=0;G.speed=0;G.lean=0;G.crashT=0;G.crashSide=1;G.inv=0;G.kickT=0;G.kickSide=1;G.shakeT=0;G.flashT=0;
 G.slipT=0;G.slipDir=1;G.bumpT=0;G.ambT=99;G.brakeK=0;G.nitroN=0;G.nitroT=0;G.arriveT=0;G.hitT=0;G.graceT=0;
 G.timeLeft=0;G.cond=100;G.bonus=0;G.clock=0;G.countT=0;G.lastCount=0;G.playerY=0;G.farOff=0;G.nearOff=0;G.offroad=false;
-G.cars=[];G.rivals=[];
+G.cars=[];G.rivals=[];G.debris=[];
 export const card=id=>G.shift?G.shift.cards[id]||0:0;
 export const rain=()=>G.route&&G.route.ev==='yagmur'&&G.state!=='menu';
 
@@ -76,7 +76,7 @@ export function startMission(){
   G.ST=stats(b,ups(b.id),G.shift.cards);G.PSPR=bikeSprites(b,G.S.wpn);
   G.slipT=0;G.bumpT=0;G.graceT=0;G.ambT=15+Math.random()*20;G.pos=0;G.playerX=0;G.speed=0;G.lean=0;G.crashT=0;G.inv=0;G.kickT=0;G.cond=100;G.hits=0;G.bonus=0;G.timeLeft=G.route.time;G.flashT=0;G.shakeT=0;
   G.playerX=(G.route.side0||1)*.72;G.nitroN=ups(b.id)[4]||0;G.nitroT=0;G.arriveT=0;
-  spawnCars();spawnRivals();streetSetup();
+  G.debris=[];G.coneMsg=-9;spawnCars();spawnRivals();streetSetup();
   clearInput();G.paused=false;
   G.state='count';G.countT=1.2;G.lastCount=0;
   showScreen(null);
@@ -207,7 +207,26 @@ export function update(dt){
       for(const s of pSeg.sprites.concat(next.sprites))if(s.spr.solid&&Math.abs(G.playerX-s.off)<s.spr.hit+PW/2){crash(s.spr.msg,s.spr===SPR.cart?16:14);break;}
     }
   }
-  if(G.crashT<=0&&G.state==='play'&&pSeg.cl!=null){const cl=pSeg.cl;if((cl===2&&G.playerX>.36)||(cl===0&&G.playerX<-.36))crash(pSeg.clk==='park'?'Park etmiş arabaya çarptın':'Yol çalışmasına daldın',14);}
+  if(G.crashT<=0&&G.state==='play'&&pSeg.cl!=null){
+    const cl=pSeg.cl,sd=cl===2?1:-1,ax=G.playerX*sd;
+    if(pSeg.clk==='park'){if(ax>.36)crash('Park etmiş arabaya çarptın',14);}
+    else{
+      // road works: the barriers at both ends are solid; the cone line scatters and slows you; the dug-up lane is slow going
+      const k=closureAt(G.pos+playerZ);
+      if(ax>.36&&k&&(pSeg.index===k.n0||pSeg.index>=k.n1-1))crash('Bariyere çarptın',14);
+      else{
+        if(ax>.24)for(const sg of[pSeg,G.segs[pSeg.index+1]])if(sg)for(let i=sg.sprites.length-1;i>=0;i--){
+          const sp=sg.sprites[i];if(sp.spr!==SPR.cone||Math.abs(G.playerX-sp.off)>.11)continue;
+          sg.sprites.splice(i,1);G.speed*=.9;G.shakeT=Math.max(G.shakeT,.1);G.bumpT=.2;sfx('junk');buzz(20);
+          G.debris.push({z:sg.index*segL+20,x:sp.off,vx:(Math.sign(sp.off-G.playerX)||sd)*(.5+Math.random()*.5),vz:G.speed*(1.05+Math.random()*.25),rot:0,w:(Math.random()<.5?-1:1)*(6+Math.random()*6),t:1.3});
+          if(G.clock-(G.coneMsg||-9)>3){G.coneMsg=G.clock;toast('Dubaları devirdin');}
+        }
+        if(ax>.4){G.offroad=true;if(G.speed>OFFLIM*1.5)G.speed+=OFFDEC*.6*dt;}
+      }
+    }
+  }
+  for(const d of G.debris){d.t-=dt;d.z+=d.vz*dt;d.vz*=Math.exp(-2.5*dt);d.x+=d.vx*dt;d.vx*=Math.exp(-2*dt);d.rot+=d.w*dt;d.w*=Math.exp(-1.5*dt);}
+  if(G.debris.length)G.debris=G.debris.filter(d=>d.t>0);
   if(G.crashT<=0&&G.state==='play'){const h=pSeg.hz;if(h&&!h.hit&&Math.abs(G.playerX-h.x)<h.w/2+PW/2){h.hit=true;hitHazard(h);}}
   if(G.crashT<=0&&G.state==='play'){
     const pz=G.pos+playerZ;

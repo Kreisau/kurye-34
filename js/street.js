@@ -11,7 +11,7 @@ import { toast } from './ui.js';
 export const S = { lights: [], peds: [], dogs: [], cops: [], onc: [], oncT: 0 };
 let IMG = null;
 const CYCLE = 13, GREEN = 6.8, YELLOW = 8;   // seconds: green until 6.8, yellow until 8, red until 13
-const PED_FINE = 100, COP_FINE = 150, COP_LIMIT = 45, ONC_BONUS = 60;
+const PED_FINE = 100, COP_FINE = 150, COP_LIMIT = 45, ONC_BONUS = 60, RED_FINE = 75;
 
 function sprites() {
   if (IMG) return;
@@ -71,10 +71,11 @@ function sprites() {
     g.fillStyle = '#15111a'; rr(g, cx - 9, b - 48, 18, 48, 8); g.fill();
     g.fillStyle = '#2a2533'; rr(g, cx - 15, b - 70, 30, 30, 8); g.fill();
     g.fillStyle = '#3b2f4a'; rr(g, cx - 34, b - 76, 68, 9, 4); g.fill();
-    g.fillStyle = '#4a3a2a'; rr(g, cx - 26, b - 132, 52, 62, 14); g.fill();
-    g.strokeStyle = '#4a3a2a'; g.lineWidth = 11; g.lineCap = 'round'; g.beginPath(); g.moveTo(cx - 22, b - 118); g.lineTo(cx - 32, b - 78); g.moveTo(cx + 22, b - 118); g.lineTo(cx + 32, b - 78); g.stroke();
-    g.fillStyle = '#c9c2b6'; g.beginPath(); g.arc(cx, b - 142, 18, 0, 7); g.fill(); g.fillStyle = '#15111a'; rr(g, cx - 13, b - 148, 26, 10, 4); g.fill();
-    g.globalAlpha = .35; g.fillStyle = '#fff3c4'; g.beginPath(); g.arc(cx, b - 58, 22, 0, 7); g.fill(); g.globalAlpha = 1;
+    g.fillStyle = '#e8f23a'; rr(g, cx - 26, b - 132, 52, 62, 14); g.fill();
+    g.fillStyle = '#ff5a1f'; g.fillRect(cx - 26, b - 108, 52, 9);
+    g.strokeStyle = '#e8f23a'; g.lineWidth = 11; g.lineCap = 'round'; g.beginPath(); g.moveTo(cx - 22, b - 118); g.lineTo(cx - 32, b - 78); g.moveTo(cx + 22, b - 118); g.lineTo(cx + 32, b - 78); g.stroke();
+    g.fillStyle = '#ff3b3b'; g.beginPath(); g.arc(cx, b - 142, 18, 0, 7); g.fill(); g.fillStyle = '#15111a'; rr(g, cx - 13, b - 148, 26, 10, 4); g.fill();
+    g.globalAlpha = .4; g.fillStyle = '#fff3c4'; g.beginPath(); g.arc(cx, b - 58, 34, 0, 7); g.fill(); g.globalAlpha = 1;
     g.fillStyle = '#fffbe6'; g.beginPath(); g.arc(cx, b - 58, 10, 0, 7); g.fill();
   });
   const coats = [['#c4373a', '#2a1f1a'], ['#2a6fb0', '#5a4632'], ['#e8e2da', '#1d1a20'], ['#3f8f5a', '#7a3b22']];
@@ -137,6 +138,10 @@ export function streetTick(dt) {
       }
     }
     l.was = l.st === 'red';
+    if (!l.passed && pz > l.z + segL) {   // crossed the stop line
+      l.passed = true;
+      if (l.st === 'red' && G.state === 'play') { G.fine += RED_FINE; G.flashT = Math.max(G.flashT, .12); toast('Kırmızıda geçtin: ' + RED_FINE + ' TL ceza', 2400); sfx('whistle'); }
+    }
   }
   for (const p of S.peds) {
     const hurry = p.flee ? 3.2 : p.l.st === 'green' ? 1.7 : 1;
@@ -150,7 +155,7 @@ export function streetTick(dt) {
   if (S.peds.length) S.peds = S.peds.filter(p => Math.abs(p.x) < 1.6 && p.z > pz - 2000);
   for (const c of S.cops) {
     const dz = c.z - pz;
-    if (!c.warn && dz > 0 && dz < 4200) { c.warn = true; toast('İleride polis çevirmesi: yavaşla', 2000); sfx('whistle'); }
+    if (!c.warn && dz > 0 && dz < Math.max(14000, G.speed * 4)) { c.warn = true; toast('İleride polis çevirmesi: yavaşla', 2000); sfx('whistle'); }
     if (!c.done && dz < 0) {
       c.done = true;
       if (G.speed / maxSpeed * KMH > COP_LIMIT) { G.fine += COP_FINE; toast('Çevirmede yavaşlamadın: ' + COP_FINE + ' TL ceza', 2400); sfx('whistle'); }
@@ -214,6 +219,6 @@ export function streetObjs() {
   for (const p of S.peds) out.push({ z: p.z, img: IMG.ped[p.c][Math.floor(G.clock * (p.flee ? 12 : 6) + p.ph) % 2][p.dir > 0 ? 0 : 1], ww: 200, x: p.x, rot: 0 });
   for (const c of S.cops) out.push({ z: c.z, img: IMG.cop, ww: 290, x: c.side * 1.06, rot: 0 });
   for (const d of S.dogs) out.push({ z: d.z, img: IMG.dog[d.st === 'wait' ? 0 : Math.floor(G.clock * 10) % 2][(d.st === 'quit' ? d.side : -d.side) > 0 ? 0 : 1], ww: 330, x: d.x, rot: 0 });
-  for (const o of S.onc) out.push({ z: o.z, img: IMG.onc, ww: 570, x: o.x, rot: o.ko ? o.fall * Math.sign(o.vx || 1) : 0 });
+  for (const o of S.onc) out.push({ z: o.z, img: IMG.onc, ww: 570, x: o.x, rot: o.ko ? o.fall * Math.sign(o.vx || 1) : 0, warn: !o.ko && o.z - (G.pos + playerZ) > 0 });
   return out;
 }

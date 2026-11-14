@@ -85,7 +85,7 @@ const EN = {
   'Kırmızı': 'Red', 'Yeşil': 'Green', 'Turuncu': 'Orange', 'Mor': 'Purple',
   // street life
   'Yayaya çarptın': 'You hit a pedestrian', ' TL ceza, puan düştü': ' TL fine, rating down', 'İleride polis çevirmesi: yavaşla': 'Police checkpoint ahead: slow down',
-  'Çevirmede yavaşlamadın: ': 'You sped through the checkpoint: ', ' TL ceza': ' TL fine', 'Kontrol tamam, kask yerinde': 'Checkpoint cleared, helmet on',
+  'Çevirmede yavaşlamadın: ': 'You sped through the checkpoint: ', 'Kırmızıda geçtin: ': 'You ran a red light: ', 'Bariyere çarptın': 'You hit the barrier', 'Dubaları devirdin': 'You knocked over the cones', ' TL ceza': ' TL fine', 'Kontrol tamam, kask yerinde': 'Checkpoint cleared, helmet on',
   'Köpek peşinde!': 'A dog is chasing you!', 'Ters yönden gelen kuryeye çarptın': 'You hit a wrong-way courier', 'Ters yön kuryesini devirdin!': 'Wrong-way courier knocked down!', 'Cezalar': 'Fines',
   'SABAH': 'MORNING', 'ÖĞLEN': 'NOON', 'AKŞAM': 'EVENING', 'GECE': 'NIGHT',
   // results
