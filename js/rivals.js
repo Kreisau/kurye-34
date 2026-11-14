@@ -2,7 +2,8 @@ import { sfx } from './audio.js';
 import { PW, RIVALS, clamp, lerp, maxSpeed, playerZ, segL } from './config.js';
 import { G } from './g.js';
 import { buzz, hitStop, sparks } from './fx.js';
-import { card, damage } from './game.js';
+import { card, damage, rivalMult } from './game.js';
+import { rivalDownLine } from './radio.js';
 import { bossEnd } from './meta.js';
 import { SPR } from './sprites.js';
 import { toast } from './ui.js';
@@ -17,7 +18,7 @@ import { toast } from './ui.js';
 const CAR_NAME = { taxiY: 'taksiye', taxiT: 'taksiye', taxiV: 'taksiye', car: 'arabaya', lux: 'cipe', hafif: 'minivana', van: 'minibüse', klasik: 'eski sedana', hurda: 'kamyonete', dolmus: 'dolmuşa', bus: 'otobüse' };
 
 export function spawnRivals(){
-  G.rivals=[];const quiet=card('sakin')>0,n=Math.min(3,1+((G.route.d||0)>=6?1:0)+(G.route.ev==='rakip2'?1:0));
+  G.rivals=[];const quiet=card('sakin')>0,n=Math.min(4,1+((G.route.d||0)>=6?1:0)+(G.route.ev==='rakip2'?1:0)+(card('kabadayi')>0?1:0));
   const pool=RIVALS.slice();for(let i=pool.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[pool[i],pool[j]]=[pool[j],pool[i]];}
   for(let i=0;i<n;i++){const p=pool[i];G.rivals.push(newRival(p,(quiet?-5200:-2500)-i*1800,i%2?-.55:.55,0,(quiet?7:3)+i*2));}
 }
@@ -56,7 +57,7 @@ function crashRival(r,what){
   }
   r.out=true;   // a wrecked rival is out for the rest of this delivery
   if(r.shoved>0){
-    const add=Math.round((15+r.p.hp*10)*2*(card('eldiven')>0?2:1));G.bonus+=add;
+    const add=Math.round((15+r.p.hp*10)*2*rivalMult());G.bonus+=add;if(card('aynaci')>0)G.timeLeft+=6;rivalDownLine(r);
     if(near){sparks(Math.sign(r.x-G.playerX)||1,18);hitStop(.04);buzz(50);}
     toast(r.p.n+' kurye '+what+' çarptı, saf dışı!  +'+add+' TL');
   }else if(near)toast(r.p.n+' kurye '+what+' çarptı, saf dışı');

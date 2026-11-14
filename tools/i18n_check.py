@@ -49,7 +49,7 @@ with sync_playwright() as p:
     click('#picks button'); pg.wait_for_timeout(300); click('#offers button'); pg.wait_for_timeout(1700)
     ev("G.timeLeft=.2"); pg.wait_for_timeout(600); grab('failed'); click('#resBtns button:last-child'); pg.wait_for_timeout(200)
     click('#startBtn'); pg.wait_for_timeout(200); click('#offers button'); pg.wait_for_timeout(1700)
-    ev("G.shift.i=2;G.rivals=[];G.cars=[];G.pos=G.finishZ-C.playerZ-C.segL*9;"); pg.wait_for_timeout(2600); grab('shift-done'); click('#resBtns button'); pg.wait_for_timeout(200); grab('clue')
+    ev("G.shift.i=4;G.rivals=[];G.cars=[];G.pos=G.finishZ-C.playerZ-C.segL*9;"); pg.wait_for_timeout(2600); grab('shift-done'); click('#resBtns button'); pg.wait_for_timeout(200); grab('clue')
     click('#resBtns button:last-child'); pg.wait_for_timeout(200); click('#caseBtn'); pg.wait_for_timeout(200); grab('case'); click('#resBtns button:last-child')
     click('#dailyBtn'); pg.wait_for_timeout(1700); grab('daily-ride'); ev("G.rivals=[];G.cars=[];G.pos=G.finishZ-C.playerZ-C.segL*9;"); pg.wait_for_timeout(2600); grab('daily-done'); click('#resBtns button:last-child')
     ev("G.S.clues=5;(await import('/js/ui.js')).updateMenu()"); grab('menu2'); click('#caseBtn'); pg.wait_for_timeout(200); grab('case5'); click('#resBtns button'); pg.wait_for_timeout(2300); grab('boss')

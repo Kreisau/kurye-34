@@ -7,6 +7,7 @@ import { rateDelivery, starStr } from './rating.js';
 import { save } from './save.js';
 import { newRival } from './rivals.js';
 import { goMenu, hideGameUI, renderResult, showGarage } from './ui.js';
+import { placeRadio } from './radio.js';
 
 /* ---------- tutorial: "İlk gün" ---------- */
 // One fixed, gentle Kadıköy route. Each step waits for the player to do the move.
@@ -60,17 +61,6 @@ function setPulse(sel) {
   if (sel) { const e = document.querySelector(sel); if (e) e.classList.add('pulse'); }
 }
 
-// The radio sits in the gap between the two rear-view mirrors (same band, never over the road).
-function placeRadio() {
-  const r = $('radio'), M = G.MIR;
-  if (!M || r.hidden) return;
-  const s = G.W / innerWidth, gap = 8;
-  const x0 = (M.l + M.w) / s + gap, x1 = M.r / s - gap, w = Math.min(420, x1 - x0);
-  r.style.left = (x0 + (x1 - x0 - w) / 2) + 'px'; r.style.width = w + 'px'; r.style.top = (M.y / s - (w < 260 ? 10 : 0)) + 'px';
-  r.classList.toggle('compact', w < 260);
-}
-addEventListener('resize', () => setTimeout(placeRadio, 0));
-
 function showStep() {
   const T = G.tut, st = STEPS[T.step];
   $('radio').classList.remove('done');
@@ -98,6 +88,7 @@ export function startTutorial() {
   startMission();
   G.rivals = []; G.nitroN = 0; $('nitroBtn').hidden = true;
   $('route').textContent = 'İLK GÜN · Moda → Yeldeğirmeni';
+  $('radio').classList.remove('talk', 'inner'); $('radioWho').textContent = 'USTA';
   $('radio').hidden = false;
   nextStep();
   placeRadio();

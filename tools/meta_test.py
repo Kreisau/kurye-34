@@ -20,7 +20,7 @@ with sync_playwright() as p:
         if OUT: pg.screenshot(path=f'{OUT}/{tag}-menu.png')
         # shift completion -> clue
         click(pg,'#startBtn'); pg.wait_for_timeout(200); click(pg,'#offers button'); pg.wait_for_timeout(1600)
-        ev(pg,"G.shift.i=2;G.pos=G.finishZ-C.playerZ-C.segL*9;"); pg.wait_for_timeout(2600)
+        ev(pg,"G.shift.i=4;G.pos=G.finishZ-C.playerZ-C.segL*9;"); pg.wait_for_timeout(2600)
         r=res(pg); check(tag+' shift done', r['title']=='VARDİYA TAMAM' and r['btns']==['DEVAM'], r)
         click(pg,'#resBtns button'); pg.wait_for_timeout(200); r=res(pg)
         check(tag+' clue shown', 'İPUCU 1/5' in r['eyebrow'] and r['title']=='KIRIK AYNA', r)

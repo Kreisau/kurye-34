@@ -36,7 +36,7 @@ export function wantLane(c,lx){
   c.pend=lx;c.sigT=.9;c.sig=Math.sign(lx-c.x)||1;
 }
 export function busWant(c,dt,want){
-  if(c.st==='drive'){const s=G.stopsZ.find(z=>z>c.z+250);if(s!==undefined&&s!==c.done&&s-c.z<2400){c.st='pull';c.sz=s;c.tl=.9;}return want;}
+  if(c.st==='drive'){if(c.yld)return want;const s=G.stopsZ.find(z=>z>c.z+250);if(s!==undefined&&s!==c.done&&s-c.z<2400){c.st='pull';c.sz=s;c.tl=.9;}return want;}
   if(c.st==='pull'){const rem=c.sz-c.z;if(rem<60){c.st='stop';c.wait=2.5+Math.random()*2;return 0;}return Math.min(want,Math.max(250,rem*1.3));}
   if(c.st==='stop'){c.wait-=dt;const busy=G.cars.some(o=>o!==c&&Math.abs(o.x-LANES[2])<.3&&o.z>c.z-300&&o.z<c.z+600);
     if(c.wait<=0&&(!busy||c.wait<-3)){c.st='merge';c.tl=LANES[2];c.done=c.sz;}return 0;}
@@ -48,7 +48,7 @@ export function updateCars(dt){
   const amb=G.cars.find(o=>o.amb);
   for(const c of G.cars){
     let lead=null,lg=1e9;
-    for(const o of G.cars){if(o===c)continue;const g=o.z-c.z;if(g>0&&g<lg&&Math.abs(o.x-c.x)<(o.hit+c.hit)/2+.03){lg=g;lead=o;}}
+    for(const o of G.cars){if(o===c)continue;const g=o.z-c.z;if(g>0&&g<lg&&Math.abs(o.x-c.x)<(o.hit+c.hit)/2+(c.amb?-.04:.03)){lg=g;lead=o;}}
     const pg=pz-c.z;
     // after fining a blocking player the ambulance squeezes past instead of queueing behind them
     if(G.state==='play'&&!(c.amb&&c.fined)&&pg>0&&pg<lg&&Math.abs(G.playerX-c.x)<(c.hit+PW)/2+.03){lg=pg;lead={speed:G.speed,z:pz,p:true};}
@@ -59,7 +59,7 @@ export function updateCars(dt){
     let want=c.bus?busWant(c,dt,c.base):c.base;
     if(c.k==='dolmus'){
       c.ht-=dt;
-      if(c.st==='drive'&&c.ht<=0){const ahead=c.z-pz;
+      if(c.st==='drive'&&c.ht<=0&&!c.yld){const ahead=c.z-pz;
         if(nearLane(c.x)!==2){if(laneFree(LANES[2],c,450)){c.tl=LANES[2];c.ht=1.5;}else c.ht=3;}
         else if(ahead>300&&ahead<3500&&Math.abs(c.x-c.tl)<.05){c.st='halt';c.wait=2+Math.random()*1.5;c.tl=.85;c.ht=8+Math.random()*8;}
         else c.ht=2;}
@@ -75,7 +75,8 @@ export function updateCars(dt){
     // (middle-lane traffic to the inner edge of a side lane, side-lane traffic onto the shoulder) and slows down.
     // Once past the player it accelerates beyond any bike's top speed, so it can't be caught again.
     if(c.amb){
-      c.tl=0;
+      // normally down the middle; if something still sits in the way (queued at road works, mid lane change), squeeze past on its open side
+      c.tl=lead&&!lead.p&&lead.x!=null&&lg<1600&&lead.speed<c.speed*.8?clamp(lead.x-(Math.sign(lead.x)||1)*((lead.hit+c.hit)/2+.02),-.6,.6):0;
       c.honk=!!(lead&&lg<1400&&lead.speed<c.base*.8);
       if(lead&&lead.p&&lg<900){c.blockT+=dt;if(c.blockT>1.3&&!c.fined){c.fined=true;damage(8,'Ambulansa yol vermedin');}}
       for(const r of G.rivals){const g=r.z-c.z;if(g>-100&&g<900&&r.down<=0&&!(r.dodge>0)&&Math.abs(r.x-c.x)<.32){r.dodge=1.2;r.dsd=Math.sign(r.x-c.x)||(Math.random()<.5?-1:1);}}
@@ -86,9 +87,12 @@ export function updateCars(dt){
         if(cl===1){let best=0,bs=1e9;
           for(const sd of[-1,1]){if(shut(sd<0?0:2))continue;let n=Math.random()*.5;for(const o of G.cars)if(o!==c&&!o.amb&&Math.abs(o.z-c.z)<600&&Math.sign(o.x)===sd&&Math.abs(o.x)>.3)n++;if(n<bs){bs=n;best=sd;}}
           c.yld=best||(Math.random()<.5?-1:1);c.yx=c.yld*.46;}
-        else{c.yld=cl===0?-1:1;c.yx=shut(cl)?c.x:c.yld*.92;}
+        else{c.yld=cl===0?-1:1;c.yx=shut(cl)?c.yld*Math.max(.5,Math.abs(c.x)):c.yld*.92;}
       }
-      if(c.st==='drive'||c.st==='merge'){c.tl=c.yx;if(c.st==='merge')c.st='drive';}
+      // yielding overrides bus stops and dolmuş halts: everything gets out of the way
+      if(c.bus&&c.st!=='drive'){c.done=c.sz;c.st='drive';}
+      if(c.k==='dolmus'&&c.st==='halt'){c.st='drive';c.ht=6;}
+      c.tl=c.yx;
       c.sig=0;c.sigT=0;
       want=Math.min(want,c.base*.5);
     }else if(c.yld){c.yld=0;if(c.st==='drive')c.tl=LANES[nearLane(c.x)];}

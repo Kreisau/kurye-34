@@ -1,5 +1,5 @@
 import { audioInit, sfx } from './audio.js';
-import { $, BIKES, BRK, CARDS, CENT, DEC, DISTRICTS, EVENTS, M_PER_SEG, OFFDEC, OFFLIM, PW, RESTS, clamp, el, fmt, lerp, maxSpeed, num, pdesc, pick, playerZ, prof, segL } from './config.js';
+import { $, BIKES, BRK, CARDS, NDEL, STREAK, CENT, DEC, DISTRICTS, EVENTS, M_PER_SEG, OFFDEC, OFFLIM, PW, RESTS, clamp, el, fmt, lerp, maxSpeed, num, pdesc, pick, playerZ, prof, segL } from './config.js';
 import { buzz, hitStop, sparks } from './fx.js';
 import { G } from './g.js';
 import { clearInput, input } from './input.js';
@@ -13,6 +13,7 @@ import { buildTrack, closureAt, findSeg } from './track.js';
 import { spawnAmb, spawnCars, updateCars } from './traffic.js';
 import { bossEnd } from './meta.js';
 import { tutTick } from './tutorial.js';
+import { radioReset, rivalDownLine, storyTick } from './radio.js';
 import { finish, keepAwake, showScreen, toast } from './ui.js';
 
 /* ---------- state ---------- */
@@ -23,6 +24,9 @@ G.slipT=0;G.slipDir=1;G.bumpT=0;G.ambT=99;G.brakeK=0;G.nitroN=0;G.nitroT=0;G.arr
 G.timeLeft=0;G.cond=100;G.bonus=0;G.clock=0;G.countT=0;G.lastCount=0;G.playerY=0;G.farOff=0;G.nearOff=0;G.offroad=false;
 G.cars=[];G.rivals=[];G.debris=[];
 export const card=id=>G.shift?G.shift.cards[id]||0:0;
+// a normal shift: earnings sit in the shift pot until it is banked
+export const inPot=()=>!!(G.shift&&!G.tut&&!G.shift.daily&&!G.shift.boss);
+export const rivalMult=()=>(card('eldiven')>0?2:1)*(card('kabadayi')>0?3:1);
 export const rain=()=>G.route&&G.route.ev==='yagmur'&&G.state!=='menu';
 
 /* ---------- shift flow ---------- */
@@ -40,16 +44,16 @@ export const tod=L=>TOD[L%TOD.length];
 export function makeOffer(kind){
   const L=G.shift.L,i=G.shift.i,d=L*3+i,T=tod(L),D0=DISTRICTS[Math.floor(Math.random()*unlocked())],D=Object.assign({},D0,{theme:T.theme(D0),traf:D0.traf*T.traf}),loop=Math.floor(L/DISTRICTS.length);
   const len=Math.round(Math.min(2400,(600+d*90)*kind.len)),ref=Math.min(.75,.30+d*.012);
-  const time=Math.round((len/(60*ref)+10)*D.tmul+8*card('kisayol'));
-  const chance=[L>=2?.2:0,.4,.7][i];
+  const time=Math.round(((len/(60*ref)+10)*D.tmul+8*card('kisayol'))*Math.pow(.8,card('ekspres')));
+  const chance=[L>=2?.2:0,.4,.6,.7,.8][i];
   const ev=Math.random()<chance?pick(Math.random,Object.keys(EVENTS)):null;
   const pool=D.pool.slice(),a=pool.splice(Math.floor(Math.random()*pool.length),1)[0],b=pick(Math.random,pool);
   return{D,kind:kind.k,rest:pick(Math.random,RESTS),from:a,to:b,A:prof(a),B:prof(b),len,time,curv:D.curv*(1+loop*.15),hill:D.hill,up:D.up,
-    pay:Math.round((40+d*18)*kind.pay*(ev?1.2:1)*(1+.25*card('bahsis'))*payMult()*T.pay),d,ev,seed:(Math.random()*1e9)|0};
+    pay:Math.round((40+d*18)*kind.pay*(ev?1.2:1)*(1+.25*card('bahsis'))*payMult()*T.pay*STREAK[i]*(card('cam')?2:1)*Math.pow(1.6,card('ekspres'))),d,ev,seed:(Math.random()*1e9)|0};
 }
 export function prepDelivery(){
   const offers=KINDS.map(makeOffer);
-  $('bEyebrow').textContent='VARDİYA #'+(G.shift.L+1)+' · '+tod(G.shift.L).k+(tod(G.shift.L).pay>1?' +%'+Math.round((tod(G.shift.L).pay-1)*100):'')+' · TESLİMAT '+(G.shift.i+1)+'/3 · PUAN '+ratingLabel()+(payLabel()?' · '+payLabel():'');
+  $('bEyebrow').textContent='VARDİYA #'+(G.shift.L+1)+' · '+tod(G.shift.L).k+(tod(G.shift.L).pay>1?' +%'+Math.round((tod(G.shift.L).pay-1)*100):'')+' · TESLİMAT '+(G.shift.i+1)+'/'+NDEL+(G.shift.i?' · ÜCRET ×'+num(STREAK[G.shift.i],2):'')+' · PUAN '+ratingLabel()+(payLabel()?' · '+payLabel():'');
   const box=$('offers');box.textContent='';
   for(const o of offers){
     const b=el('button','order');b.type='button';
@@ -75,7 +79,8 @@ export function startMission(){
   buildTrack(G.route,G.route.seed);
   G.ST=stats(b,ups(b.id),G.shift.cards);G.PSPR=bikeSprites(b,G.S.wpn);
   G.slipT=0;G.bumpT=0;G.graceT=0;G.ambT=15+Math.random()*20;G.pos=0;G.playerX=0;G.speed=0;G.lean=0;G.crashT=0;G.inv=0;G.kickT=0;G.cond=100;G.hits=0;G.bonus=0;G.timeLeft=G.route.time;G.flashT=0;G.shakeT=0;
-  G.playerX=(G.route.side0||1)*.72;G.nitroN=ups(b.id)[4]||0;G.nitroT=0;G.arriveT=0;
+  G.playerX=(G.route.side0||1)*.72;G.nitroN=(ups(b.id)[4]||0)+card('nitrokart');G.nitroT=0;G.arriveT=0;
+  radioReset();$('moneyLbl').textContent=inPot()?'VARDİYA':'KASA';
   G.debris=[];G.coneMsg=-9;spawnCars();spawnRivals();streetSetup();
   clearInput();G.paused=false;
   G.state='count';G.countT=1.2;G.lastCount=0;
@@ -83,7 +88,7 @@ export function startMission(){
   $('hud').hidden=false;$('controls').hidden=false;$('keyhint').hidden=false;
   layoutMirrors();
   const nb=$('nitroBtn');nb.hidden=!G.nitroN;nb.textContent='NİTRO ×'+G.nitroN;nb.classList.remove('used');
-  const r=$('route');r.textContent=(G.shift.i+1)+'/3 · '+G.route.from+' → '+G.route.to;
+  const r=$('route');r.textContent=(G.shift.i+1)+'/'+NDEL+' · '+G.route.from+' → '+G.route.to;
   if(G.route.ev){r.append(' · ');r.append(el('em',null,EVENTS[G.route.ev].t));}
 }
 export function demoTrack(){
@@ -147,7 +152,7 @@ export function landHit(best,wp,g){
       if(best.boss){best.down=4;bossEnd(true);return;}
       // second knockdown puts a rival out for the rest of the delivery
       best.kd=(best.kd||0)+1;best.out=best.kd>=2;best.down=best.out?4:(best.p.id==='orange'?3:5);
-      const add=Math.round((15+best.p.hp*10)*(g?2:1)*(best.out?2:1));G.bonus+=add;toast(best.p.n+(best.out?' kurye saf dışı!  +':' kurye yerde!  +')+add+' TL');
+      const add=Math.round((15+best.p.hp*10)*rivalMult()*(best.out?2:1));G.bonus+=add;if(card('aynaci')>0)G.timeLeft+=6;rivalDownLine(best);toast(best.p.n+(best.out?' kurye saf dışı!  +':' kurye yerde!  +')+add+' TL');
     }else{best.speed*=.8;best.vx=(best.vx||0)+G.kickSide*(.9+.3*wp.pow);best.stun=.45;best.shoved=2.5;best.cool=Math.max(best.cool,1.2);toast(best.p.n+' kurye sendeledi');}
   }
 }
@@ -188,7 +193,7 @@ export function update(dt){
     G.playerX+=sr*st;
     G.lean=lerp(G.lean,st*.22,Math.min(1,dt*8));
     if(!input.brake)G.brakeK=0;
-    if(input.brake){G.brakeK=Math.min(1,G.brakeK+dt*3);G.speed-=maxSpeed*(.12+.33*G.brakeK)*dt;}
+    if(input.brake){G.brakeK=Math.min(1,G.brakeK+dt*3);G.speed-=maxSpeed*(.12+.33*G.brakeK)*(card('frensiz')?.5:1)*dt;}
     else if(G.speed<top)G.speed=Math.min(top,G.speed+acc*dt*(1.35-.85*G.speed/top));
     else G.speed=Math.max(top,G.speed+DEC*.5*dt);
   }
@@ -243,7 +248,7 @@ export function update(dt){
         const diff=(G.speed-c.speed)/maxSpeed;
         if(G.inv>0)G.speed=c.speed*.9;
         else if(diff>G.ST.top*.45)crash(c.msg,14);
-        else{G.speed=c.speed*.85;sparks(Math.sign(c.x-G.playerX)||1,10);damage(6,c.msg);}
+        else{G.speed=c.speed*.85;sparks(Math.sign(c.x-G.playerX)||1,10);if(card('zirh')>0){sfx('bump');G.shakeT=.12;}else damage(6,c.msg);}
         G.pos=c.z-playerZ-30;break;
       }
     }
@@ -264,7 +269,7 @@ export function update(dt){
       if(r.blk>.8){r.blk=0;r.cutT=0;r.cutCd=8;r.dodge=1;r.dsd=r.x>=G.playerX?1:-1;r.speed=Math.max(r.speed,G.speed);}
     }else r.blk=Math.max(0,r.blk-dt);
   }
-  if(G.tut)tutTick(dt);
+  if(G.tut)tutTick(dt);else storyTick(dt);
   if(G.state!=='play')return;
   if(!G.tut)G.timeLeft-=dt;
   if(G.pos+playerZ>=G.finishZ-segL*10){G.state='arrive';G.arriveT=1.6;clearInput();toast('Adrese vardın');sfx('bell');}

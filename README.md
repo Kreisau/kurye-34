@@ -25,6 +25,7 @@ Derleme yok; düz ES modülleri.
 | `js/input.js` | Joystick, dokunmatik butonlar, klavye |
 | `js/audio.js` | Ses: motor, efektler, kornalar, ortam, hikâye sesleri (hepsi kodla), müzik döngüleri, ses ayarları |
 | `js/rating.js` | Müşteri puanı (1-5 yıldız), bahşiş, ortalama puana göre ücret ±%10 |
+| `js/radio.js` | Telsiz: eğitim kutusunun yerleşimi ve sürüş sırasında hikâye replikleri (Usta, 34'ün iç sesi, rakipler) |
 | `js/tutorial.js` | Eğitim rotası "İlk gün", Usta'nın telsiz mesajları |
 | `js/meta.js` | Uzun vadeli hedefler: ipuçları (dosya), Kara ile hesaplaşma, günün siparişi |
 | `js/fx.js` | Darbe hissi: kıvılcım, kısa donma, titreşim |
@@ -41,6 +42,7 @@ Derleme yok; düz ES modülleri.
 | `tools/i18n_check.py` | İngilizcede çevrilmeden kalan metinleri listeler |
 | `tools/camera_test.py` | Sabit ve dinamik kamerayı yokuşlu rotada karşılaştırır |
 | `tools/street_test.py` | Işık, yaya, çevirme, köpek, ters yön, ceza ve günün saati testleri |
+| `tools/shift_test.py` | Vardiya kuralları: 5 teslimat, vardiya kasası, kasayı alma, kaybedince kasanın gitmesi, kart açılması, lanetli kartlar, telsiz |
 | `tools/amb_test.py` | Ambulans: 16 rotada trafiğe sıkışmıyor, geçtikten sonra yakalanmıyor |
 | `tools/ui_scan.py` | Tüm ekranları TR/EN ve 6 ekran boyutunda tarar; çakışan, kesilen, ekran dışına taşan öğeleri listeler |
 | `tools/parity.py` | Eski ve yeni sürümü aynı seed/girdiyle çalıştırıp kare kare karşılaştırır |

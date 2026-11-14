@@ -32,7 +32,7 @@ export function rateDelivery(ok, why) {
   if (!ok) return { stars: 1, tip: 0, comment: pick(Math.random, FAIL[why] || FAIL.time) };
   const tr = r.time > 0 ? G.timeLeft / r.time : .3;
   const score = .65 * G.cond / 100 + .35 * Math.min(1, tr / .35);
-  const stars = clamp(1 + Math.round(score * 4) - (G.hits >= 6 ? 1 : 0) - (G.pedHit ? 1 : 0), 1, 5);
+  const stars = clamp(1 + Math.round(score * 4) - (G.hits >= 6 ? 1 : 0) - (G.pedHit ? 1 : 0) + (G.shift && G.shift.cards && G.shift.cards.yildiz ? 1 : 0), 1, 5);
   const tip = Math.round(r.pay * TIP[stars] * generosity(r.B) / 5) * 5;
   const pool = r.ev === 'yagmur' && stars >= 3 ? LINES[stars].concat(RAIN) : LINES[stars];
   return { stars, tip, comment: pick(Math.random, pool) };

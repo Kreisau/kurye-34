@@ -40,7 +40,7 @@ button:disabled{cursor:default}
 .sys{display:flex;gap:6px;margin-top:8px;pointer-events:auto}
 .mini{font:700 12px/1 var(--ui);letter-spacing:.1em;color:var(--paper);background:var(--glass);border:1px solid var(--line);border-radius:8px;padding:7px 10px;text-shadow:none}
 
-.toast{position:fixed;left:50%;top:calc(var(--mirB,92px) + 10px);transform:translateX(-50%);z-index:6;pointer-events:none;box-sizing:border-box;width:max-content;max-width:calc(100vw - 32px);padding:5px 12px;border-radius:12px;background:var(--glass);font:800 18px/1.15 var(--display);color:var(--paper);text-shadow:0 3px 0 var(--shadow);text-align:center;text-wrap:balance;opacity:0;transition:opacity .15s}
+.toast{position:fixed;left:50%;top:calc(var(--mirB,92px) + 10px + var(--radB,0px));transform:translateX(-50%);z-index:6;pointer-events:none;box-sizing:border-box;width:max-content;max-width:calc(100vw - 32px);padding:5px 12px;border-radius:12px;background:var(--glass);font:800 18px/1.15 var(--display);color:var(--paper);text-shadow:0 3px 0 var(--shadow);text-align:center;text-wrap:balance;opacity:0;transition:opacity .15s}
 .toast.show{opacity:1}
 .toast.big{font-size:64px;color:var(--taxi);top:30%;background:none}
 /* over a menu (garage purchases etc.) the toast sits at the bottom as a card, never on top of the content */
@@ -163,10 +163,10 @@ h3{font:700 13px/1 var(--ui);letter-spacing:.16em;color:var(--muted)}
 .chip.ev{border-color:var(--rain);color:var(--rain)}
 .oacc{text-align:center;background:var(--good);color:var(--ink);border-radius:10px;padding:10px;font:800 15px/1 var(--display);margin-top:4px}
 .online{font:700 12px/1 var(--ui);letter-spacing:.12em;color:var(--good)}
-.cd{position:fixed;left:50%;top:calc(var(--mirB,92px) + 64px);transform:translateX(-50%);z-index:2;pointer-events:none;font:800 clamp(72px,16vw,128px)/1 var(--display);color:var(--bad);opacity:.42;text-shadow:0 4px 0 var(--shadow);font-variant-numeric:tabular-nums}
+.cd{position:fixed;left:50%;top:calc(var(--mirB,92px) + 64px + var(--radB,0px));transform:translateX(-50%);z-index:2;pointer-events:none;font:800 clamp(72px,16vw,128px)/1 var(--display);color:var(--bad);opacity:.42;text-shadow:0 4px 0 var(--shadow);font-variant-numeric:tabular-nums}
 .btn.nitro{width:64px;height:44px;border-radius:22px;border-color:var(--rain);color:var(--rain);font-size:11px}
 .btn.used{opacity:.35}
-@media (max-height:500px){.cd{top:calc(var(--mirB,60px) + 52px);font-size:76px}.btn.nitro{width:56px;height:36px;font-size:10px}}
+@media (max-height:500px){.cd{top:calc(var(--mirB,60px) + 52px + var(--radB,0px));font-size:76px}.btn.nitro{width:56px;height:36px;font-size:10px}}
 @media (prefers-reduced-motion:reduce){.toast{transition:none}}
 
 /* Customer rating */
@@ -249,3 +249,16 @@ h3{font:700 13px/1 var(--ui);letter-spacing:.16em;color:var(--muted)}
   .sub{font-size:12px}
   .route{font-size:13px}
 }
+
+/* Story radio while riding: a strip under the mirrors */
+.radio.talk{left:max(12px, env(safe-area-inset-left,0px));right:max(12px, env(safe-area-inset-right,0px));top:calc(var(--mirB,92px) + 6px);margin:0 auto;max-width:520px;background:var(--glass);border-color:var(--line);box-shadow:none;padding:6px 10px 7px}
+.radio.talk .rstep,.radio.talk .rskip{display:none}
+.radio.talk p{margin:3px 0 0;font:600 14px/1.25 var(--ui);text-shadow:0 2px 0 var(--shadow)}
+.radio.talk.inner{border-style:dashed}
+.radio.talk.inner .rhead{color:var(--muted)}
+.radio.talk.inner .rdot{display:none}
+.radio.talk.inner p{font-style:italic;color:var(--muted)}
+/* Cursed cards, risk rows */
+.opt.curse{border-color:var(--bad)}
+.opt.curse small,.opt.curse b{color:var(--bad)}
+.facts .risk{color:var(--ember);font-weight:700}

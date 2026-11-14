@@ -83,6 +83,8 @@ export const UPG=[
   {n:'Mont',d:'Düştüğünde daha çabuk toparlanırsın'},
   {n:'Nitro',d:'Her seviye, teslimat başına 1 nitro hakkı: 2,5 sn +%25 hız'}
 ];
+// Shift cards. The first 10 are always in the pool; the rest unlock one per completed shift (G.S.cu), in this order.
+// curse: strong but with a price; at most one is offered at a time.
 export const CARDS=[
   {id:'termos',t:'Termos Çanta',d:'Paket hasarı %30 az.',stack:true},
   {id:'taksici',t:'Taksici Dayı',d:'Taksiler şerit değiştirmez.'},
@@ -93,8 +95,19 @@ export const CARDS=[
   {id:'sigorta',t:'Kargo Sigortası',d:'Paket bir kez dağılmaktan kurtulur, %30 ile devam edersin.'},
   {id:'kask',t:'Çelik Kask',d:'Düştüğünde iki kat hızlı kalkarsın.'},
   {id:'yolbilir',t:'Ara Sokak Bilgisi',d:'Virajda savrulma %25 az.'},
-  {id:'sakin',t:'Sessiz Egzoz',d:'Rakip kurye seni geç fark eder.'}
+  {id:'sakin',t:'Sessiz Egzoz',d:'Rakip kurye seni geç fark eder.'},
+  {id:'nitrokart',t:'Yedek Tüp',d:'Her teslimatta +1 nitro.',stack:true},
+  {id:'cam',t:'Cam Eşya',d:'Taşıma ücreti iki katı. Paket iki kat kırılgan.',curse:true},
+  {id:'aynaci',t:'Dikiz Ustası',d:'Yere serdiğin her rakip +6 sn kazandırır.'},
+  {id:'kombo',t:'Seri Teslimat',d:'Süre bonusu iki katı.'},
+  {id:'frensiz',t:'Balata Bitik',d:'Maks. hız +%15. Fren yarı güçte.',curse:true},
+  {id:'yildiz',t:'Tatlı Dil',d:'Müşteri puanı +1 yıldız.'},
+  {id:'ekspres',t:'Ekspres Sipariş',d:'Taşıma ücreti +%60. Süre %20 kısa.',curse:true,stack:true},
+  {id:'cezasiz',t:'Tanıdık Polis',d:'Cezalar yarıya iner.'},
+  {id:'kabadayi',t:'Kabadayı',d:'Rakip bonusu üç katı. Her teslimatta fazladan bir rakip.',curse:true},
+  {id:'zirh',t:'Çelik Tampon',d:'Araçlara hafif sürtünme pakete zarar vermez.'}
 ];
+export const BASE_CARDS=10,NDEL=5,STREAK=[1,1.15,1.3,1.5,1.75];
 export const EVENTS={
   yagmur:{t:'YAĞMUR',d:'Yol kaygan: virajda daha çok savrulursun.'},
   trafik:{t:'YOĞUN TRAFİK',d:'Yolda her zamankinden fazla araç var.'},

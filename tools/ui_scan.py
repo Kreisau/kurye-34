@@ -26,7 +26,7 @@ CHECK=r"""(rootSel)=>{
  const clipTo=(rs,b)=>rs.map(r=>({left:Math.max(r.left,b.left),right:Math.min(r.right,b.right),top:Math.max(r.top,b.top),bottom:Math.min(r.bottom,b.bottom)})).filter(r=>r.right>r.left&&r.bottom>r.top);
  const rectsOf=e=>{const b=e.getBoundingClientRect();if(['BUTTON','INPUT','SELECT','CANVAS'].includes(e.tagName)||!e.firstChild)return [b];
    const rs=[];for(const n of e.childNodes)if(n.nodeType===3&&n.textContent.trim()){const rg=document.createRange();rg.selectNodeContents(n);rs.push(...rg.getClientRects());}
-   const cs=getComputedStyle(e);return cs.overflow!=='visible'||cs.textOverflow==='ellipsis'?clipTo(rs.length?rs:[b],b):(rs.length?rs:[b]);};
+   let out=rs.length?rs:[b];for(let a=e;a&&a!==document.body;a=a.parentElement){const cs=getComputedStyle(a);if(cs.overflow!=='visible'||cs.textOverflow==='ellipsis')out=clipTo(out,a.getBoundingClientRect());}return out;};
  const R=leaves.map(rectsOf);
  for(let i=0;i<leaves.length;i++)for(let j=i+1;j<leaves.length;j++){
    const a=leaves[i],b=leaves[j];if(a.contains(b)||b.contains(a))continue;
@@ -36,7 +36,7 @@ CHECK=r"""(rootSel)=>{
  for(const e of leaves){
    const cs=getComputedStyle(e);if(cs.textOverflow==='ellipsis')continue;
    if(e.scrollWidth>e.clientWidth+1&&e.clientWidth>0&&cs.overflow!=='visible')out.push('CLIPPED '+name(e)+' '+e.scrollWidth+'>'+e.clientWidth);
-   const r=e.getBoundingClientRect();if(r.right>innerWidth+1||r.left<-1)out.push('OFFSCREEN '+name(e)+' '+Math.round(r.left)+'..'+Math.round(r.right)+' / '+innerWidth);
+   const rr=rectsOf(e);if(!rr.length)continue;const r={left:Math.min(...rr.map(x=>x.left)),right:Math.max(...rr.map(x=>x.right))};if(r.right>innerWidth+1||r.left<-1)out.push('OFFSCREEN '+name(e)+' '+Math.round(r.left)+'..'+Math.round(r.right)+' / '+innerWidth);
  }
  return out;}"""
 VIEWS=[('iphone',390,844,True),('se',375,667,True),('small',320,568,True),('ipad',820,1180,True),('land',844,390,True),('desktop',1280,800,False)]
@@ -54,6 +54,8 @@ STEPS=[
  ('story','#story',"UI.goMenu();document.getElementById('storyBtn').click();"),
  ('pause','#pause',"UI.goMenu();G.shift={L:7,i:0,cards:{},earned:0};G.route=GM.makeOffer(GM.KINDS[2]);GM.startMission();G.state='play';UI.togglePause(true);"),
  ('hud','#hud,#toast,#cd,#controls,#bossBar,#mirrors',"UI.togglePause(false);G.timeLeft=7.3;G.state='play';UI.toast('Turuncu kurye kaldırımdaki engele çarptı, saf dışı!  +110 TL',99999);UI.hudTick();"),
+ ('hud-radio','#hud,#toast,#cd,#radio,#controls,#mirrors',"const RD=await import('/js/radio.js');RD.radioReset();RD.radioSay('USTA','Kara senin bölgeni aldı. Bölge almak için adam ezmek gerekmezdi ama.');G.paused=false;G.timeLeft=7.3;await new Promise(r=>setTimeout(r,400));G.paused=true;UI.toast('Turuncu kurye kaldırımdaki engele çarptı, saf dışı!  +110 TL',99999);UI.hudTick();await new Promise(r=>setTimeout(r,100));UI.hudTick();"),
+ ('result-pick2','#result',"G.paused=false;UI.goMenu();G.S.cu=10;G.shift={L:7,i:1,cards:{cam:1},earned:640};G.route=GM.makeOffer(GM.KINDS[2]);GM.startMission();G.state='play';UI.finish(true);"),
  ('tutorial','#hud,#radio,#controls',"UI.goMenu();TU.startTutorial();"),
 ]
 res={}
