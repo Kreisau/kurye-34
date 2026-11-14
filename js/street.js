@@ -118,25 +118,25 @@ export function streetSetup() {
     }
   };
   const used = [];
-  place(1 + (fi > 1100 ? 1 : 0) + (d >= 6 ? 1 : 0), 160, n => {
+  place(1 + (fi > 1400 ? 1 : 0), 300, n => {
     for (let k = 1; k <= 3; k++) seg[n + k].xw = true;
     S.lights.push({ n, z: n * segL, off: R() * CYCLE, st: 'green', was: false, passed: false });
   });
-  if (d >= 2 && R() < .4) place(1, 120, n => {
+  if (d >= 3 && R() < .3) place(1, 260, n => {
     const side = seg[n].sea > 0 ? -1 : 1;
     seg[n].chk = true; seg[n - 16].sprites.push({ spr: IMG.csign, off: side * 1.1 });
     S.cops.push({ n, z: n * segL, side, warn: false, done: false });
   });
-  place((R() < .55 ? 1 : 0) + (d >= 5 && R() < .4 ? 1 : 0), 90, n => {
+  place(R() < .4 ? 1 : 0, 240, n => {
     const side = seg[n].sea ? -seg[n].sea : (R() < .5 ? -1 : 1);
     S.dogs.push({ z0: n * segL, z: n * segL, x: side * 1.08, side, st: 'wait', t: 0, nip: 0 });
   });
-  S.oncT = 10 + R() * 10;
+  S.oncT = 20 + R() * 12;
 }
 export const lightsAhead = () => S.lights;
 
 export function streetTick(dt) {
-  if (!S.lights.length && !S.dogs.length && !S.cops.length && !S.onc.length && !(G.route && G.route.d >= 3 && G.shift && !G.shift.boss && !G.tut)) return;
+  if (!S.lights.length && !S.dogs.length && !S.cops.length && !S.onc.length && !(G.route && G.route.d >= 4 && G.shift && !G.shift.boss && !G.tut)) return;
   const pz = G.pos + playerZ; let canHit = G.crashT <= 0 && G.inv <= 0;
   for (const l of S.lights) {
     const ph = (G.clock + l.off) % CYCLE; l.st = ph > YELLOW ? 'red' : ph > GREEN ? 'yellow' : 'green';
@@ -186,9 +186,12 @@ export function streetTick(dt) {
     } else { d.x += d.side * 1.2 * dt; d.z += maxSpeed * .1 * dt; }
   }
   if (S.dogs.length) S.dogs = S.dogs.filter(d => !(d.st === 'quit' && (Math.abs(d.x) > 1.4 || pz - d.z > 1500)));
-  if (G.route && G.route.d >= 3 && G.shift && !G.shift.boss && !G.tut) {
+  if (G.route && G.route.d >= 4 && G.shift && !G.shift.boss && !G.tut) {
     S.oncT -= dt;
-    if (S.oncT <= 0) { S.oncT = 14 + Math.random() * 12; S.onc.push({ z: pz + drawDist * segL * .75, x: Math.random() < .5 ? -.33 : .33, v: maxSpeed * .3, honk: false }); }
+    // event budget: no wrong-way courier while a traffic light or checkpoint is coming up, and they come rarely
+    const busy = S.lights.some(l => l.z > pz - 600 && l.z < pz + 20000) || S.cops.some(c => !c.done && c.z > pz - 600 && c.z < pz + 20000);
+    if (S.oncT <= 0 && busy) S.oncT = 3;
+    else if (S.oncT <= 0) { S.oncT = 26 + Math.random() * 18; S.onc.push({ z: pz + drawDist * segL * .75, x: Math.random() < .5 ? -.33 : .33, v: maxSpeed * .3, honk: false }); }
   }
   for (const o of S.onc) {
     if (o.ko) { o.fall = Math.min(1.4, o.fall + dt * 5); o.vx *= Math.exp(-3 * dt); o.x = Math.max(-1.25, Math.min(1.25, o.x + o.vx * dt)); continue; }

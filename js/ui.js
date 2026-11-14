@@ -92,7 +92,7 @@ export function finish(ok,why){
   if(ok){
     const pay=Math.round(G.route.pay*G.cond/100),tb=Math.round(G.timeLeft*1.5)*(card('kombo')>0?2:1),fine=Math.round((G.fine||0)*(card('cezasiz')>0?.5:1)),total=Math.max(0,pay+tb+G.bonus+rt.tip-fine);
     G.shift.earned+=total;
-    const rows=[['Müşteri puanı',starStr(rt.stars),'stars'],['Taşıma ücreti ('+G.cond+'%)',fmt(pay)],['Süre bonusu ('+num(G.timeLeft,1)+' sn)',fmt(tb)],['Bahşiş',fmt(rt.tip)],['Rakip bonusu',fmt(G.bonus)]].concat(fine?[['Cezalar','−'+fmt(fine)]]:[],[['BU TESLİMAT',fmt(total),'total']]);
+    const rows=[['Müşteri puanı',starStr(rt.stars),'stars'],['Paket durumu',G.cond+'%'],['Kalan süre',Math.min(100,Math.max(0,Math.round(100*G.timeLeft/Math.max(1,G.route.time))))+'%'],['Taşıma ücreti ('+G.cond+'%)',fmt(pay)],['Süre bonusu ('+num(G.timeLeft,1)+' sn)',fmt(tb)],['Bahşiş',fmt(rt.tip)],['Rakip bonusu',fmt(G.bonus)]].concat(fine?[['Cezalar','−'+fmt(fine)]]:[],[['BU TESLİMAT',fmt(total),'total']]);
     const sub='“'+rt.comment+'” · '+to;
     sfxStars(rt.stars);if(rt.tip&&G.AC)sfx('cash',{t:G.AC.currentTime+.25+rt.stars*.16});
     if(G.shift.i<NDEL-1){

@@ -160,7 +160,7 @@ const EN = {
   '. Üç teslimat da yerine ulaştı.': '. All three deliveries made it.', ' Yeni bölge açıldı: ': ' New district unlocked: ',
   'VARDİYA BİTTİ': 'SHIFT OVER', 'Süre doldu, sipariş iptal. ': 'Out of time, order cancelled. ', 'Paket dağıldı. ': 'The package is wrecked. ', 'Süre doldu. ': 'Out of time. ',
   '. Bu vardiyada kazandığın para kasada.': '. You keep what you earned this shift.',
-  'Kalan mesafe': 'Distance left', 'Paket durumu': 'Package condition', 'Vardiya kazancı': 'Shift earnings',
+  'Kalan mesafe': 'Distance left', 'Kalan süre': 'Time left', 'Paket durumu': 'Package condition', 'Vardiya kazancı': 'Shift earnings',
   // customer comments
   'Yemek sıcacık, kutu jilet gibi. Eline sağlık!': 'Piping hot and the box is spotless. Well done!',
   'Bu hızla nasıl geldin? Sağ ol usta.': 'How did you get here that fast? Cheers, mate.',

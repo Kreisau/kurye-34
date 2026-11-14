@@ -18,9 +18,9 @@ import { toast } from './ui.js';
 const CAR_NAME = { taxiY: 'taksiye', taxiT: 'taksiye', taxiV: 'taksiye', car: 'arabaya', lux: 'cipe', hafif: 'minivana', van: 'minibüse', klasik: 'eski sedana', hurda: 'kamyonete', dolmus: 'dolmuşa', bus: 'otobüse' };
 
 export function spawnRivals(){
-  G.rivals=[];const quiet=card('sakin')>0,n=Math.min(4,1+((G.route.d||0)>=6?1:0)+(G.route.ev==='rakip2'?1:0)+(card('kabadayi')>0?1:0));
+  G.rivals=[];const quiet=card('sakin')>0,n=Math.min(4,2+((G.route.d||0)>=8?1:0)+(G.route.ev==='rakip2'?1:0)+(card('kabadayi')>0?1:0));
   const pool=RIVALS.slice();for(let i=pool.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[pool[i],pool[j]]=[pool[j],pool[i]];}
-  for(let i=0;i<n;i++){const p=pool[i];G.rivals.push(newRival(p,(quiet?-5200:-2500)-i*1800,i%2?-.55:.55,0,(quiet?7:3)+i*2));}
+  for(let i=0;i<n;i++){const p=pool[i];G.rivals.push(newRival(p,(quiet?-4200:-1000)-i*1500,i%2?-.55:.55,0,(quiet?7:3)+i*2));}
 }
 export function newRival(p,z,x,speed,cool){
   return {p,hp:p.hp,z,x,vx:0,speed,down:0,kick:0,wind:0,kside:1,cutT:2.5,cutCd:8,dodge:0,dsd:1,blk:0,cool,fall:0,spr:SPR.rv[p.id],

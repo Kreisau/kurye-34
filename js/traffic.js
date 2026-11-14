@@ -24,16 +24,20 @@ export function respawn(c,initial){
     if(laneFree(lane,c,900))break;
   }
 }
-export function spawnCars(){G.cars=[];const d=G.route.d||0;const n=Math.round((10+Math.min(10,d))*(G.route.D?G.route.D.traf:1)*(G.route.ev==='trafik'?1.6:1));for(let i=0;i<n;i++){const c={};respawn(c,true);G.cars.push(c);}}
+// density grows slowly with progress and eases off on fast bikes
+export function spawnCars(){G.cars=[];const d=G.route.d||0;const n=Math.min(17,Math.round((10+Math.min(4,d/3))*(1.05-.25*G.ST.top)*(G.route.D?G.route.D.traf:1)*(G.route.ev==='trafik'?1.5:1)));for(let i=0;i<n;i++){const c={};respawn(c,true);G.cars.push(c);}}
 export function spawnAmb(){
   const lane=LANES[1];
   G.cars.push({spr:SPR.amb,hit:SPR.amb.ww*.88/G.roadW,msg:'Ambulansa çarptın',k:'amb',amb:true,wild:true,bus:false,st:'drive',cool:0,done:-1,sig:0,sigT:0,
     base:Math.min(maxSpeed*.98,G.ST.top*maxSpeed*1.3+maxSpeed*.05),speed:G.ST.top*maxSpeed,x:lane,tl:lane,lt:99,z:G.pos+playerZ-4600,blockT:0,fined:false,passed:false,dead:false,brk:false});
 }
+// A lane change is only ever started when the car is out of the rider's reach (about 1.5 s ahead or more, or already behind),
+// and it is announced first: indicator for a second, then the move. So it can be read and dodged, not just survived by luck.
+const nearRider=c=>{const g=c.z-(G.pos+playerZ);return g>-350&&g<Math.max(1800,G.speed*1.5);};
 export function wantLane(c,lx){
-  if(c.wild){c.tl=lx;return;}
-  if(c.sigT>0)return;
-  c.pend=lx;c.sigT=.9;c.sig=Math.sign(lx-c.x)||1;
+  if(c.amb){c.tl=lx;return;}
+  if(c.sigT>0||nearRider(c))return;
+  c.pend=lx;c.sigT=c.wild?.8:1;c.sig=Math.sign(lx-c.x)||1;
 }
 export function busWant(c,dt,want){
   if(c.st==='drive'){if(c.yld)return want;const s=G.stopsZ.find(z=>z>c.z+250);if(s!==undefined&&s!==c.done&&s-c.z<2400){c.st='pull';c.sz=s;c.tl=.9;}return want;}
@@ -98,7 +102,7 @@ export function updateCars(dt){
     }else if(c.yld){c.yld=0;if(c.st==='drive')c.tl=LANES[nearLane(c.x)];}
     const free=c.st==='drive'&&!c.yld,still=calm&&c.cat==='taxi';
     c.cool-=dt;
-    if(c.sigT>0){c.sigT-=dt;if(c.sigT<=0){if(laneFree(c.pend,c,500))c.tl=c.pend;else c.sig=0;}}
+    if(c.sigT>0){c.sigT-=dt;if(c.sigT<=0){if(laneFree(c.pend,c,500)&&!nearRider(c))c.tl=c.pend;else c.sig=0;}}
     else if(c.sig&&Math.abs(c.x-c.tl)<.04)c.sig=0;
     if(lead&&lg<1500){
       if(free&&c.cool<=0&&lead.speed<c.base*.8&&!still&&!(c.sigT>0)){
@@ -107,7 +111,7 @@ export function updateCars(dt){
       }
       want=Math.min(want,lead.speed+(lg-450)*1.2);
     }
-    if(c.wild&&!still&&free){c.lt-=dt;if(c.lt<=0){c.lt=((c.k==='klasik'||c.k==='lux'||c.k==='taxiY')?1:c.k==='hurda'?9:1.5)+Math.random()*3;if(Math.random()<.5){const li=nearLane(c.tl),j=pick(Math.random,[li-1,li+1].filter(i=>i>=0&&i<3));if(laneFree(LANES[j],c,450))c.tl=LANES[j];}}}
+    if(c.wild&&!still&&free){c.lt-=dt;if(c.lt<=0){c.lt=((c.k==='klasik'||c.k==='lux'||c.k==='taxiY')?1:c.k==='hurda'?9:1.5)+Math.random()*3;if(Math.random()<.5){const li=nearLane(c.tl),j=pick(Math.random,[li-1,li+1].filter(i=>i>=0&&i<3));if(laneFree(LANES[j],c,450))wantLane(c,LANES[j]);}}}
     want=Math.max(0,want);
     if(want<c.speed-maxSpeed*.01||c.speed<maxSpeed*.02)c.brkT=.35;else c.brkT=Math.max(0,(c.brkT||0)-dt);
     c.brk=c.brkT>0;

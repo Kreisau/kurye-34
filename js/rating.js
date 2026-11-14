@@ -31,8 +31,11 @@ export function rateDelivery(ok, why) {
   const r = G.route;
   if (!ok) return { stars: 1, tip: 0, comment: pick(Math.random, FAIL[why] || FAIL.time) };
   const tr = r.time > 0 ? G.timeLeft / r.time : .3;
-  const score = .65 * G.cond / 100 + .35 * Math.min(1, tr / .35);
-  const stars = clamp(1 + Math.round(score * 4) - (G.hits >= 6 ? 1 : 0) - (G.pedHit ? 1 : 0) + (G.shift && G.shift.cards && G.shift.cards.yildiz ? 1 : 0), 1, 5);
+  // Package condition counts most, spare time next (full marks from a quarter of the time left). Hits only matter through the damage
+  // they did; running over a pedestrian still costs a star. Thresholds, so a clean on-time run reliably lands 4-5 stars.
+  const score = .65 * G.cond / 100 + .35 * Math.min(1, tr / .25);
+  const base = score >= .9 ? 5 : score >= .75 ? 4 : score >= .55 ? 3 : score >= .35 ? 2 : 1;
+  const stars = clamp(base - (G.pedHit ? 1 : 0) + (G.shift && G.shift.cards && G.shift.cards.yildiz ? 1 : 0), 1, 5);
   const tip = Math.round(r.pay * TIP[stars] * generosity(r.B) / 5) * 5;
   const pool = r.ev === 'yagmur' && stars >= 3 ? LINES[stars].concat(RAIN) : LINES[stars];
   return { stars, tip, comment: pick(Math.random, pool) };

@@ -189,6 +189,12 @@ export function render(){
   G.camL=G.camL==null?lift:Math.max(lift,lerp(G.camL,lift,.12));   // rise at once (the road is continuous), settle back smoothly
   let camY=camH*(1+.24*G.camZ+Math.max(0,-G.camP)*.6)+G.camL;
   if(G.camOff){G.K=G.K0;G.HZ=G.HZ0;camY=camH;G.camL=0;}   // fixed camera, for comparison in tools/camera_test.py
+  else{
+    // Keep the rider where the fixed camera would put it (plus a small tilt with the slope). The camera rise on descents and the
+    // tilt used to push the bike down by up to half a screen; now the horizon moves to compensate and the bike stays in view.
+    const sc0=camDepth/playerZ;
+    G.HZ=Math.round(G.HZ0+sc0*G.K0*camH+G.camP*G.K0*.05-sc0*G.K*camY);
+  }
   ctx.save();
   if(G.shakeT>0&&!RM)ctx.translate(Math.round((Math.random()*2-1)*4),Math.round((Math.random()*2-1)*3));
   drawBg();
@@ -235,7 +241,7 @@ export function render(){
         if(o.siren){const on=Math.floor(G.clock*8)%2;ctx.fillStyle=on?'#ff2a2a':'#2a6bff';ctx.fillRect(ox-dw*.22,oy-dh*.955,dw*.2,dh*.065);ctx.fillStyle=on?'#2a6bff':'#ff2a2a';ctx.fillRect(ox+dw*.02,oy-dh*.955,dw*.2,dh*.065);}
         ctx.globalAlpha=1;
       }
-      if(o.blink&&Math.floor(G.clock*3)%2&&oy<=s.clip){const dw=o.ww*sc*G.K,dh=dw*o.img.height/o.img.width;ctx.globalAlpha=a;ctx.fillStyle='#ffa31a';ctx.fillRect(ox+o.blink*dw*.38-dw*.06,oy-dh*o.by,dw*.12,dw*.07);ctx.globalAlpha=1;}
+      if(o.blink&&Math.floor(G.clock*3)%2&&oy<=s.clip){const dw=o.ww*sc*G.K,dh=dw*o.img.height/o.img.width;ctx.globalAlpha=a;const bx=ox+o.blink*dw*.38,by=oy-dh*o.by+dw*.03;ctx.fillStyle='rgba(255,170,30,.35)';ctx.beginPath();ctx.arc(bx,by,dw*.13,0,Math.PI*2);ctx.fill();ctx.fillStyle='#ffb21f';ctx.fillRect(bx-dw*.08,by-dw*.045,dw*.16,dw*.09);ctx.globalAlpha=1;}
     }}
     for(const sp of s.sprites){if(sp.back&&G.qi>=2)continue;   // the back row of buildings is the first thing to go on slow devices
       const sc=s.p1.s;if(n<pN&&sp.spr.ww*sc*G.K>G.W*.45)continue;drawSprite(sp.spr.img,sp.spr.ww,sc,s.p1.sx+sc*sp.off*G.roadW*G.K,s.p1.sy,s.clip,a,0);}
