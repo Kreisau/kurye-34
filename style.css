@@ -40,9 +40,11 @@ button:disabled{cursor:default}
 .sys{display:flex;gap:6px;margin-top:8px;pointer-events:auto}
 .mini{font:700 12px/1 var(--ui);letter-spacing:.1em;color:var(--paper);background:var(--glass);border:1px solid var(--line);border-radius:8px;padding:7px 10px;text-shadow:none}
 
-.toast{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 92px);transform:translateX(-50%);z-index:6;pointer-events:none;font:800 18px/1.1 var(--display);color:var(--paper);text-shadow:0 3px 0 var(--shadow);text-align:center;white-space:nowrap;opacity:0;transition:opacity .15s}
+.toast{position:fixed;left:50%;top:calc(var(--mirB,92px) + 10px);transform:translateX(-50%);z-index:6;pointer-events:none;box-sizing:border-box;width:max-content;max-width:calc(100vw - 32px);padding:5px 12px;border-radius:12px;background:var(--glass);font:800 18px/1.15 var(--display);color:var(--paper);text-shadow:0 3px 0 var(--shadow);text-align:center;text-wrap:balance;opacity:0;transition:opacity .15s}
 .toast.show{opacity:1}
-.toast.big{font-size:64px;color:var(--taxi);top:30%}
+.toast.big{font-size:64px;color:var(--taxi);top:30%;background:none}
+/* over a menu (garage purchases etc.) the toast sits at the bottom as a card, never on top of the content */
+.toast.menu{top:auto;bottom:calc(env(safe-area-inset-bottom,0px) + 20px);background:var(--card);border:1px solid var(--taxi);text-shadow:none;font-size:16px;padding:10px 16px}
 .hint{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 140px);transform:translateX(-50%);z-index:2;pointer-events:none;font:700 13px/1 var(--ui);letter-spacing:.12em;background:var(--glass);border:1px solid var(--ember);color:var(--paper);border-radius:999px;padding:7px 12px;white-space:nowrap}
 
 /* Controls: gas is automatic. Left thumb steers, right thumb brakes and kicks. */
@@ -65,7 +67,7 @@ button:disabled{cursor:default}
 .key-only{display:none}
 @media (hover:hover) and (pointer:fine){
   .controls{display:none}
-  .keyhint{display:block;position:fixed;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom,0px) + 12px);z-index:2;font:700 13px/1 var(--ui);letter-spacing:.08em;color:var(--muted);text-shadow:0 2px 0 var(--shadow);white-space:nowrap}
+  .keyhint{display:block;position:fixed;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom,0px) + 12px);z-index:2;font:700 13px/1.3 var(--ui);letter-spacing:.08em;color:var(--muted);text-shadow:0 2px 0 var(--shadow);width:max-content;max-width:calc(100vw - 32px);text-align:center}
   .touch-only{display:none}
   .key-only{display:block}
   .hint{bottom:calc(env(safe-area-inset-bottom,0px) + 44px)}
@@ -85,7 +87,7 @@ button:disabled{cursor:default}
   .btn.brake{width:76px;height:76px;font-size:13px}
   .controls{padding-bottom:calc(env(safe-area-inset-bottom,0px) + 10px)}
   .hint{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px)}
-  .toast{top:calc(env(safe-area-inset-top,0px) + 64px);font-size:15px}
+  .toast{font-size:15px}
   .toast.big{font-size:48px;top:28%}
 }
 
@@ -128,6 +130,8 @@ h3{font:700 13px/1 var(--ui);letter-spacing:.16em;color:var(--muted)}
 
 /* Garage */
 .ghead{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
+.gmsg{flex:1 1 auto;min-width:0;text-align:center;font:700 14px/1.2 var(--ui);color:var(--good);opacity:0;transition:opacity .2s}
+.gmsg.show{opacity:1}
 .cash{font:800 20px/1 var(--display);color:var(--taxi);font-variant-numeric:tabular-nums}
 .cur{display:grid;grid-template-columns:110px minmax(0,1fr);gap:14px;align-items:center}
 .cur canvas{width:110px;height:105px;border-radius:12px;background:var(--opt)}
@@ -159,10 +163,10 @@ h3{font:700 13px/1 var(--ui);letter-spacing:.16em;color:var(--muted)}
 .chip.ev{border-color:var(--rain);color:var(--rain)}
 .oacc{text-align:center;background:var(--good);color:var(--ink);border-radius:10px;padding:10px;font:800 15px/1 var(--display);margin-top:4px}
 .online{font:700 12px/1 var(--ui);letter-spacing:.12em;color:var(--good)}
-.cd{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 74px);transform:translateX(-50%);z-index:2;pointer-events:none;font:800 clamp(72px,16vw,128px)/1 var(--display);color:var(--bad);opacity:.42;text-shadow:0 4px 0 var(--shadow);font-variant-numeric:tabular-nums}
+.cd{position:fixed;left:50%;top:calc(var(--mirB,92px) + 64px);transform:translateX(-50%);z-index:2;pointer-events:none;font:800 clamp(72px,16vw,128px)/1 var(--display);color:var(--bad);opacity:.42;text-shadow:0 4px 0 var(--shadow);font-variant-numeric:tabular-nums}
 .btn.nitro{width:64px;height:44px;border-radius:22px;border-color:var(--rain);color:var(--rain);font-size:11px}
 .btn.used{opacity:.35}
-@media (max-height:500px){.cd{top:calc(env(safe-area-inset-top,0px) + 50px);font-size:76px}.btn.nitro{width:56px;height:36px;font-size:10px}}
+@media (max-height:500px){.cd{top:calc(var(--mirB,60px) + 52px);font-size:76px}.btn.nitro{width:56px;height:36px;font-size:10px}}
 @media (prefers-reduced-motion:reduce){.toast{transition:none}}
 
 /* Customer rating */
@@ -230,7 +234,18 @@ h3{font:700 13px/1 var(--ui);letter-spacing:.16em;color:var(--muted)}
 @media (min-width:700px) and (min-height:600px){
   .card{zoom:1.3}
   .hud{zoom:1.35}
-  .rpad,.toast{zoom:1.3}
+  .rpad{zoom:1.3}
+  .toast{font-size:23px}
+  .toast.menu{font-size:20px}
 }
 
 .vols select{width:100%;height:36px;border-radius:8px;border:1px solid var(--line);background:var(--opt);color:var(--paper);font:700 15px var(--ui);padding:0 8px}
+
+/* narrow phones: keep the HUD's middle column readable */
+.sub span{white-space:nowrap}
+@media (max-width:360px){
+  .val{font-size:21px}
+  .hud{gap:8px;padding-left:max(10px, env(safe-area-inset-left,0px));padding-right:max(10px, env(safe-area-inset-right,0px))}
+  .sub{font-size:12px}
+  .route{font-size:13px}
+}

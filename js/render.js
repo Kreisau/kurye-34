@@ -71,6 +71,8 @@ export function layoutMirrors(){
   const hud=$('hud');if(hud.hidden){G.MIR=null;return;}
   const s=G.W/innerWidth,hb=hud.getBoundingClientRect().bottom,mw=Math.min(G.W*(G.H>G.W?.3:.2),170*s),mh=mw*.46,pad=14*s;
   G.MIR={w:mw,h:mh,y:hb*s-8*s,l:pad,r:G.W-pad-mw};
+  // overlays (toast, countdown) stack below the mirrors instead of covering them
+  document.documentElement.style.setProperty('--mirB',Math.round((G.MIR.y+mh)/s)+'px');
 }
 export function mirror(mx,side,obs){
   const my=G.MIR.y,mw=G.MIR.w,mh=G.MIR.h;
@@ -218,7 +220,8 @@ export function render(){
       }
       if(o.blink&&Math.floor(G.clock*3)%2&&oy<=s.clip){const dw=o.ww*sc*G.K,dh=dw*o.img.height/o.img.width;ctx.globalAlpha=a;ctx.fillStyle='#ffa31a';ctx.fillRect(ox+o.blink*dw*.38-dw*.06,oy-dh*o.by,dw*.12,dw*.07);ctx.globalAlpha=1;}
     }}
-    for(const sp of s.sprites){const sc=s.p1.s;if(n<pN&&sp.spr.ww*sc*G.K>G.W*.45)continue;drawSprite(sp.spr.img,sp.spr.ww,sc,s.p1.sx+sc*sp.off*G.roadW*G.K,s.p1.sy,s.clip,a,0);}
+    for(const sp of s.sprites){if(sp.back&&G.qi>=2)continue;   // the back row of buildings is the first thing to go on slow devices
+      const sc=s.p1.s;if(n<pN&&sp.spr.ww*sc*G.K>G.W*.45)continue;drawSprite(sp.spr.img,sp.spr.ww,sc,s.p1.sx+sc*sp.off*G.roadW*G.K,s.p1.sy,s.clip,a,0);}
   }
   drawPlayer(pSeg,pp);
   fxDraw(ctx);

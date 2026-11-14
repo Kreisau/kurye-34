@@ -50,11 +50,12 @@ export function updateCars(dt){
     let lead=null,lg=1e9;
     for(const o of G.cars){if(o===c)continue;const g=o.z-c.z;if(g>0&&g<lg&&Math.abs(o.x-c.x)<(o.hit+c.hit)/2+.03){lg=g;lead=o;}}
     const pg=pz-c.z;
-    if(G.state==='play'&&pg>0&&pg<lg&&Math.abs(G.playerX-c.x)<(c.hit+PW)/2+.03){lg=pg;lead={speed:G.speed,z:pz,p:true};}
+    // after fining a blocking player the ambulance squeezes past instead of queueing behind them
+    if(G.state==='play'&&!(c.amb&&c.fined)&&pg>0&&pg<lg&&Math.abs(G.playerX-c.x)<(c.hit+PW)/2+.03){lg=pg;lead={speed:G.speed,z:pz,p:true};}
     for(const k of G.closures){const g=k.z0-c.z;if(k.lane===nearLane(c.x)&&g>0&&g<lg&&g<1600){lg=g;lead={speed:0,z:k.z0};}}
     // stop at a red light (and at yellow if there is room to brake)
     if(!c.amb)for(const l of lightsAhead()){const g=l.z-c.z;if(g>0&&g<lg&&g<1700&&(l.st==='red'||(l.st==='yellow'&&g>650))){lg=g;lead={speed:0,z:l.z};}}
-    for(const r of G.rivals){const g=r.z-c.z;if(g>0&&g<lg&&Math.abs(r.x-c.x)<(c.hit+PW)/2+.03){lg=g;lead={speed:r.down>0?0:r.speed,z:r.z};}}
+    if(!c.amb)for(const r of G.rivals){const g=r.z-c.z;if(g>0&&g<lg&&Math.abs(r.x-c.x)<(c.hit+PW)/2+.03){lg=g;lead={speed:r.down>0?0:r.speed,z:r.z};}}
     let want=c.bus?busWant(c,dt,c.base):c.base;
     if(c.k==='dolmus'){
       c.ht-=dt;
@@ -70,24 +71,28 @@ export function updateCars(dt){
         if(ahead>500&&ahead<3200&&sg&&!sg.hz&&idx<G.segs.length-drawDist)sg.hz={t:'junk',x:clamp(c.x+(Math.random()-.5)*.2,-.9,.9),w:.2,hit:false,v:Math.floor(Math.random()*3)};}
     }
     const shut=j=>G.closures.some(k=>k.lane===j&&c.z>k.z0-1400&&c.z<k.z1);
+    // Emergency corridor: the ambulance keeps to the middle of the road; everything ahead of it pulls to the sides
+    // (middle-lane traffic to the inner edge of a side lane, side-lane traffic onto the shoulder) and slows down.
+    // Once past the player it accelerates beyond any bike's top speed, so it can't be caught again.
     if(c.amb){
+      c.tl=0;
       c.honk=!!(lead&&lg<1400&&lead.speed<c.base*.8);
-      if(lead&&lead.p&&lg<900){c.blockT+=dt;if(c.blockT>1.3&&!c.fined){c.fined=true;damage(8,'Ambulansa yol vermedin');const pl=nearLane(G.playerX),op=[0,1,2].filter(j=>j!==pl&&!shut(j));if(op.length)c.tl=LANES[pick(Math.random,op)];}}
-      if(!c.passed&&c.z>pz+150){c.passed=true;c.base=maxSpeed*.98;if(!c.fined&&G.state==='play'){G.bonus+=10;toast('Ambulansa yol verdin  +10 TL');}}
-    }else if(amb&&amb.z<c.z&&c.z-amb.z<2600){
-      if(!c.bus&&c.st==='drive'){
-        const al=nearLane(amb.x),cl=nearLane(c.x);
-        if(cl===al){
-          const sd=c.x>amb.x?1:c.x<amb.x?-1:(Math.random()<.5?-1:1);
-          let moved=false;
-          for(const j of[al+sd,al-sd])if(j>=0&&j<3&&!shut(j)&&laneFree(LANES[j],c,500)){c.tl=LANES[j];moved=true;break;}
-          if(!moved)want=Math.min(want,c.base*.3);
-        }else if(!shut(cl))c.tl=Math.sign(c.x)*.82;
-        c.sig=0;c.sigT=0;c.yld=true;
+      if(lead&&lead.p&&lg<900){c.blockT+=dt;if(c.blockT>1.3&&!c.fined){c.fined=true;damage(8,'Ambulansa yol vermedin');}}
+      for(const r of G.rivals){const g=r.z-c.z;if(g>-100&&g<900&&r.down<=0&&!(r.dodge>0)&&Math.abs(r.x-c.x)<.32){r.dodge=1.2;r.dsd=Math.sign(r.x-c.x)||(Math.random()<.5?-1:1);}}
+      if(!c.passed&&c.z>pz+150){c.passed=true;c.base=maxSpeed*1.15;if(!c.fined&&G.state==='play'){G.bonus+=10;toast('Ambulansa yol verdin  +10 TL');}}
+    }else if(amb&&c.z>amb.z-150&&c.z-amb.z<3000){
+      if(!c.yld){
+        const cl=nearLane(c.x);
+        if(cl===1){let best=0,bs=1e9;
+          for(const sd of[-1,1]){if(shut(sd<0?0:2))continue;let n=Math.random()*.5;for(const o of G.cars)if(o!==c&&!o.amb&&Math.abs(o.z-c.z)<600&&Math.sign(o.x)===sd&&Math.abs(o.x)>.3)n++;if(n<bs){bs=n;best=sd;}}
+          c.yld=best||(Math.random()<.5?-1:1);c.yx=c.yld*.46;}
+        else{c.yld=cl===0?-1:1;c.yx=shut(cl)?c.x:c.yld*.92;}
       }
-      want=Math.min(want,c.base*.6);
-    }else if(c.yld){c.yld=false;if(c.st==='drive')c.tl=LANES[nearLane(c.tl)];}
-    const free=c.st==='drive',still=calm&&c.cat==='taxi';
+      if(c.st==='drive'||c.st==='merge'){c.tl=c.yx;if(c.st==='merge')c.st='drive';}
+      c.sig=0;c.sigT=0;
+      want=Math.min(want,c.base*.5);
+    }else if(c.yld){c.yld=0;if(c.st==='drive')c.tl=LANES[nearLane(c.x)];}
+    const free=c.st==='drive'&&!c.yld,still=calm&&c.cat==='taxi';
     c.cool-=dt;
     if(c.sigT>0){c.sigT-=dt;if(c.sigT<=0){if(laneFree(c.pend,c,500))c.tl=c.pend;else c.sig=0;}}
     else if(c.sig&&Math.abs(c.x-c.tl)<.04)c.sig=0;
@@ -102,10 +107,10 @@ export function updateCars(dt){
     want=Math.max(0,want);
     if(want<c.speed-maxSpeed*.01||c.speed<maxSpeed*.02)c.brkT=.35;else c.brkT=Math.max(0,(c.brkT||0)-dt);
     c.brk=c.brkT>0;
-    c.speed+=clamp(want-c.speed,-maxSpeed*(c.k==='dolmus'?1.4:.7)*dt,maxSpeed*.22*dt);
+    c.speed+=clamp(want-c.speed,-maxSpeed*(c.k==='dolmus'?1.4:.7)*dt,maxSpeed*(c.amb?.6:.22)*dt);
     c.z+=c.speed*dt;
     if(lead&&lead.z-c.z<320){c.z=lead.z-320;c.speed=Math.min(c.speed,lead.speed);}
-    const ls=c.wild?1:.7;c.x+=clamp(c.tl-c.x,-ls*dt,ls*dt);
+    const ls=c.amb||c.yld?1.3:c.wild?1:.7;c.x+=clamp(c.tl-c.x,-ls*dt,ls*dt);
     if(c.amb){if(c.z>pz+drawDist*segL*1.2)c.dead=true;}
     else if(c.z<G.pos-4000||c.z>pz+drawDist*segL*1.6)respawn(c,false);
   }

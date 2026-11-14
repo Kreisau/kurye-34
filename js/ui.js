@@ -25,13 +25,17 @@ export function hudTick(){
   if(hudCache.cond!==G.cond){hudCache.cond=G.cond;const p=$('pkg');p.style.width=G.cond+'%';p.classList.toggle('low',G.cond<40);}
   const cdv=G.state==='play'&&G.timeLeft<=10?Math.ceil(G.timeLeft):0,cd=$('cd');
   if(cdv){if(cd.hidden)cd.hidden=false;if(hudCache.cd!==cdv){hudCache.cd=cdv;cd.textContent=cdv;sfx('beep');}}
+  if(cdv){const t=$('toast'),tb=t.classList.contains('show')&&!t.classList.contains('big')?Math.round(t.getBoundingClientRect().bottom)+6:0;if(hudCache.cdTop!==tb){hudCache.cdTop=tb;cd.style.top=tb?tb+'px':'';}}
   else if(!cd.hidden){cd.hidden=true;hudCache.cd=0;}
   const boss=G.shift&&G.shift.boss?G.rivals.find(r=>r.boss):null,bb=$('bossBar');
   if(bb.hidden!==!boss)bb.hidden=!boss;
   if(boss){$('bossHp').style.width=clamp(boss.hp/boss.p.hp,0,1)*100+'%';if(G.MIR)bb.style.top=(G.MIR.y/(G.W/innerWidth)+4)+'px';}
 }
 G.toastTimer=0;
-export function toast(msg,ms,big){const t=$('toast');t.textContent=msg;t.classList.toggle('big',!!big);t.classList.add('show');clearTimeout(G.toastTimer);G.toastTimer=setTimeout(()=>t.classList.remove('show'),ms||1300);}
+export function toast(msg,ms,big){
+  // in the garage, confirmations go into the header line instead of floating over the list
+  if(!$('garage').hidden){const m=$('gMsg');m.textContent=msg;m.classList.add('show');clearTimeout(G.gMsgT);G.gMsgT=setTimeout(()=>m.classList.remove('show'),ms||1800);return;}
+  const t=$('toast');t.textContent=msg;t.classList.toggle('big',!!big);t.classList.toggle('menu',$('hud').hidden);t.classList.add('show');clearTimeout(G.toastTimer);G.toastTimer=setTimeout(()=>t.classList.remove('show'),ms||1300);}
 export function showScreen(id){for(const s of['menu','garage','brief','result','pause','story','settings'])$(s).hidden=s!==id;}
 export function updateMenu(){
   $('mMoney').textContent=fmt(G.S.money);

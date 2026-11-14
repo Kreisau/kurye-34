@@ -7,7 +7,7 @@ import { layoutMirrors } from './render.js';
 import { spawnRivals, updateRival } from './rivals.js';
 import { payLabel, payMult, ratingLabel } from './rating.js';
 import { curBike, curWpn, stats, ups } from './save.js';
-import { streetClear, streetSetup, streetTick } from './street.js';
+import { oncHit, oncTarget, streetClear, streetSetup, streetTick } from './street.js';
 import { SPR, bikeSprites, setTheme } from './sprites.js';
 import { buildTrack, closureAt, findSeg } from './track.js';
 import { spawnAmb, spawnCars, updateCars } from './traffic.js';
@@ -125,8 +125,10 @@ export function doKick(){
   if(G.state!=='play'||G.crashT>0||G.kickT>0)return;
   const wp=curWpn(),pz=G.pos+playerZ;let best=null,bd=1e9;
   for(const r of G.rivals){if(r.down>0)continue;const s=Math.abs(r.z-pz)+Math.abs(r.x-G.playerX)*400;if(s<bd){bd=s;best=r;}}
-  G.kickSide=best&&Math.abs(best.z-pz)<600?(Math.sign(best.x-G.playerX)||1):((input.left||input.steer<-.2)?-1:(input.right||input.steer>.2)?1:G.kickSide);
-  G.kickT=wp.id==='kick'?.35:.45;G.hitT=.15;sfx('swing',{w:wp.id,pan:G.kickSide*.4});
+  const oc=oncTarget(pz);
+  if(oc&&(!best||Math.abs(best.z-pz)>=600||(oc.z-pz)*.3+Math.abs(oc.x-G.playerX)*400<bd))best=oc;
+  G.kickSide=best&&Math.abs(best.z-pz)<(best===oc?2500:600)?(Math.sign(best.x-G.playerX)||1):((input.left||input.steer<-.2)?-1:(input.right||input.steer>.2)?1:G.kickSide);
+  G.kickT=wp.id==='kick'?.35:.45;G.hitT=best&&best===oc?.45:.15;sfx('swing',{w:wp.id,pan:G.kickSide*.4});
 }
 export function tryHit(){
   const wp=curWpn(),g=card('eldiven')>0,zb=wp.zb*(g?1.3:1),za=wp.za*(g?1.3:1),lmax=wp.lmax*(g?1.2:1),pz=G.pos+playerZ;
@@ -134,6 +136,7 @@ export function tryHit(){
     if(r.down>0)continue;const gz=r.z-pz,dx=r.x-G.playerX;
     if(gz>=-zb&&gz<=za&&Math.abs(dx)>=.1&&Math.abs(dx)<=lmax&&Math.sign(dx)===G.kickSide){G.hitT=0;landHit(r,wp,g);return;}
   }
+  if(oncHit(wp,G.kickSide,g))G.hitT=0;
 }
 export function landHit(best,wp,g){
   {

@@ -1,7 +1,8 @@
 import { horn, sfx } from './audio.js';
 import { KMH, def, drawDist, maxSpeed, playerZ, rng, segL } from './config.js';
 import { G } from './g.js';
-import { crash } from './game.js';
+import { card, crash } from './game.js';
+import { buzz, hitStop, sparks } from './fx.js';
 import { mk, rr } from './sprites.js';
 import { toast } from './ui.js';
 
@@ -10,7 +11,7 @@ import { toast } from './ui.js';
 export const S = { lights: [], peds: [], dogs: [], cops: [], onc: [], oncT: 0 };
 let IMG = null;
 const CYCLE = 13, GREEN = 6.8, YELLOW = 8;   // seconds: green until 6.8, yellow until 8, red until 13
-const PED_FINE = 100, COP_FINE = 150, COP_LIMIT = 45;
+const PED_FINE = 100, COP_FINE = 150, COP_LIMIT = 45, ONC_BONUS = 60;
 
 function sprites() {
   if (IMG) return;
@@ -175,11 +176,34 @@ export function streetTick(dt) {
     if (S.oncT <= 0) { S.oncT = 14 + Math.random() * 12; S.onc.push({ z: pz + drawDist * segL * .75, x: Math.random() < .5 ? -.33 : .33, v: maxSpeed * .3, honk: false }); }
   }
   for (const o of S.onc) {
+    if (o.ko) { o.fall = Math.min(1.4, o.fall + dt * 5); o.vx *= Math.exp(-3 * dt); o.x = Math.max(-1.25, Math.min(1.25, o.x + o.vx * dt)); continue; }
     o.z -= o.v * dt; const dz = o.z - pz;
     if (!o.honk && dz < 2400) { o.honk = true; if (G.AC) horn('eco', G.AC.currentTime, .12, Math.max(-1, Math.min(1, (o.x - G.playerX) * 1.5))); }
     if (canHit && !o.hit && Math.abs(dz) < 80 && Math.abs(o.x - G.playerX) < .14) { o.hit = true; canHit = false; crash('Ters yönden gelen kuryeye çarptın', 14); }
   }
   if (S.onc.length) S.onc = S.onc.filter(o => o.z > pz - 800);
+}
+
+// Wrong-way couriers can be hit too. They close in fast, so the hit window ahead grows with the closing speed.
+export function oncTarget(pz) {
+  let best = null, bd = 1e9;
+  for (const o of S.onc) { if (o.ko) continue; const dz = o.z - pz; if (dz < -80 || dz > 2500) continue; const sc = dz * .3 + Math.abs(o.x - G.playerX) * 400; if (sc < bd) { bd = sc; best = o; } }
+  return best;
+}
+export function oncHit(wp, side, glove) {
+  const pz = G.pos + playerZ;
+  for (const o of S.onc) {
+    if (o.ko || o.hit) continue;
+    const gz = o.z - pz, dx = o.x - G.playerX, ahead = wp.za + (G.speed + o.v) / 30;   // two frames of closing distance: the hit lands as it passes, not from afar
+    if (gz < -wp.zb || gz > ahead || Math.abs(dx) < .06 || Math.abs(dx) > wp.lmax * (glove ? 1.2 : 1) + .04 || Math.sign(dx) !== side) continue;
+    o.ko = true; o.fall = 0; o.vx = side * .7;
+    const add = ONC_BONUS * (glove ? 2 : 1); G.bonus += add;
+    const pan = Math.max(-1, Math.min(1, dx * 1.5));
+    sfx('impact', { w: wp.id, pan }); sfx('down', { pan }); sparks(side, 16); hitStop(.06); buzz(60); G.shakeT = .15;
+    toast('Ters yön kuryesini devirdin!  +' + add + ' TL', 1800);
+    return true;
+  }
+  return false;
 }
 
 // things for the renderer, same shape as cars: {z, img, ww, x}
@@ -190,6 +214,6 @@ export function streetObjs() {
   for (const p of S.peds) out.push({ z: p.z, img: IMG.ped[p.c][Math.floor(G.clock * (p.flee ? 12 : 6) + p.ph) % 2][p.dir > 0 ? 0 : 1], ww: 200, x: p.x, rot: 0 });
   for (const c of S.cops) out.push({ z: c.z, img: IMG.cop, ww: 290, x: c.side * 1.06, rot: 0 });
   for (const d of S.dogs) out.push({ z: d.z, img: IMG.dog[d.st === 'wait' ? 0 : Math.floor(G.clock * 10) % 2][(d.st === 'quit' ? d.side : -d.side) > 0 ? 0 : 1], ww: 330, x: d.x, rot: 0 });
-  for (const o of S.onc) out.push({ z: o.z, img: IMG.onc, ww: 570, x: o.x, rot: 0 });
+  for (const o of S.onc) out.push({ z: o.z, img: IMG.onc, ww: 570, x: o.x, rot: o.ko ? o.fall * Math.sign(o.vx || 1) : 0 });
   return out;
 }

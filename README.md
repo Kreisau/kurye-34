@@ -18,7 +18,7 @@ Derleme yok; düz ES modülleri.
 | `js/save.js` | Kayıt (localStorage), motor istatistikleri |
 | `js/track.js` | Yol üretimi |
 | `js/game.js` | Vardiya, teslimat, hasar, `update()` |
-| `js/traffic.js` | Trafik araçları |
+| `js/traffic.js` | Trafik araçları; ambulans için acil koridoru (araçlar iki yana açılır) |
 | `js/rivals.js` | Rakip kuryeler |
 | `js/render.js` | Çizim, ayna, boyutlandırma |
 | `js/ui.js` | HUD, menüler, garaj, sonuç ekranı |
@@ -28,7 +28,7 @@ Derleme yok; düz ES modülleri.
 | `js/tutorial.js` | Eğitim rotası "İlk gün", Usta'nın telsiz mesajları |
 | `js/meta.js` | Uzun vadeli hedefler: ipuçları (dosya), Kara ile hesaplaşma, günün siparişi |
 | `js/fx.js` | Darbe hissi: kıvılcım, kısa donma, titreşim |
-| `js/street.js` | Sokak hayatı: trafik ışıkları ve yaya geçitleri, yayalar, polis çevirmesi, sokak köpekleri, ters yönden gelen kuryeler |
+| `js/street.js` | Sokak hayatı: trafik ışıkları ve yaya geçitleri, yayalar, polis çevirmesi, sokak köpekleri, ters yönden gelen kuryeler (vurulabilir, +60 TL) |
 | `js/i18n.js` | İngilizce katmanı: ekrana giden her metni çevirir (Ayarlar → Dil) |
 | `js/story.js` | Hikâye girişi (6 sahne, canvas çizimleri) |
 | `music/` | Gemini (Lyria) müzikleri, `tools/make_loops.py` ile döngüye çevrilmiş (menü, sürüş, gergin sürüş) |
@@ -41,6 +41,8 @@ Derleme yok; düz ES modülleri.
 | `tools/i18n_check.py` | İngilizcede çevrilmeden kalan metinleri listeler |
 | `tools/camera_test.py` | Sabit ve dinamik kamerayı yokuşlu rotada karşılaştırır |
 | `tools/street_test.py` | Işık, yaya, çevirme, köpek, ters yön, ceza ve günün saati testleri |
+| `tools/amb_test.py` | Ambulans: 16 rotada trafiğe sıkışmıyor, geçtikten sonra yakalanmıyor |
+| `tools/ui_scan.py` | Tüm ekranları TR/EN ve 6 ekran boyutunda tarar; çakışan, kesilen, ekran dışına taşan öğeleri listeler |
 | `tools/parity.py` | Eski ve yeni sürümü aynı seed/girdiyle çalıştırıp kare kare karşılaştırır |
 
 ## Lokal çalıştırma

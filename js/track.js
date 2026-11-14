@@ -44,7 +44,10 @@ export function buildTrack(rt,seed){
   const land=sd=>sd?-sd:(SR()<.5?-1:1);
   for(let n=12;n<G.segs.length;n++){
     const s=G.segs[n];
-    if(n%7===0&&Math.abs(n-fi)>4)for(const side of[-1,1])if(side!==s.sea&&SR()<.88){const b=pick(SR,bset(s.pf.style));s.sprites.push({spr:b,off:side*(1.2+b.half+SR()*.3)});}
+    // Street wall: a back row further out fills the gaps behind the front row, so the backdrop never shows through
+    // as empty space. Back row first: within a segment, sprites draw in push order.
+    if(n%8===4&&Math.abs(n-fi)>6)for(const side of[-1,1])if(side!==s.sea&&SR()<.9){const b=pick(SR,bset(s.pf.style));s.sprites.push({spr:b,off:side*(2.3+b.half*2+SR()*.5),back:true});}
+    if(n%5===0&&Math.abs(n-fi)>4)for(const side of[-1,1])if(side!==s.sea&&SR()<.95){const b=pick(SR,bset(s.pf.style));s.sprites.push({spr:b,off:side*(1.2+b.half+SR()*.25)});}
     if(s.sea&&n%3===0)s.sprites.push({spr:SPR.rail,off:s.sea*1.1});
     if(s.sea&&n%60===25)s.sprites.push({spr:SPR.ferry,off:s.sea*(2.8+SR()*2.4)});
     if(s.pf.style!=='plaza'&&n%5===2&&Math.abs(n-fi)>8&&SR()<.35)s.sprites.push({spr:pick(SR,SPR.trees),off:land(s.sea)*(1.12+SR()*.06)});

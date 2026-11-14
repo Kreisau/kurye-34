@@ -9,6 +9,7 @@ import { curBike } from './save.js';
 const VOL_DEF = { music: .5, sfx: .8, amb: .5 };
 const LEVEL = { music: .4, sfx: 1, amb: .6 };
 const MASTER = 1.6;
+const RAIN = .016;   // rain level: about 13 dB under the old setting (measured with tools/sound_demo-style offline render)
 const TRACKS = {
   menu: { url: 'music/menu.mp3', ls: .5, le: 70.4966 },
   ride: { url: 'music/ride.mp3', ls: .5, le: 96.4913 },
@@ -276,7 +277,7 @@ function loopNoise(buf, type, f, q, to) {
 function buildAmb() {
   A.bed = loopNoise(A.brown, 'lowpass', 420, .7, A.bus.amb);       // city rumble
   A.hush = loopNoise(A.white, 'bandpass', 900, .6, A.bus.amb);     // far traffic hush
-  const r = loopNoise(A.white, 'highpass', 1200, .7, A.bus.amb);   // rain
+  const r = loopNoise(A.white, 'bandpass', 1600, .45, A.bus.amb);  // rain: soft, wide band; a highpass hiss read as far too loud on phone speakers
   A.rain = r;
 }
 export function gull(t, v, pan) {
@@ -294,7 +295,7 @@ function ambTick(t, dt) {
   const k = .4;
   A.bed.gain.setTargetAtTime(story ? 0 : ride ? .1 : .1, t, k);
   A.hush.gain.setTargetAtTime(story ? 0 : ride ? .012 + .008 * Math.min(1, G.speed / maxSpeed) : .01, t, k);
-  A.rain.gain.setTargetAtTime(!story && G.route && G.route.ev === 'yagmur' && G.state !== 'menu' ? .03 : 0, t, k);
+  A.rain.gain.setTargetAtTime(!story && G.route && G.route.ev === 'yagmur' && G.state !== 'menu' ? RAIN : 0, t, k);
   if (story || G.paused || !seaRoute()) return;
   A.gullT -= dt; A.ferryT -= dt;
   if (A.gullT <= 0) { A.gullT = rnd(18, 35); gull(t, .03, rnd(-.8, .8)); }
