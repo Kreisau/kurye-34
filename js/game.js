@@ -209,7 +209,14 @@ export function update(dt){
   }
   if(G.crashT<=0&&G.state==='play'&&pSeg.cl!=null){
     const cl=pSeg.cl,sd=cl===2?1:-1,ax=G.playerX*sd;
-    if(pSeg.clk==='park'){if(ax>.36)crash('Park etmiş arabaya çarptın',14);}
+    if(pSeg.clk==='park'){
+      // collide with the parked cars themselves (their real width and length), not with the whole closed lane
+      const pz=G.pos+playerZ;
+      for(let i=pSeg.index-1;i<=pSeg.index+1&&G.crashT<=0;i++){const sg=G.segs[i];if(sg)for(const sp of sg.sprites){
+        if(!sp.parked)continue;const dz=i*segL-pz;
+        if(dz>-segL*.9&&dz<segL*.5&&Math.abs(G.playerX-sp.off)<sp.spr.ww*.88/G.roadW/2+PW/2){crash('Park etmiş arabaya çarptın',14);break;}
+      }}
+    }
     else{
       // road works: the barriers at both ends are solid; the cone line scatters and slows you; the dug-up lane is slow going
       const k=closureAt(G.pos+playerZ);

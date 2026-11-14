@@ -70,7 +70,7 @@ export function buildTrack(rt,seed){
         G.segs[n0].sprites.push({spr:SPR.barrier,off:LANES[lane]});
         for(let n=n0;n<n1;n+=2)G.segs[n].sprites.push({spr:SPR.cone,off:sd*.34});
         G.segs[n1-1].sprites.push({spr:SPR.barrier,off:LANES[lane]});
-      }else for(let n=n0+2;n<n1-1;n+=5)G.segs[n].sprites.push({spr:pick(SR,parked),off:.72});
+      }else for(let n=n0+2;n<n1-1;n+=5)G.segs[n].sprites.push({spr:pick(SR,parked),off:.72,parked:true});
       break;
     }
   }
