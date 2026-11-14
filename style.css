@@ -66,6 +66,7 @@ button:disabled{cursor:default}
 .keyhint{display:none}
 .key-only{display:none}
 @media (hover:hover) and (pointer:fine){
+  .screen{padding-top:14px;padding-bottom:14px}
   .controls{display:none}
   .keyhint{display:block;position:fixed;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom,0px) + 12px);z-index:2;font:700 13px/1.3 var(--ui);letter-spacing:.08em;color:var(--muted);text-shadow:0 2px 0 var(--shadow);width:max-content;max-width:calc(100vw - 32px);text-align:center}
   .touch-only{display:none}

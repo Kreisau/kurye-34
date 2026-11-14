@@ -177,3 +177,23 @@ export function renderGarage(){
 /* ---------- buttons ---------- */
 G.wake=null;
 export function keepAwake(){try{if(navigator.wakeLock&&!G.wake)navigator.wakeLock.request('screen').then(w=>{G.wake=w;w.addEventListener('release',()=>{G.wake=null;});}).catch(()=>{});}catch(e){}}
+
+/* ---------- desktop: fit menu cards to the window ----------
+   On a mouse-driven screen the cards are enlarged (x1.3). On a laptop that pushed the lower part of most screens
+   below the window edge. Here each visible card is scaled so it fits the window height (down to x0.75; below that it scrolls). */
+const DESK=matchMedia('(hover:hover) and (pointer:fine)');
+let fitQ=0;
+function fitCards(){
+  fitQ=0;
+  for(const c of document.querySelectorAll('.screen:not([hidden]) .card')){
+    if(!DESK.matches){if(c.style.zoom)c.style.zoom='';continue;}
+    c.style.zoom='1';
+    const big=innerWidth>=700&&innerHeight>=600?1.3:1,fit=(innerHeight-34)/c.offsetHeight,z=fit<.75?1:Math.min(big,fit);   // long lists (garage) keep normal size and scroll
+    c.style.zoom=z.toFixed(3);
+  }
+}
+const fitSoon=()=>{if(!fitQ)fitQ=requestAnimationFrame(fitCards);};
+addEventListener('resize',fitSoon);DESK.addEventListener('change',fitSoon);
+new MutationObserver(fitSoon).observe(document.body,{subtree:true,childList:true,attributes:true,attributeFilter:['hidden']});
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(fitSoon);
+fitSoon();
