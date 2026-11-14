@@ -16,13 +16,23 @@ const PED_FINE = 100, COP_FINE = 150, COP_LIMIT = 45, ONC_BONUS = 60, RED_FINE =
 function sprites() {
   if (IMG) return;
   const flipper = (g, w, flip) => { if (flip) { g.translate(w, 0); g.scale(-1, 1); } };
-  const light = st => mk(60, 260, g => {
-    g.fillStyle = '#2a2533'; g.fillRect(27, 76, 6, 184); g.fillStyle = '#15111a'; rr(g, 13, 2, 34, 78, 7); g.fill();
-    [['#ff3b3b', 'red'], ['#ffc61a', 'yellow'], ['#3ddc84', 'green']].forEach(([c, k], i) => {
-      const on = k === st, y = 17 + i * 24;
-      if (on) { g.globalAlpha = .35; g.fillStyle = c; g.beginPath(); g.arc(30, y, 15, 0, 7); g.fill(); g.globalAlpha = 1; }
-      g.fillStyle = on ? c : '#3a3344'; g.beginPath(); g.arc(30, y, 9, 0, 7); g.fill();
-    });
+  // Gantry light: the pole stands on the right kerb and arches over the road; the whole pole glows in the signal colour.
+  const light = st => mk(420, 440, g => {
+    const col = { red: '#ff3b3b', yellow: '#ffc61a', green: '#3ddc84' }[st];
+    const path = () => { g.beginPath(); g.moveTo(388, 440); g.lineTo(388, 190); g.quadraticCurveTo(388, 62, 262, 56); g.lineTo(64, 56); };
+    g.lineCap = 'round';
+    g.strokeStyle = '#2a2533'; g.lineWidth = 16; path(); g.stroke();
+    g.shadowColor = col; g.shadowBlur = 22; g.strokeStyle = col; g.lineWidth = 9; path(); g.stroke(); g.stroke();
+    g.shadowBlur = 0; g.strokeStyle = 'rgba(255,255,255,.55)'; g.lineWidth = 2.5; path(); g.stroke();
+    const head = (x, y, k) => {
+      g.fillStyle = '#15111a'; rr(g, x - 20 * k, y, 40 * k, 104 * k, 8 * k); g.fill();
+      [['#ff3b3b', 'red'], ['#ffc61a', 'yellow'], ['#3ddc84', 'green']].forEach(([c, n], i) => {
+        const on = n === st, cy = y + (20 + i * 32) * k;
+        if (on) { g.globalAlpha = .4; g.fillStyle = c; g.beginPath(); g.arc(x, cy, 24 * k, 0, 7); g.fill(); g.globalAlpha = 1; }
+        g.fillStyle = on ? c : '#3a3344'; g.beginPath(); g.arc(x, cy, 12 * k, 0, 7); g.fill();
+      });
+    };
+    head(64, 40, 1); head(388, 236, .8);
   });
   const ped = (coat, hair, f, flip) => mk(60, 150, g => {
     flipper(g, 60, flip);
@@ -215,7 +225,8 @@ export function oncHit(wp, side, glove) {
 export function streetObjs() {
   const out = [];
   if (!IMG) return out;
-  for (const l of S.lights) for (const sd of [-1, 1]) out.push({ z: l.z + 30, img: IMG.light[l.st], ww: 250, x: sd * 1.07, rot: 0 });
+  // sprite is one road half-width wide: pole foot (x=388/420) on the right kerb, signal head over the middle lane
+  for (const l of S.lights) out.push({ z: l.z + 30, img: IMG.light[l.st], ww: G.roadW * 1.1, x: 1.08 - (388 / 420 - .5) * 1.1, rot: 0 });
   for (const p of S.peds) out.push({ z: p.z, img: IMG.ped[p.c][Math.floor(G.clock * (p.flee ? 12 : 6) + p.ph) % 2][p.dir > 0 ? 0 : 1], ww: 200, x: p.x, rot: 0 });
   for (const c of S.cops) out.push({ z: c.z, img: IMG.cop, ww: 290, x: c.side * 1.06, rot: 0 });
   for (const d of S.dogs) out.push({ z: d.z, img: IMG.dog[d.st === 'wait' ? 0 : Math.floor(G.clock * 10) % 2][(d.st === 'quit' ? d.side : -d.side) > 0 ? 0 : 1], ww: 330, x: d.x, rot: 0 });

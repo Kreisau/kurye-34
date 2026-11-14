@@ -173,21 +173,17 @@ export function render(){
   // Dynamic camera: pulls back and rises with speed; looks down and lifts before a drop so the road
   // beyond a crest stays in view, looks up a little on climbs. Everything is eased.
   const look=G.segs[(pSeg.index+28)%N],slope=look.index>pSeg.index?Math.max(-1,Math.min(1,(look.p1.wy-G.playerY)/(28*segL))):0;
-  // Speed feel. The pull-back follows speed relative to the bike's own top speed, plus a kick while accelerating
-  // (the bike surges ahead of the camera) and a big, fast push on nitro; braking lets the camera catch up.
-  const ride=G.state==='play'||G.state==='arrive'||G.state==='count',topS=Math.max(1,G.ST.top*maxSpeed),rel=G.speed/topS;
-  const acc=G.camV==null?0:Math.max(-1.5,Math.min(1.5,(G.speed-G.camV)*60/(topS/Math.max(.5,G.ST.accT))));G.camV=G.speed;
-  G.camA=lerp(G.camA||0,G.paused?0:acc,.08);
-  const nit=G.nitroT>0&&ride,tz=ride?Math.min(1.5,Math.min(1,rel)+(nit?.45:0)+.22*G.camA):.3;
-  G.camZ=G.camZ==null?tz:lerp(G.camZ,tz,nit&&tz>G.camZ?.12:.05);G.camP=G.camP==null?0:lerp(G.camP,slope,.05);
+  // speed feel is relative to the bike: a Mobilet flat out should feel fast too, not only the big bikes. Nitro goes past 1.
+  const ride=G.state==='play'||G.state==='arrive'||G.state==='count',rel=G.speed/Math.max(1,G.ST.top*maxSpeed),tz=ride?Math.min(1.25,.3*G.speed/maxSpeed+.7*rel):.3;
+  G.camZ=G.camZ==null?tz:lerp(G.camZ,tz,.035);G.camP=G.camP==null?0:lerp(G.camP,slope,.05);
   if(RM){G.camZ=.4;G.camP=0;}
-  G.K=G.K0*(1.14-.32*G.camZ);   // standing still: close behind the bike; flat out: ~28% further back; nitro: ~40%
+  G.K=G.K0*(1.08-.2*G.camZ);   // wider view as speed builds: the camera pulls back
   G.HZ=Math.round(G.HZ0+G.camP*G.K0*.16);
   // going downhill the camera sits behind (uphill of) the rider: keep it above the road at its own position too,
   // otherwise it ends up under the tarmac and the bottom of the screen shows empty ground
   const baseY=lerp(base.p1.wy,base.p2.wy,bp),lift=Math.max(0,baseY-G.playerY);
   G.camL=G.camL==null?lift:Math.max(lift,lerp(G.camL,lift,.12));   // rise at once (the road is continuous), settle back smoothly
-  let camY=camH*(1+.3*G.camZ+Math.max(0,-G.camP)*.6)+G.camL;
+  let camY=camH*(1+.2*G.camZ+Math.max(0,-G.camP)*.6)+G.camL;
   if(G.camOff){G.K=G.K0;G.HZ=G.HZ0;camY=camH;G.camL=0;}   // fixed camera, for comparison in tools/camera_test.py
   ctx.save();
   if(G.shakeT>0&&!RM)ctx.translate(Math.round((Math.random()*2-1)*4),Math.round((Math.random()*2-1)*3));
