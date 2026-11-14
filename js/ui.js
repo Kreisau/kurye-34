@@ -1,6 +1,7 @@
 import { audioInit, sfx, sfxStars } from './audio.js';
-import { $, BIKES, CARDS, DISTRICTS, KMH, M_PER_SEG, UPG, WPN, clamp, el, fmt, maxSpeed, playerZ, segL } from './config.js';
+import { $, BIKES, CARDS, DISTRICTS, KMH, M_PER_SEG, UPG, WPN, clamp, el, fmt, maxSpeed, num, playerZ, segL } from './config.js';
 import { G } from './g.js';
+import { isEN } from './i18n.js';
 import { card, demoTrack, newShift, prepDelivery, unlocked } from './game.js';
 import { clearInput } from './input.js';
 import { curBike, save, stats, upCost, ups } from './save.js';
@@ -12,16 +13,16 @@ import { tutFinish, tutStop } from './tutorial.js';
 /* ---------- HUD & UI ---------- */
 export const hudCache={};
 export function setText(id,v){if(hudCache[id]!==v){hudCache[id]=v;$(id).textContent=v;}}
-export function distStr(){const m=Math.max(0,(G.finishZ-G.pos-playerZ)/segL*M_PER_SEG);return m>=1000?(m/1000).toFixed(1)+' km':Math.round(m/10)*10+' m';}
+export function distStr(){const m=Math.max(0,(G.finishZ-G.pos-playerZ)/segL*M_PER_SEG);return m>=1000?num(m/1000,1)+' km':Math.round(m/10)*10+' m';}
 export function hudTick(){
   if($('hud').hidden)return;
   setText('time',G.tut?'—':G.timeLeft.toFixed(1));
-  $('time').classList.toggle('warn',G.timeLeft<10);
-  $('prog').style.width=(clamp((G.pos+playerZ)/G.finishZ,0,1)*100).toFixed(1)+'%';
+  const tw=G.timeLeft<10;if(hudCache.tw!==tw){hudCache.tw=tw;$('time').classList.toggle('warn',tw);}
+  const pw=(clamp((G.pos+playerZ)/G.finishZ,0,1)*100).toFixed(1)+'%';if(hudCache.pw!==pw){hudCache.pw=pw;$('prog').style.width=pw;}
   setText('dist',distStr());
-  setText('kmh',Math.round(G.speed/maxSpeed*KMH)+' km/sa');
+  setText('kmh',Math.round(G.speed/maxSpeed*KMH)+(isEN()?' km/h':' km/sa'));
   setText('money',fmt(G.S.money+G.bonus));
-  const p=$('pkg');p.style.width=G.cond+'%';p.classList.toggle('low',G.cond<40);
+  if(hudCache.cond!==G.cond){hudCache.cond=G.cond;const p=$('pkg');p.style.width=G.cond+'%';p.classList.toggle('low',G.cond<40);}
   const cdv=G.state==='play'&&G.timeLeft<=10?Math.ceil(G.timeLeft):0,cd=$('cd');
   if(cdv){if(cd.hidden)cd.hidden=false;if(hudCache.cd!==cdv){hudCache.cd=cdv;cd.textContent=cdv;sfx('beep');}}
   else if(!cd.hidden){cd.hidden=true;hudCache.cd=0;}
@@ -75,7 +76,7 @@ export function finish(ok,why){
   if(ok){
     const pay=Math.round(G.route.pay*G.cond/100),tb=Math.round(G.timeLeft*1.5),total=pay+tb+G.bonus+rt.tip;
     G.S.money+=total;G.shift.earned+=total;
-    const rows=[['Müşteri puanı',starStr(rt.stars),'stars'],['Taşıma ücreti ('+G.cond+'%)',fmt(pay)],['Süre bonusu ('+G.timeLeft.toFixed(1)+' sn)',fmt(tb)],['Bahşiş',fmt(rt.tip)],['Rakip bonusu',fmt(G.bonus)],['BU TESLİMAT',fmt(total),'total']];
+    const rows=[['Müşteri puanı',starStr(rt.stars),'stars'],['Taşıma ücreti ('+G.cond+'%)',fmt(pay)],['Süre bonusu ('+num(G.timeLeft,1)+' sn)',fmt(tb)],['Bahşiş',fmt(rt.tip)],['Rakip bonusu',fmt(G.bonus)],['BU TESLİMAT',fmt(total),'total']];
     const sub='“'+rt.comment+'” · '+to;
     sfxStars(rt.stars);if(rt.tip&&G.AC)sfx('cash',{t:G.AC.currentTime+.25+rt.stars*.16});
     if(G.shift.i<2){

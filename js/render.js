@@ -155,20 +155,36 @@ export function render(){
   const N=G.segs.length,base=findSeg(G.pos),bp=(G.pos%segL)/segL;
   const pSeg=findSeg(G.pos+playerZ),pp=((G.pos+playerZ)%segL)/segL;
   G.playerY=lerp(pSeg.p1.wy,pSeg.p2.wy,pp);
+  // Dynamic camera: pulls back and rises with speed; looks down and lifts before a drop so the road
+  // beyond a crest stays in view, looks up a little on climbs. Everything is eased.
+  const look=G.segs[(pSeg.index+28)%N],slope=look.index>pSeg.index?Math.max(-1,Math.min(1,(look.p1.wy-G.playerY)/(28*segL))):0;
+  const ride=G.state==='play'||G.state==='arrive'||G.state==='count',tz=ride?Math.min(1,G.speed/maxSpeed):.3;
+  G.camZ=G.camZ==null?tz:lerp(G.camZ,tz,.035);G.camP=G.camP==null?0:lerp(G.camP,slope,.05);
+  if(RM){G.camZ=.4;G.camP=0;}
+  G.K=G.K0*(1.06-.13*G.camZ);
+  G.HZ=Math.round(G.HZ0+G.camP*G.K0*.16);
+  // going downhill the camera sits behind (uphill of) the rider: keep it above the road at its own position too,
+  // otherwise it ends up under the tarmac and the bottom of the screen shows empty ground
+  const baseY=lerp(base.p1.wy,base.p2.wy,bp),lift=Math.max(0,baseY-G.playerY);
+  G.camL=G.camL==null?lift:Math.max(lift,lerp(G.camL,lift,.12));   // rise at once (the road is continuous), settle back smoothly
+  let camY=camH*(1+.15*G.camZ+Math.max(0,-G.camP)*.6)+G.camL;
+  if(G.camOff){G.K=G.K0;G.HZ=G.HZ0;camY=camH;G.camL=0;}   // fixed camera, for comparison in tools/camera_test.py
   ctx.save();
   if(G.shakeT>0&&!RM)ctx.translate(Math.round((Math.random()*2-1)*4),Math.round((Math.random()*2-1)*3));
   drawBg();
-  let maxy=G.H,x=0,dx=-(base.curve*bp);
+  let maxy=G.H,x=0,dx=-(base.curve*bp),first=true;
   for(let n=0;n<drawDist;n++){
     const s=G.segs[(base.index+n)%N];
     s.looped=s.index<base.index;const f=n/drawDist;s.fog=Math.exp(-f*f*FOGD);s.clip=maxy;
     const cz=G.pos-(s.looped?G.trackLen:0);
-    project(s.p1,G.playerX*G.roadW-x,G.playerY+camH,cz);
-    project(s.p2,G.playerX*G.roadW-x-dx,G.playerY+camH,cz);
+    project(s.p1,G.playerX*G.roadW-x,G.playerY+camY,cz);
+    project(s.p2,G.playerX*G.roadW-x-dx,G.playerY+camY,cz);
     x+=dx;dx+=s.curve;
     if(s.p1.cz<=camDepth||s.p2.sy>=s.p1.sy||s.p2.sy>=maxy)continue;
+    if(first){first=false;G.roadBot=s.p1.sy;}
     drawSeg(s);maxy=s.p1.sy;
   }
+  G.roadTop=maxy;
   const B=new Array(drawDist);
   const put=(z,o)=>{const idx=Math.floor(z/segL);if(idx<0||idx>=N)return;const n=idx-base.index;if(n<1||n>=drawDist)return;o.pct=(z%segL)/segL;(B[n]||(B[n]=[])).push(o);};
   for(const c of G.cars)put(c.z,{img:c.spr.img,ww:c.spr.ww,x:c.x,rot:0,by:c.spr.by||.4,brake:c.brk,siren:c.amb,
@@ -210,13 +226,14 @@ export function render(){
 }
 
 /* ---------- resize & loop ---------- */
-export const QUAL=[1200,900,720,560];G.qi=0;G.perfN=0;G.perfT=0;
+export const QUAL=[900,720,560,480];G.qi=0;G.perfN=0;G.perfT=0;
 export function resize(){
   const vw=innerWidth,vh=innerHeight,r=Math.min(window.devicePixelRatio||1,QUAL[G.qi]/Math.min(vw,vh));
   G.W=Math.max(200,Math.round(vw*r));G.H=Math.max(150,Math.round(vh*r));cvs.width=G.W;cvs.height=G.H;
   const portrait=vh>vw;
   G.K=portrait?Math.min(G.H*.39,G.W*.62):Math.min(G.H*.47,G.W*.32);
   G.HZ=Math.round((portrait?G.H*.84:G.H*.97)-G.K*1.17);
+  G.K0=G.K;G.HZ0=G.HZ;
   buildGrads();layoutMirrors();
 }
 export function buildGrads(){

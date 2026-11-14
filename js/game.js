@@ -1,5 +1,5 @@
 import { audioInit, sfx } from './audio.js';
-import { $, BIKES, BRK, CARDS, CENT, DEC, DISTRICTS, EVENTS, M_PER_SEG, OFFDEC, OFFLIM, PW, RESTS, clamp, el, fmt, lerp, maxSpeed, pdesc, pick, playerZ, prof, segL } from './config.js';
+import { $, BIKES, BRK, CARDS, CENT, DEC, DISTRICTS, EVENTS, M_PER_SEG, OFFDEC, OFFLIM, PW, RESTS, clamp, el, fmt, lerp, maxSpeed, num, pdesc, pick, playerZ, prof, segL } from './config.js';
 import { buzz, hitStop, sparks } from './fx.js';
 import { G } from './g.js';
 import { clearInput, input } from './input.js';
@@ -48,7 +48,7 @@ export function prepDelivery(){
     const chips=el('div','chips');chips.append(el('span','chip',o.kind));
     if(o.ev)chips.append(el('span','chip ev',EVENTS[o.ev].t));
     chips.append(el('span','chip',pdesc(o.A)+' → '+pdesc(o.B)));
-    b.append(top,el('div','oroute',o.from+' → '+o.to),el('div','ometa',o.D.name+' · '+(o.len*M_PER_SEG/1000).toFixed(1)+' km · '+o.time+' sn'),chips);
+    b.append(top,el('div','oroute',o.from+' → '+o.to),el('div','ometa',o.D.name+' · '+num(o.len*M_PER_SEG/1000,1)+' km · '+o.time+' sn'),chips);
     if(o.ev)b.append(el('div','oev',EVENTS[o.ev].d));
     b.append(el('span','oacc','KABUL ET'));
     b.addEventListener('click',()=>{audioInit();keepAwake();G.route=o;startMission();});
@@ -97,7 +97,7 @@ export function damage(a,msg){
 }
 export function crash(msg,dmg){
   if(G.inv>0||G.crashT>0)return;
-  G.crashT=G.ST.crashT;G.crashSide=Math.sign(G.playerX)||1;G.speed*=.3;sfx('crash');sparks(0,26);hitStop(.09);buzz(90);
+  G.crashT=G.ST.crashT;G.crashSide=Math.sign(G.playerX)||1;G.speed*=.3;sfx('crash');sparks(0,26);hitStop(.05);buzz(90);
   damage(dmg,msg);
 }
 export function hitHazard(h){
@@ -129,7 +129,7 @@ export function tryHit(){
 export function landHit(best,wp,g){
   {
     best.hp-=wp.pow;best.wind=0;G.shakeT=.15;sfx('impact',{w:wp.id,pan:clamp((best.x-G.playerX)*1.5,-1,1)});
-    sparks(G.kickSide,wp.id==='kick'?8:14,wp.id==='kick'?'#f4eee6':null);hitStop(best.hp<=0?.11:.05);buzz(best.hp<=0?60:25);
+    sparks(G.kickSide,wp.id==='kick'?8:14,wp.id==='kick'?'#f4eee6':null);hitStop(best.hp<=0?.06:.03);buzz(best.hp<=0?60:25);
     if(best.hp<=0){
       sfx('down',{pan:clamp((best.x-G.playerX)*1.5,-1,1)});best.vx=G.kickSide*.6;best.speed*=.5;best.fall=0;best.kick=0;
       if(best.boss){best.down=4;bossEnd(true);return;}

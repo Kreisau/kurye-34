@@ -24,7 +24,7 @@
 <div class="hud" id="hud" hidden>
   <div class="stat">
     <span class="lbl">SÜRE</span>
-    <span class="val" id="time">00.0</span>
+    <span class="val" id="time" data-noi18n>00.0</span>
     <div class="sys">
       <button class="mini" id="pauseBtn" type="button" aria-label="Duraklat">II</button>
       <button class="mini" id="muteBtn" type="button">SES</button>
@@ -33,11 +33,11 @@
   <div class="mid">
     <div class="route" id="route"></div>
     <div class="track"><div class="fill" id="prog"></div><div class="pin"></div></div>
-    <div class="sub"><span id="dist">0 m</span><span id="kmh">0 km/sa</span></div>
+    <div class="sub"><span id="dist" data-noi18n>0 m</span><span id="kmh">0 km/sa</span></div>
   </div>
   <div class="stat r">
     <span class="lbl">KASA</span>
-    <span class="val" id="money">0 TL</span>
+    <span class="val" id="money" data-noi18n>0 TL</span>
     <span class="lbl" style="margin-top:6px">PAKET</span>
     <div class="pbar"><i id="pkg"></i></div>
   </div>
@@ -66,11 +66,11 @@
 
 <div class="screen" id="menu">
   <div class="card">
-    <div class="eyebrow">İSTANBUL · MOTO KURYE · PROTOTİP 0.21</div>
+    <div class="eyebrow">İSTANBUL · MOTO KURYE · PROTOTİP 0.22</div>
     <h1>KURYE <span class="plate">34</span></h1>
     <p class="lede">Her vardiya 3 teslimat. Kazan, garajı büyüt, sana çarpanı bul.</p>
     <dl class="facts">
-      <dt>KASA</dt><dd id="mMoney">0 TL</dd>
+      <dt>KASA</dt><dd id="mMoney" data-noi18n>0 TL</dd>
       <dt>PUAN</dt><dd id="mRating">Henüz yok</dd>
       <dt>MOTOR</dt><dd id="mBike">Mobilet 50</dd>
       <dt>SIRADAKİ</dt><dd id="mShift">Vardiya #1 · Kadıköy</dd>
@@ -107,7 +107,7 @@
 
 <div class="screen" id="garage" hidden>
   <div class="card wide">
-    <div class="ghead"><h2>GARAJ</h2><span class="cash" id="gMoney">0 TL</span></div>
+    <div class="ghead"><h2>GARAJ</h2><span class="cash" id="gMoney" data-noi18n>0 TL</span></div>
     <div class="cur">
       <canvas id="gPrev" width="180" height="172" aria-hidden="true"></canvas>
       <div style="min-width:0">
@@ -151,6 +151,7 @@
     <div class="eyebrow">AYARLAR</div>
     <h2>AYARLAR</h2>
     <div class="vols">
+      <label for="s-lang">Dil / Language</label><select id="s-lang" data-noi18n><option value="tr">Türkçe</option><option value="en">English</option></select><span></span>
       <label for="s-joy">Joystick hassasiyeti</label><input type="range" id="s-joy" min="60" max="150" step="10"><output id="s-joy-n"></output>
       <label class="chk"><input type="checkbox" id="s-left"> Solak mod (joystick sağda, butonlar solda)</label>
     </div>

@@ -51,13 +51,13 @@ function crashRival(r,what){
   r.down=4;r.fall=0;r.speed*=.35;r.vx*=.3;r.wind=0;r.kick=0;
   if(near)sfx('crash',{pan});
   if(r.boss){   // the boss gets back up, but every wreck costs him
-    r.hp-=3;if(r.shoved>0&&near){sparks(Math.sign(r.x-G.playerX)||1,18);hitStop(.08);}
+    r.hp-=3;if(r.shoved>0&&near){sparks(Math.sign(r.x-G.playerX)||1,18);hitStop(.04);}
     toast('Kara '+what+' çarptı!');r.shoved=0;if(r.hp<=0)bossEnd(true);return;
   }
   r.out=true;   // a wrecked rival is out for the rest of this delivery
   if(r.shoved>0){
     const add=Math.round((15+r.p.hp*10)*2*(card('eldiven')>0?2:1));G.bonus+=add;
-    if(near){sparks(Math.sign(r.x-G.playerX)||1,18);hitStop(.08);buzz(50);}
+    if(near){sparks(Math.sign(r.x-G.playerX)||1,18);hitStop(.04);buzz(50);}
     toast(r.p.n+' kurye '+what+' çarptı, saf dışı!  +'+add+' TL');
   }else if(near)toast(r.p.n+' kurye '+what+' çarptı, saf dışı');
   r.shoved=0;

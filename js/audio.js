@@ -292,7 +292,7 @@ function ambTick(t, dt) {
   const k = .4;
   A.bed.gain.setTargetAtTime(story ? 0 : ride ? .1 : .1, t, k);
   A.hush.gain.setTargetAtTime(story ? 0 : ride ? .012 + .008 * Math.min(1, G.speed / maxSpeed) : .01, t, k);
-  A.rain.gain.setTargetAtTime(!story && G.route && G.route.ev === 'yagmur' && G.state !== 'menu' ? .18 : 0, t, k);
+  A.rain.gain.setTargetAtTime(!story && G.route && G.route.ev === 'yagmur' && G.state !== 'menu' ? .03 : 0, t, k);
   if (story || G.paused || !seaRoute()) return;
   A.gullT -= dt; A.ferryT -= dt;
   if (A.gullT <= 0) { A.gullT = rnd(18, 35); gull(t, .03, rnd(-.8, .8)); }
@@ -364,8 +364,9 @@ function musicTick(t) {
     for (const v of Object.values(A.mv)) stopVoice(v, t, 1);
     A.mv = {}; A.mMode = want;
     // keep only the buffers this mode needs: decoded music is large on phones
-    if (want === 'ride') { A.buf.menu = null; loadTrack('ride'); loadTrack('tense'); }
-    if (want === 'menu') { A.buf.ride = A.buf.tense = null; loadTrack('menu'); }
+    // decoded tracks stay in memory: re-decoding at every ride start caused a hitch
+    if (want === 'ride') { loadTrack('ride'); loadTrack('tense'); }
+    if (want === 'menu') loadTrack('menu');
   }
   if (want === 'menu' && !A.mv.menu && A.buf.menu) A.mv.menu = playTrack('menu', t, 1, 1.5);
   if (want === 'ride' && !A.mv.ride && A.buf.ride && A.buf.tense) { A.mv.ride = playTrack('ride', t, 1, .8); A.mv.tense = playTrack('tense', t, 0, .01); }
@@ -399,7 +400,9 @@ export function audioInit() {
 }
 export function audioTick() {
   if (!A || A.ctx !== G.AC) return;
-  const t = now(), dt = Math.min(.1, Math.max(0, t - A.lastT)); A.lastT = t;
+  // ~20 Hz is plenty for parameter updates; scheduling dozens of ramps every frame costs the audio thread
+  const t = now(); if (t - A.lastT < .045) return;
+  const dt = Math.min(.1, Math.max(0, t - A.lastT)); A.lastT = t;
   if (A.duck !== G.paused) { A.duck = G.paused; applyVol(); }
   engineTick(t); hornTick(t, dt); sirenTick(t); ambTick(t, dt); musicTick(t);
 }

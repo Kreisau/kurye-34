@@ -3,6 +3,7 @@ import { $, STEP } from './config.js';
 import { G } from './g.js';
 import { demoTrack, newShift, update } from './game.js';
 import { QUAL, render, resize } from './render.js';
+import { initI18n } from './i18n.js';
 import { showCase, startDaily } from './meta.js';
 import { load, save } from './save.js';
 import { initSprites } from './sprites.js';
@@ -38,11 +39,12 @@ let setFrom='menu';
 function openSettings(from){
   setFrom=from;const v=vol();
   for(const k of ['music','sfx','amb']){const r=$('v-'+k);r.value=Math.round(v[k]*100);$('v-'+k+'-n').textContent=r.value;}
-  $('s-joy').value=Math.round((G.S.joy||1)*100);$('s-joy-n').textContent=$('s-joy').value;$('s-left').checked=!!G.S.left;
+  $('s-joy').value=Math.round((G.S.joy||1)*100);$('s-joy-n').textContent=$('s-joy').value;$('s-left').checked=!!G.S.left;$('s-lang').value=G.S.lang||'tr';
   showScreen('settings');
 }
 const applyHand=()=>document.body.classList.toggle('lefty',!!G.S.left);
 $('s-joy').addEventListener('input',e=>{G.S.joy=e.target.value/100;$('s-joy-n').textContent=e.target.value;});
+$('s-lang').addEventListener('change',e=>{G.S.lang=e.target.value;save();location.reload();});
 $('s-left').addEventListener('change',e=>{G.S.left=e.target.checked?1:0;applyHand();});
 for(const k of ['music','sfx','amb'])$('v-'+k).addEventListener('input',e=>{vol()[k]=e.target.value/100;$('v-'+k+'-n').textContent=e.target.value;applyVol();});
 $('v-sfx').addEventListener('change',()=>sfx('cash'));
@@ -50,10 +52,12 @@ $('sndBtn').addEventListener('click',()=>{audioInit();openSettings('menu');});
 $('pSndBtn').addEventListener('click',()=>openSettings('pause'));
 $('setBack').addEventListener('click',()=>{save();showScreen(setFrom);});
 
-load();applyHand();resize();initSprites();demoTrack();updateMenu();showScreen('menu');
+load();initI18n();applyHand();resize();initSprites();demoTrack();updateMenu();showScreen('menu');
 G.last=performance.now();G.acc=0;
 export function frame(now){
-  const dt=Math.min(.1,(now-G.last)/1000);G.last=now;
+  let dt=Math.min(.1,(now-G.last)/1000);G.last=now;
+  // snap to the display refresh period, so fixed 60 Hz steps don't beat against timer jitter (0 or 2 updates in a frame)
+  for(const r of[1/60,1/120,1/90,1/30])if(Math.abs(dt-r)<.0025){dt=r;break;}
   if(G.state==='play'&&!G.paused){G.perfN++;G.perfT+=dt;if(G.perfN>=120){if(G.perfT/G.perfN>.022&&G.qi<QUAL.length-1){G.qi++;resize();}G.perfN=0;G.perfT=0;}}
   if(G.hitStop>0)G.hitStop-=dt;   // brief freeze on impacts
   else if(!G.paused){G.acc+=dt;let k=0;while(G.acc>=STEP&&k<8){update(STEP);G.acc-=STEP;k++;}if(k>=8)G.acc=0;}

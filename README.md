@@ -28,6 +28,7 @@ Derleme yok; düz ES modülleri.
 | `js/tutorial.js` | Eğitim rotası "İlk gün", Usta'nın telsiz mesajları |
 | `js/meta.js` | Uzun vadeli hedefler: ipuçları (dosya), Kara ile hesaplaşma, günün siparişi |
 | `js/fx.js` | Darbe hissi: kıvılcım, kısa donma, titreşim |
+| `js/i18n.js` | İngilizce katmanı: ekrana giden her metni çevirir (Ayarlar → Dil) |
 | `js/story.js` | Hikâye girişi (6 sahne, canvas çizimleri) |
 | `music/` | Gemini (Lyria) müzikleri, `tools/make_loops.py` ile döngüye çevrilmiş (menü, sürüş, gergin sürüş) |
 | `sw.js`, `manifest.webmanifest`, `icons/` | PWA |
@@ -36,6 +37,8 @@ Derleme yok; düz ES modülleri.
 | `tools/make_loops.py` | Müzik MP3'lerini ölçü hizalı, dikişsiz döngülere çevirir |
 | `tools/sound_demo.py` | Sesleri tarayıcıda çevrimdışı render edip WAV olarak kaydeder |
 | `tools/meta_test.py` | İpucu, hesaplaşma, günün siparişi, saf dışı, ayarlar testleri |
+| `tools/i18n_check.py` | İngilizcede çevrilmeden kalan metinleri listeler |
+| `tools/camera_test.py` | Sabit ve dinamik kamerayı yokuşlu rotada karşılaştırır |
 | `tools/parity.py` | Eski ve yeni sürümü aynı seed/girdiyle çalıştırıp kare kare karşılaştırır |
 
 ## Lokal çalıştırma

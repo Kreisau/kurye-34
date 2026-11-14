@@ -1,5 +1,5 @@
 import { sfx, sfxStars } from './audio.js';
-import { $, BOSS, DISTRICTS, EVENTS, RESTS, fmt, pick, playerZ, prof, rng } from './config.js';
+import { $, BOSS, DISTRICTS, EVENTS, RESTS, fmt, num, pick, playerZ, prof, rng } from './config.js';
 import { G } from './g.js';
 import { KINDS, startMission, unlocked } from './game.js';
 import { clearInput } from './input.js';
@@ -99,7 +99,7 @@ export function dailyFinish(ok, why, rt) {
     G.S.money += total; G.S.daily = { d: key, done: 1, best: Math.max(prev.best, +G.timeLeft.toFixed(1)) }; save();
     sfxStars(rt.stars); if (G.AC) sfx('cash', { t: G.AC.currentTime + .25 + rt.stars * .16 });
     renderResult({ eyebrow: 'GÜNÜN SİPARİŞİ · ' + key, title: 'TESLİM EDİLDİ', sub: '“' + rt.comment + '” · ' + to + (first ? '' : '. Bugünkü çift ödemeyi zaten aldın; rekor için tekrar deneyebilirsin.'),
-      rows: [['Müşteri puanı', starStr(rt.stars), 'stars'], ['Teslimat', fmt(base)], ['Günün ilk teslimi', first ? '×2' : '—'], ['TOPLAM', fmt(total), 'total'], ['Kalan süre (bugünkü rekor)', G.timeLeft.toFixed(1) + ' sn (' + G.S.daily.best.toFixed(1) + ')'], ['KASA', fmt(G.S.money)]], buttons });
+      rows: [['Müşteri puanı', starStr(rt.stars), 'stars'], ['Teslimat', fmt(base)], ['Günün ilk teslimi', first ? '×2' : '—'], ['TOPLAM', fmt(total), 'total'], ['Kalan süre (bugünkü rekor)', num(G.timeLeft, 1) + ' sn (' + num(G.S.daily.best, 1) + ')'], ['KASA', fmt(G.S.money)]], buttons });
   } else {
     save(); sfx('fail');
     renderResult({ eyebrow: 'GÜNÜN SİPARİŞİ · ' + key, title: 'OLMADI', sub: (why === 'time' ? 'Süre doldu. ' : 'Paket dağıldı. ') + '“' + rt.comment + '”',

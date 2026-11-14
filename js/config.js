@@ -80,18 +80,18 @@ export const UPG=[
   {n:'Motor',d:'+%5 maks. hız, daha çabuk kalkış'},
   {n:'Lastik',d:'Virajda daha az savrulma, daha keskin dönüş'},
   {n:'Çanta',d:'Paket hasarı %12 az'},
-  {n:'Mont',d:'Düşünce daha çabuk toparlanırsın'},
-  {n:'Nitro',d:'Her seviye, teslimat başına 1 nitro hakkı: 2.5 sn +%25 hız'}
+  {n:'Mont',d:'Düştüğünde daha çabuk toparlanırsın'},
+  {n:'Nitro',d:'Her seviye, teslimat başına 1 nitro hakkı: 2,5 sn +%25 hız'}
 ];
 export const CARDS=[
   {id:'termos',t:'Termos Çanta',d:'Paket hasarı %30 az.',stack:true},
   {id:'taksici',t:'Taksici Dayı',d:'Taksiler şerit değiştirmez.'},
   {id:'kisayol',t:'Kısa Yol',d:'Kalan teslimatlara +8 sn.',stack:true},
-  {id:'bahsis',t:'Bahşişçi Müşteri',d:'Taşıma ücreti +%25.',stack:true},
+  {id:'bahsis',t:'Bonkör Müşteri',d:'Taşıma ücreti +%25.',stack:true},
   {id:'turbo',t:'Karbüratör Ayarı',d:'Maks. hız +%8.',stack:true},
   {id:'eldiven',t:'Ağır El',d:'Vuruş menzili +%30, rakip bonusu iki katı.'},
   {id:'sigorta',t:'Kargo Sigortası',d:'Paket bir kez dağılmaktan kurtulur, %30 ile devam edersin.'},
-  {id:'kask',t:'Çelik Kask',d:'Düşünce iki kat hızlı kalkarsın.'},
+  {id:'kask',t:'Çelik Kask',d:'Düştüğünde iki kat hızlı kalkarsın.'},
   {id:'yolbilir',t:'Ara Sokak Bilgisi',d:'Virajda savrulma %25 az.'},
   {id:'sakin',t:'Sessiz Egzoz',d:'Rakip kurye seni geç fark eder.'}
 ];
@@ -135,5 +135,7 @@ export const pick=(R,a)=>a[Math.floor(R()*a.length)];
 export function rng(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
 export function shade(hex,a){const n=parseInt(hex.slice(1),16);let r=n>>16,g=n>>8&255,b=n&255;const t=a<0?0:255,p=Math.abs(a);r=Math.round(r+(t-r)*p);g=Math.round(g+(t-g)*p);b=Math.round(b+(t-b)*p);return'rgb('+r+','+g+','+b+')';}
 export const def=(img,ww,o)=>Object.assign({img,ww,half:ww/G.roadW/2,solid:false,hit:0,msg:''},o||{});
-export const fmt=n=>Math.round(n).toLocaleString('tr-TR')+' TL';
+export const fmt=n=>Math.round(n).toLocaleString(G.S&&G.S.lang==='en'?'en-US':'tr-TR')+' TL';
+// decimals with a comma (Turkish); the English layer turns them back into dots
+export const num=(x,d)=>G.S&&G.S.lang==='en'?x.toFixed(d):x.toFixed(d).replace('.',',');
 export const el=(tag,cls,txt)=>{const e=document.createElement(tag);if(cls)e.className=cls;if(txt!=null)e.textContent=txt;return e;};

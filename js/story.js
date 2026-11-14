@@ -1,5 +1,6 @@
 import { $, el, rng } from './config.js';
 import { storySfx, storyStop } from './audio.js';
+import { L } from './i18n.js';
 import { showScreen } from './ui.js';
 
 /* ---------- story intro ---------- */
@@ -121,8 +122,8 @@ const SCENES = [
       g.fillStyle = grad(g, 0, H, ['#07050d', '#140f24']); g.fillRect(0, 0, W, H);
       for (let i = 0; i < 14; i++) { const x = 30 + i * 23; g.fillStyle = `rgba(127,180,255,${.04 + (i % 3) * .02})`; g.fillRect(x, 130, 2, 80); }
       glow(g, 180, 150, 40 + 6 * Math.sin(t * 2), '255,198,26', .25);
-      g.fillStyle = '#ffc61a'; g.font = '900 44px Rubik, Arial Black, sans-serif'; g.textAlign = 'center'; g.fillText('KİM ÇARPTI?', 180, 98);
-      g.fillStyle = '#c3b4d0'; g.font = '700 11px Rubik, Arial, sans-serif'; g.fillText('KURYE 34 · İLK GÜN', 180, 122); g.textAlign = 'left';
+      g.fillStyle = '#ffc61a'; g.font = '900 44px Rubik, Arial Black, sans-serif'; g.textAlign = 'center'; g.fillText(L('KİM ÇARPTI?'), 180, 98);
+      g.fillStyle = '#c3b4d0'; g.font = '700 11px Rubik, Arial, sans-serif'; g.fillText(L('KURYE 34 · İLK GÜN'), 180, 122); g.textAlign = 'left';
     } },
 ];
 
@@ -138,7 +139,7 @@ function loop(now) {
 }
 function show(i) {
   idx = i; t0 = performance.now();
-  const tx = $('sTxt'); tx.innerHTML = SCENES[i].txt;
+  const tx = $('sTxt'); tx.innerHTML = L(SCENES[i].txt);
   tx.style.animation = 'none'; void tx.offsetWidth; tx.style.animation = '';
   const d = $('sDots'); d.textContent = '';
   SCENES.forEach((_, k) => d.append(el('i', k === i ? 'on' : null)));
