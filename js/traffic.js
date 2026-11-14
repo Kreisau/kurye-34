@@ -2,6 +2,7 @@ import { CARTYPES, LANES, PW, clamp, drawDist, maxSpeed, pick, playerZ, segL } f
 import { G } from './g.js';
 import { card, damage } from './game.js';
 import { SPR } from './sprites.js';
+import { lightsAhead } from './street.js';
 import { toast } from './ui.js';
 
 export const nearLane=x=>x<-.33?0:x>.33?2:1;
@@ -51,6 +52,8 @@ export function updateCars(dt){
     const pg=pz-c.z;
     if(G.state==='play'&&pg>0&&pg<lg&&Math.abs(G.playerX-c.x)<(c.hit+PW)/2+.03){lg=pg;lead={speed:G.speed,z:pz,p:true};}
     for(const k of G.closures){const g=k.z0-c.z;if(k.lane===nearLane(c.x)&&g>0&&g<lg&&g<1600){lg=g;lead={speed:0,z:k.z0};}}
+    // stop at a red light (and at yellow if there is room to brake)
+    if(!c.amb)for(const l of lightsAhead()){const g=l.z-c.z;if(g>0&&g<lg&&g<1700&&(l.st==='red'||(l.st==='yellow'&&g>650))){lg=g;lead={speed:0,z:l.z};}}
     for(const r of G.rivals){const g=r.z-c.z;if(g>0&&g<lg&&Math.abs(r.x-c.x)<(c.hit+PW)/2+.03){lg=g;lead={speed:r.down>0?0:r.speed,z:r.z};}}
     let want=c.bus?busWant(c,dt,c.base):c.base;
     if(c.k==='dolmus'){

@@ -95,7 +95,7 @@ export function dailyFinish(ok, why, rt) {
   const key = G.shift.daily, to = G.route.to, buttons = [{ t: 'TEKRAR DENE', cls: 'cta', fn: startDaily }, { t: 'MENÜ', cls: 'ghost', fn: goMenu }];
   const prev = G.S.daily && G.S.daily.d === key ? G.S.daily : { d: key, done: 0, best: 0 };
   if (ok) {
-    const first = !prev.done, base = Math.round(G.route.pay * G.cond / 100) + Math.round(G.timeLeft * 1.5) + G.bonus + rt.tip, total = base * (first ? 2 : 1);
+    const first = !prev.done, base = Math.round(G.route.pay * G.cond / 100) + Math.round(G.timeLeft * 1.5) + G.bonus + rt.tip - (G.fine || 0), total = Math.max(0, base) * (first ? 2 : 1);
     G.S.money += total; G.S.daily = { d: key, done: 1, best: Math.max(prev.best, +G.timeLeft.toFixed(1)) }; save();
     sfxStars(rt.stars); if (G.AC) sfx('cash', { t: G.AC.currentTime + .25 + rt.stars * .16 });
     renderResult({ eyebrow: 'GÜNÜN SİPARİŞİ · ' + key, title: 'TESLİM EDİLDİ', sub: '“' + rt.comment + '” · ' + to + (first ? '' : '. Bugünkü çift ödemeyi zaten aldın; rekor için tekrar deneyebilirsin.'),

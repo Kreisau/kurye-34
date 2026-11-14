@@ -3,6 +3,7 @@ import { fxDraw } from './fx.js';
 import { G } from './g.js';
 import { rain } from './game.js';
 import { SPR, rr } from './sprites.js';
+import { streetObjs } from './street.js';
 import { findSeg } from './track.js';
 
 export const drops=Array.from({length:90},(_,i)=>({x:Math.random(),y:Math.random(),v:1.6+Math.random()*1.2,l:.03+Math.random()*.04}));
@@ -27,6 +28,7 @@ export function drawSeg(s){
   poly(x1-w1,y1,x1+w1,y1,x2+w2,y2,x2-w2,y2,c.road);
   if(c.lane){const lw1=w1*2/3,lw2=w2*2/3;let lx1=x1-w1+lw1,lx2=x2-w2+lw2;
     for(let i=1;i<3;i++,lx1+=lw1,lx2+=lw2)poly(lx1-l1/2,y1,lx1+l1/2,y1,lx2+l2/2,y2,lx2-l2/2,y2,c.lane);}
+  if(s.xw)for(let i=0;i<9;i++){const a=-1+(i+.22)*2/9,b=-1+(i+.78)*2/9;poly(x1+a*w1,y1,x1+b*w1,y1,x2+b*w2,y2,x2+a*w2,y2,'rgba(236,232,224,.82)');}
   if(s.clk==='works'){const a0=s.cl===0?-1:1/3,b0=s.cl===0?-1/3:1;poly(x1+a0*w1,y1,x1+b0*w1,y1,x2+b0*w2,y2,x2+a0*w2,y2,'rgba(240,138,75,.22)');}
   if(s.fog<1){ctx.globalAlpha=1-s.fog;ctx.fillStyle=G.FOG;ctx.fillRect(0,y2,G.W,y1-y2);ctx.globalAlpha=1;}
 }
@@ -193,6 +195,7 @@ export function render(){
     const img=r.down>0?r.spr[1]:(r.kick>0||r.wind>0)?r.spr[r.kside<0?0:2]:r.spr[1];
     put(r.z,{img,ww:BIKE_WW,x:r.x,rot:r.down>0?r.fall*(r.x>G.playerX?1:-1):0,warn:r.wind>0&&r.down<=0});
   }
+  if(G.state==='play'||G.state==='count'||G.state==='arrive')for(const o of streetObjs())put(o.z,o);
   const pN=Math.floor((G.pos+playerZ)/segL)-base.index;
   for(let n=drawDist-1;n>0;n--){
     const s=G.segs[(base.index+n)%N],a=Math.max(.12,s.fog);

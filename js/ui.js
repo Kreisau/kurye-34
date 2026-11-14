@@ -21,7 +21,7 @@ export function hudTick(){
   const pw=(clamp((G.pos+playerZ)/G.finishZ,0,1)*100).toFixed(1)+'%';if(hudCache.pw!==pw){hudCache.pw=pw;$('prog').style.width=pw;}
   setText('dist',distStr());
   setText('kmh',Math.round(G.speed/maxSpeed*KMH)+(isEN()?' km/h':' km/sa'));
-  setText('money',fmt(G.S.money+G.bonus));
+  setText('money',fmt(G.S.money+G.bonus-(G.fine||0)));
   if(hudCache.cond!==G.cond){hudCache.cond=G.cond;const p=$('pkg');p.style.width=G.cond+'%';p.classList.toggle('low',G.cond<40);}
   const cdv=G.state==='play'&&G.timeLeft<=10?Math.ceil(G.timeLeft):0,cd=$('cd');
   if(cdv){if(cd.hidden)cd.hidden=false;if(hudCache.cd!==cdv){hudCache.cd=cdv;cd.textContent=cdv;sfx('beep');}}
@@ -74,9 +74,9 @@ export function finish(ok,why){
   const eyebrow='VARDİYA #'+(G.shift.L+1)+' · TESLİMAT '+(G.shift.i+1)+'/3';
   const endButtons=[{t:'GARAJA GİT',cls:'cta',fn:showGarage},{t:'YENİ VARDİYA',cls:'ghost',fn:()=>{audioInit();newShift();}},{t:'MENÜ',cls:'ghost',fn:goMenu}];
   if(ok){
-    const pay=Math.round(G.route.pay*G.cond/100),tb=Math.round(G.timeLeft*1.5),total=pay+tb+G.bonus+rt.tip;
+    const pay=Math.round(G.route.pay*G.cond/100),tb=Math.round(G.timeLeft*1.5),fine=G.fine||0,total=Math.max(0,pay+tb+G.bonus+rt.tip-fine);
     G.S.money+=total;G.shift.earned+=total;
-    const rows=[['Müşteri puanı',starStr(rt.stars),'stars'],['Taşıma ücreti ('+G.cond+'%)',fmt(pay)],['Süre bonusu ('+num(G.timeLeft,1)+' sn)',fmt(tb)],['Bahşiş',fmt(rt.tip)],['Rakip bonusu',fmt(G.bonus)],['BU TESLİMAT',fmt(total),'total']];
+    const rows=[['Müşteri puanı',starStr(rt.stars),'stars'],['Taşıma ücreti ('+G.cond+'%)',fmt(pay)],['Süre bonusu ('+num(G.timeLeft,1)+' sn)',fmt(tb)],['Bahşiş',fmt(rt.tip)],['Rakip bonusu',fmt(G.bonus)]].concat(fine?[['Cezalar','−'+fmt(fine)]]:[],[['BU TESLİMAT',fmt(total),'total']]);
     const sub='“'+rt.comment+'” · '+to;
     sfxStars(rt.stars);if(rt.tip&&G.AC)sfx('cash',{t:G.AC.currentTime+.25+rt.stars*.16});
     if(G.shift.i<2){

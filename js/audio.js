@@ -137,6 +137,8 @@ export function sfx(kind, opt) {
       break;
     case 'star': { const f = [880, 988, 1109, 1319, 1480][opt.i || 0]; tone(t, { f, dur: .45, v: .1 }); tone(t, { f: f * 2, dur: .25, v: .03 }); break; }
     case 'bell': tone(t, { f: 659, dur: 1.1, v: .12 }); tone(t, { f: 1819, dur: .3, v: .02 }); tone(t + .42, { f: 523, dur: 1.3, v: .12 }); tone(t + .42, { f: 1443, dur: .3, v: .02 }); break;
+    case 'bark': for (const o of [0, .17]) { tone(t + o, { f: 430, f2: 250, type: 'sawtooth', dur: .08, v: .16, lp: 1500, pan }); noise(t + o, { type: 'bandpass', f: 900, q: 2, dur: .07, v: .12, pan }); } break;
+    case 'whistle': { const o = tone(t, { f: 2850, hold: .32, dur: .08, v: .06, att: .02 }); vibrato(o, t, 36, 190, t + .5); break; }
     case 'fail': tone(t, { f: 330, type: 'square', dur: .18, v: .04, lp: 1500 }); tone(t + .2, { f: 220, type: 'square', dur: .35, v: .04, lp: 1200 }); break;
   }
 }

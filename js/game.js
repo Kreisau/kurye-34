@@ -7,6 +7,7 @@ import { layoutMirrors } from './render.js';
 import { spawnRivals, updateRival } from './rivals.js';
 import { payLabel, payMult, ratingLabel } from './rating.js';
 import { curBike, curWpn, stats, ups } from './save.js';
+import { streetClear, streetSetup, streetTick } from './street.js';
 import { SPR, bikeSprites, setTheme } from './sprites.js';
 import { buildTrack, closureAt, findSeg } from './track.js';
 import { spawnAmb, spawnCars, updateCars } from './traffic.js';
@@ -28,19 +29,27 @@ export const rain=()=>G.route&&G.route.ev==='yagmur'&&G.state!=='menu';
 export function newShift(){G.shift={L:G.S.shifts,i:0,cards:{},earned:0};prepDelivery();}
 export const unlocked=()=>Math.min(DISTRICTS.length,2+G.S.shifts);
 export const KINDS=[{k:'YAKIN',len:.75,pay:.75},{k:'NORMAL',len:1,pay:1},{k:'UZAK',len:1.35,pay:1.5}];
+// Each shift is a time of day: it sets the light, how busy the roads are and a pay bonus.
+export const TOD=[
+  {k:'SABAH',traf:1.15,pay:1,theme:()=>'morning'},
+  {k:'ÖĞLEN',traf:1,pay:1,theme:()=>'day'},
+  {k:'AKŞAM',traf:1.3,pay:1.1,theme:D=>D.theme==='golden'?'golden':'dusk'},
+  {k:'GECE',traf:.7,pay:1.2,theme:D=>D.theme==='neon'?'neon':'night'}
+];
+export const tod=L=>TOD[L%TOD.length];
 export function makeOffer(kind){
-  const L=G.shift.L,i=G.shift.i,d=L*3+i,D=DISTRICTS[Math.floor(Math.random()*unlocked())],loop=Math.floor(L/DISTRICTS.length);
+  const L=G.shift.L,i=G.shift.i,d=L*3+i,T=tod(L),D0=DISTRICTS[Math.floor(Math.random()*unlocked())],D=Object.assign({},D0,{theme:T.theme(D0),traf:D0.traf*T.traf}),loop=Math.floor(L/DISTRICTS.length);
   const len=Math.round(Math.min(2400,(600+d*90)*kind.len)),ref=Math.min(.75,.30+d*.012);
   const time=Math.round((len/(60*ref)+10)*D.tmul+8*card('kisayol'));
   const chance=[L>=2?.2:0,.4,.7][i];
   const ev=Math.random()<chance?pick(Math.random,Object.keys(EVENTS)):null;
   const pool=D.pool.slice(),a=pool.splice(Math.floor(Math.random()*pool.length),1)[0],b=pick(Math.random,pool);
   return{D,kind:kind.k,rest:pick(Math.random,RESTS),from:a,to:b,A:prof(a),B:prof(b),len,time,curv:D.curv*(1+loop*.15),hill:D.hill,up:D.up,
-    pay:Math.round((40+d*18)*kind.pay*(ev?1.2:1)*(1+.25*card('bahsis'))*payMult()),d,ev,seed:(Math.random()*1e9)|0};
+    pay:Math.round((40+d*18)*kind.pay*(ev?1.2:1)*(1+.25*card('bahsis'))*payMult()*T.pay),d,ev,seed:(Math.random()*1e9)|0};
 }
 export function prepDelivery(){
   const offers=KINDS.map(makeOffer);
-  $('bEyebrow').textContent='VARDİYA #'+(G.shift.L+1)+' · TESLİMAT '+(G.shift.i+1)+'/3 · '+curBike().n+' · PUAN '+ratingLabel()+(payLabel()?' · '+payLabel():'');
+  $('bEyebrow').textContent='VARDİYA #'+(G.shift.L+1)+' · '+tod(G.shift.L).k+(tod(G.shift.L).pay>1?' +%'+Math.round((tod(G.shift.L).pay-1)*100):'')+' · TESLİMAT '+(G.shift.i+1)+'/3 · PUAN '+ratingLabel()+(payLabel()?' · '+payLabel():'');
   const box=$('offers');box.textContent='';
   for(const o of offers){
     const b=el('button','order');b.type='button';
@@ -67,7 +76,7 @@ export function startMission(){
   G.ST=stats(b,ups(b.id),G.shift.cards);G.PSPR=bikeSprites(b,G.S.wpn);
   G.slipT=0;G.bumpT=0;G.graceT=0;G.ambT=15+Math.random()*20;G.pos=0;G.playerX=0;G.speed=0;G.lean=0;G.crashT=0;G.inv=0;G.kickT=0;G.cond=100;G.hits=0;G.bonus=0;G.timeLeft=G.route.time;G.flashT=0;G.shakeT=0;
   G.playerX=(G.route.side0||1)*.72;G.nitroN=ups(b.id)[4]||0;G.nitroT=0;G.arriveT=0;
-  spawnCars();spawnRivals();
+  spawnCars();spawnRivals();streetSetup();
   clearInput();G.paused=false;
   G.state='count';G.countT=1.2;G.lastCount=0;
   showScreen(null);
@@ -81,7 +90,7 @@ export function demoTrack(){
   const D=DISTRICTS[unlocked()-1];setTheme(D);
   G.route={D,A:prof(D.pool[0]),B:prof(D.pool[1]),from:'',to:'',len:1200,time:0,curv:D.curv,hill:D.hill,up:D.up,pay:0,d:0,ev:null,seed:13};
   G.ST=stats(curBike(),ups(G.S.cur));
-  buildTrack(G.route,G.route.seed);G.pos=0;spawnCars();G.rivals=[];G.PSPR=bikeSprites(curBike(),G.S.wpn);
+  buildTrack(G.route,G.route.seed);G.pos=0;spawnCars();G.rivals=[];streetClear();G.PSPR=bikeSprites(curBike(),G.S.wpn);
 }
 
 /* ---------- update ---------- */
@@ -216,6 +225,7 @@ export function update(dt){
   updateCars(dt);if(G.cars.some(c=>c.dead))G.cars=G.cars.filter(c=>!c.dead);
   for(const r of G.rivals)updateRival(r,dt);
   if(G.rivals.some(r=>r.dead))G.rivals=G.rivals.filter(r=>!r.dead);
+  streetTick(dt);
   if(G.hitT>0){G.hitT-=dt;tryHit();}
   G.ambT-=dt;if(G.ambT<=0){G.ambT=35+Math.random()*30;if(!G.cars.some(c=>c.amb))spawnAmb();}
   for(const r of G.rivals){

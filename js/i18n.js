@@ -83,6 +83,11 @@ const EN = {
   'Ambulansa yol vermedin': 'You blocked the ambulance', 'Ambulansa yol verdin': 'You let the ambulance pass',
   ' kurye vurdu': ' courier hit you', ' kurye sendeledi': ' courier staggered', ' kurye yerde!': ' courier is down!', ' kurye saf dışı!': ' courier is out!',
   'Kırmızı': 'Red', 'Yeşil': 'Green', 'Turuncu': 'Orange', 'Mor': 'Purple',
+  // street life
+  'Yayaya çarptın': 'You hit a pedestrian', ' TL ceza, puan düştü': ' TL fine, rating down', 'İleride polis çevirmesi: yavaşla': 'Police checkpoint ahead: slow down',
+  'Çevirmede yavaşlamadın: ': 'You sped through the checkpoint: ', ' TL ceza': ' TL fine', 'Kontrol tamam, kask yerinde': 'Checkpoint cleared, helmet on',
+  'Köpek peşinde!': 'A dog is chasing you!', 'Ters yönden gelen kuryeye çarptın': 'You hit a wrong-way courier', 'Cezalar': 'Fines',
+  'SABAH': 'MORNING', 'ÖĞLEN': 'NOON', 'AKŞAM': 'EVENING', 'GECE': 'NIGHT',
   // results
   'GARAJA GİT': 'GO TO GARAGE', 'YENİ VARDİYA': 'NEW SHIFT', 'MENÜ': 'MENU', 'DEVAM': 'CONTINUE', 'TEKRAR DENE': 'TRY AGAIN',
   'Müşteri puanı': 'Customer rating', 'Taşıma ücreti': 'Delivery fee', 'Bahşiş': 'Tip', 'Rakip bonusu': 'Rival bonus', 'BU TESLİMAT': 'THIS DELIVERY',
