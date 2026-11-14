@@ -4,6 +4,10 @@
 
 **Oyna:** https://kreisau.github.io/kurye-34/ (telefonda "Ana ekrana ekle" ile uygulama gibi kurulur, offline çalışır)
 
+## Wiki
+
+Oyunun tüm sistemleri (cezalar, motorlar, parçalar, kartlar, bölgeler, trafik, rakipler, ekonomi, hikâye) için: [docs/WIKI.md](docs/WIKI.md)
+
 ## Yapı
 
 Derleme yok; düz ES modülleri.
@@ -40,6 +44,7 @@ Derleme yok; düz ES modülleri.
 | `tools/sound_demo.py` | Sesleri tarayıcıda çevrimdışı render edip WAV olarak kaydeder |
 | `tools/meta_test.py` | İpucu, hesaplaşma, günün siparişi, saf dışı, ayarlar testleri |
 | `tools/i18n_check.py` | İngilizcede çevrilmeden kalan metinleri listeler |
+| `tools/bike_vis_test.py` | Motorun her ekran boyutunda ve yokuşta ekranda kaldığını ölçer |
 | `tools/camera_test.py` | Sabit ve dinamik kamerayı yokuşlu rotada karşılaştırır |
 | `tools/street_test.py` | Işık, yaya, çevirme, köpek, ters yön, ceza ve günün saati testleri |
 | `tools/shift_test.py` | Vardiya kuralları: 5 teslimat, vardiya kasası, kasayı alma, kaybedince kasanın gitmesi, kart açılması, lanetli kartlar, telsiz |

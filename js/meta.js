@@ -1,7 +1,7 @@
 import { sfx, sfxStars } from './audio.js';
 import { $, BOSS, DISTRICTS, EVENTS, RESTS, fmt, num, pick, playerZ, prof, rng } from './config.js';
 import { G } from './g.js';
-import { KINDS, startMission, unlocked } from './game.js';
+import { KINDS, refSpeed, startMission, unlocked } from './game.js';
 import { clearInput } from './input.js';
 import { newRival } from './rivals.js';
 import { payMult, starStr } from './rating.js';
@@ -83,7 +83,7 @@ export function startDaily() {
   const key = dailyKey(); let h = 0; for (const ch of key) h = (h * 31 + ch.charCodeAt(0)) | 0;
   const R = rng(h), L = Math.min(G.S.shifts, 8), d = L * 3 + 2, kind = KINDS[2];
   const D = DISTRICTS[Math.floor(R() * unlocked())];
-  const len = Math.round(Math.min(2400, (600 + d * 90) * kind.len)), ref = Math.min(.75, .30 + d * .012);
+  const len = Math.round(Math.min(2400, (600 + d * 90) * kind.len)), ref = refSpeed(d, {});
   const pool = D.pool.slice(), a = pool.splice(Math.floor(R() * pool.length), 1)[0], b = pick(R, pool), ev = pick(R, Object.keys(EVENTS));
   G.shift = { L: G.S.shifts, i: 0, cards: {}, earned: 0, daily: key };
   G.route = { D, kind: 'GÜNÜN SİPARİŞİ', rest: pick(R, RESTS), from: a, to: b, A: prof(a), B: prof(b), len, time: Math.round((len / (60 * ref) + 10) * D.tmul),

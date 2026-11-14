@@ -41,12 +41,12 @@ export const TOD=[
   {k:'GECE',traf:.7,pay:1.2,theme:D=>D.theme==='neon'?'neon':'night'}
 ];
 export const tod=L=>TOD[L%TOD.length];
+// Time budget from the rider's own bike: a clean run needs about half of its top speed, so faster bikes get more spare time
+// (better stars and tips) and slow bikes are not set up to fail. It tightens a little with progress, not with the payout.
+export function refSpeed(d,cards){const top=stats(curBike(),ups(),cards||{}).top;return(.24+.23*(top-.48))*(1+Math.min(.2,d*.008));}
 export function makeOffer(kind){
   const L=G.shift.L,i=G.shift.i,d=L*3+i,T=tod(L),D0=DISTRICTS[Math.floor(Math.random()*unlocked())],D=Object.assign({},D0,{theme:T.theme(D0),traf:D0.traf*T.traf}),loop=Math.floor(L/DISTRICTS.length);
-  const len=Math.round(Math.min(2400,(600+d*90)*kind.len)),top=stats(curBike(),ups(),G.shift.cards).top;
-  // Time budget from the rider's own bike: a clean run needs about half of its top speed, so faster bikes get more spare time
-  // (better stars and tips) and slow bikes are not set up to fail. It tightens a little with progress, not with the payout.
-  const ref=(.24+.23*(top-.48))*(1+Math.min(.2,d*.008));
+  const len=Math.round(Math.min(2400,(600+d*90)*kind.len)),ref=refSpeed(d,G.shift.cards);
   const time=Math.round(((len/(60*ref)+10)*D.tmul+8*card('kisayol'))*Math.pow(.8,card('ekspres')));
   const chance=[L>=2?.2:0,.4,.6,.7,.8][i];
   const ev=Math.random()<chance?pick(Math.random,Object.keys(EVENTS)):null;

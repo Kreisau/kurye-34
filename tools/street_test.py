@@ -33,7 +33,7 @@ with sync_playwright() as p:
     r=ev("""const l=S.lights[0];const run=st=>{l.passed=false;G.fine=0;G.pos=l.z-C.playerZ-800;l.off=((st==='red'?10:2)-G.clock%13+13)%13;for(let i=0;i<40;i++){G.inv=99;G.speed=C.maxSpeed*.4;GM.update(1/60);}return G.fine;};
       const a=run('red'),b=run('green');l.off=(9-G.clock%13+13)%13;l.was=false;G.pos=l.z-C.playerZ-1500;for(let k=0;k<30;k++){G.speed=0;GM.update(1/60);}return {red:a,green:b,peds:S.peds.length};""")
     check('running a red light is fined, green is not', r['red']==75 and r['green']==0 and r['peds']>=1, r)
-    r=ev("""const p=S.peds[0];p.x=.2;G.fine=0;G.inv=0;G.crashT=0;G.graceT=0;G.pos=p.z-C.playerZ;G.playerX=p.x;const c0=G.cond;GM.update(1/60);return {fine:G.fine,pedHit:G.pedHit,crash:G.crashT>0,lost:c0-G.cond,flee:!!p.flee};""")
+    r=ev("""S.lights.forEach(l=>l.passed=true);const p=S.peds[0];p.x=.2;G.fine=0;G.inv=0;G.crashT=0;G.graceT=0;G.pos=p.z-C.playerZ;G.playerX=p.x;const c0=G.cond;GM.update(1/60);return {fine:G.fine,pedHit:G.pedHit,crash:G.crashT>0,lost:c0-G.cond,flee:!!p.flee};""")
     check('hitting a pedestrian: fine, rating flag, crash', r['fine']==100 and r['pedHit'] and r['crash'] and r['flee'], r)
     # checkpoint
     r=ev("""G.crashT=0;G.inv=99;G.fine=0;S.peds=[];S.cops=[{n:0,z:pz()+600,side:1,warn:false,done:false}];G.speed=C.maxSpeed*.45;for(let k=0;k<90;k++){G.speed=C.maxSpeed*.45;GM.update(1/60);}const a=G.fine;
@@ -50,7 +50,7 @@ with sync_playwright() as p:
     check('wrong-way courier collision', r['crash'], r)
     ev("G.crashT=0;G.inv=99;S.onc=[{z:pz()+1100,x:-.33,v:0,honk:true}];G.playerX=.2;GM.update(1/60);(await import('/js/render.js')).render();"); pg.wait_for_timeout(150); shot('oncoming')
     # fines on the result screen
-    ev("G.paused=false;G.fine=150;G.cars=[];S.onc=[];G.pos=G.finishZ-C.playerZ-C.segL*9;"); pg.wait_for_timeout(2700)
+    ev("G.paused=false;G.fine=150;G.cars=[];S.onc=[];S.cops.forEach(c=>c.done=true);S.lights.forEach(l=>l.passed=true);G.pos=G.finishZ-C.playerZ-C.segL*9;"); pg.wait_for_timeout(2700)
     rows=pg.inner_text('#resRows'); check('fines row on result', 'Cezalar' in rows and '−150 TL' in rows, rows.replace('\n',' | ')[:160])
     # a full night ride for a visual
     ev("(await import('/js/ui.js')).goMenu();G.shift={L:3,i:0,cards:{},earned:0};G.route=GM.makeOffer(GM.KINDS[1]);GM.startMission();"); pg.wait_for_timeout(3500); shot('night')

@@ -18,6 +18,8 @@ personal goes into it (no names, contact details or anything about the owner bey
 - Parts (engine, tyres, bag, jacket, nitro) belong to the rider (`G.S.upg`), not to a bike.
 - Story lines spoken during rides are in `js/radio.js`, keyed by case-file progress.
 
+- Game systems are documented in `docs/WIKI.md`. When a rule, price, stat, fine or card changes, update the wiki in the same commit.
+
 ## Run and test
 ```
 python3 -m http.server 8765          # from the repo root
