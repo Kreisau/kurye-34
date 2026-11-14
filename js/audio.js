@@ -181,7 +181,7 @@ export function engineSet(t, on, rpm, load, nitro, p) {
   e.gs.gain.setTargetAtTime(.3 + .5 * (1 - ts), t, k);
   e.lp.frequency.setTargetAtTime((260 + 1400 * rpm * (.4 + .6 * load)) * (1 + .3 * (1 - ts)) + (nitro ? 900 : 0), t, k);
   e.hg.gain.setTargetAtTime(on ? .006 + .02 * rpm * load : 0, t, k);
-  e.out.gain.setTargetAtTime(on ? (.04 + .04 * rpm) * (.6 + .4 * load) * (nitro ? 1.25 : 1) : 0, t, .08);
+  e.out.gain.setTargetAtTime(on ? (.028 + .028 * rpm) * (.6 + .4 * load) * (nitro ? 1.25 : 1) : 0, t, .08);
 }
 function engineTick(t) {
   const st = G.state, on = !G.paused && (st === 'play' || st === 'count' || st === 'arrive');
@@ -243,15 +243,9 @@ function hornTick(t, dt) {
     const cutIn = dz < -60 && dz > -500 && dx < near && c.speed > G.speed * 1.15;   // you're slow in front of it
     const brush = Math.abs(dz) < 150 && dx < near + .06 && G.speed > c.speed * 1.1;            // you squeeze past it
     if (cutIn || brush) {
-      horn(c.cat, t, .22 * clamp(1 - Math.abs(dz) / 3000, .3, 1), clamp((c.x - G.playerX) * 1.3, -1, 1));
-      c.hcd = rnd(10, 16); A.hornGap = rnd(2.5, 4); break;
+      horn(c.cat, t, .15 * clamp(1 - Math.abs(dz) / 3000, .3, 1), clamp((c.x - G.playerX) * 1.3, -1, 1));
+      c.hcd = rnd(14, 20); A.hornGap = rnd(7, 11); break;
     }
-  }
-  A.ahT -= dt;   // distant traffic honking now and then
-  if (A.ahT <= 0) {
-    A.ahT = (G.route && G.route.ev === 'trafik' ? 8 : 16) + rnd(0, 12);
-    const far = G.cars.filter(c => !c.amb && c.z - pz > 800);
-    if (far.length) { const c = far[Math.floor(Math.random() * far.length)]; if (A.hornGap <= 0) horn(c.cat, t, .05, clamp((c.x - G.playerX) * 1.3, -1, 1), 1); }
   }
 }
 function sirenTick(t) {
@@ -296,12 +290,12 @@ const seaRoute = () => { const r = G.route; return !!(r && ((r.A && r.A.sea) || 
 function ambTick(t, dt) {
   const ride = G.state === 'play' || G.state === 'count' || G.state === 'arrive', story = !!A.story;
   const k = .4;
-  A.bed.gain.setTargetAtTime(story ? 0 : ride ? .2 : .14, t, k);
-  A.hush.gain.setTargetAtTime(story ? 0 : ride ? .02 + .015 * Math.min(1, G.speed / maxSpeed) : .015, t, k);
+  A.bed.gain.setTargetAtTime(story ? 0 : ride ? .1 : .1, t, k);
+  A.hush.gain.setTargetAtTime(story ? 0 : ride ? .012 + .008 * Math.min(1, G.speed / maxSpeed) : .01, t, k);
   A.rain.gain.setTargetAtTime(!story && G.route && G.route.ev === 'yagmur' && G.state !== 'menu' ? .18 : 0, t, k);
   if (story || G.paused || !seaRoute()) return;
   A.gullT -= dt; A.ferryT -= dt;
-  if (A.gullT <= 0) { A.gullT = rnd(9, 20); gull(t, .035, rnd(-.8, .8)); }
+  if (A.gullT <= 0) { A.gullT = rnd(18, 35); gull(t, .03, rnd(-.8, .8)); }
   if (A.ferryT <= 0) { A.ferryT = rnd(50, 100); ferry(t, .06); }
 }
 
@@ -381,8 +375,8 @@ function musicTick(t) {
     A.fightT = fight ? (A.fightT || 0) + (t - (A.fightLast || t)) : 0; A.fightLast = t;
     if (G.state === 'play' && ((!G.tut && G.timeLeft <= 12) || A.fightT > 1.5)) A.tenseUntil = t + 6;
     const tense = G.state === 'play' && t < (A.tenseUntil || 0);
-    A.mv.ride.g.gain.setTargetAtTime(tense ? .2 : 1, t, .45);
-    A.mv.tense.g.gain.setTargetAtTime(tense ? 1 : 0, t, .45);
+    A.mv.ride.g.gain.setTargetAtTime(tense ? 0 : 1, t, .7);   // never both tracks at once: they are different songs
+    A.mv.tense.g.gain.setTargetAtTime(tense ? 1 : 0, t, .7);
   }
 }
 

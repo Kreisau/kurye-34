@@ -16,13 +16,13 @@ export function clearInput(){input.left=input.right=input.brake=false;input.stee
 // steer is released from several independent signals.
 function joyEnd(){G.joyId=null;resetJoy();input.steer=0;}
 joy.addEventListener('pointerdown',e=>{e.preventDefault();G.joyId=e.pointerId;try{joy.setPointerCapture(e.pointerId);}catch(_){}G.joyX=e.clientX;G.joyY=e.clientY;jb.style.left=G.joyX+'px';jb.style.top=G.joyY+'px';jk.style.transform='';jb.classList.remove('idle');input.steer=0;});
-joy.addEventListener('pointermove',e=>{if(e.pointerId!==G.joyId)return;const dx=clamp(e.clientX-G.joyX,-50,50),dy=clamp(e.clientY-G.joyY,-50,50);jk.style.transform='translate('+dx+'px,'+(dy*.3)+'px)';input.steer=Math.abs(dx)<6?0:clamp((dx-Math.sign(dx)*6)/44,-1,1);});
+joy.addEventListener('pointermove',e=>{if(e.pointerId!==G.joyId)return;const dx=clamp(e.clientX-G.joyX,-50,50),dy=clamp(e.clientY-G.joyY,-50,50);jk.style.transform='translate('+dx+'px,'+(dy*.3)+'px)';input.steer=Math.abs(dx)<6?0:clamp((dx-Math.sign(dx)*6)/(44/(G.S.joy||1)),-1,1);});
 for(const t of['pointerup','pointercancel','lostpointercapture'])joy.addEventListener(t,e=>{if(e.pointerId===G.joyId)joyEnd();});
 // same events at window level, in case they are delivered to another element
 for(const t of['pointerup','pointercancel'])addEventListener(t,e=>{if(e.pointerId===G.joyId)joyEnd();},true);
 // touch-level fallback: no finger left on the left side -> release steering; no finger at all -> release everything
 function touchEnd(e){
-  if(G.joyId!==null&&![...e.touches].some(t=>t.clientX<innerWidth*.55))joyEnd();
+  if(G.joyId!==null&&![...e.touches].some(t=>G.S.left?t.clientX>innerWidth*.45:t.clientX<innerWidth*.55))joyEnd();
   if(e.touches.length===0){for(const b of btnSets){b.ids.clear();b.el.classList.remove('on');}input.brake=false;}
 }
 addEventListener('touchend',touchEnd,true);addEventListener('touchcancel',touchEnd,true);

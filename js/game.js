@@ -1,5 +1,6 @@
 import { audioInit, sfx } from './audio.js';
 import { $, BIKES, BRK, CARDS, CENT, DEC, DISTRICTS, EVENTS, M_PER_SEG, OFFDEC, OFFLIM, PW, RESTS, clamp, el, fmt, lerp, maxSpeed, pdesc, pick, playerZ, prof, segL } from './config.js';
+import { buzz, hitStop, sparks } from './fx.js';
 import { G } from './g.js';
 import { clearInput, input } from './input.js';
 import { layoutMirrors } from './render.js';
@@ -9,6 +10,7 @@ import { curBike, curWpn, stats, ups } from './save.js';
 import { SPR, bikeSprites, setTheme } from './sprites.js';
 import { buildTrack, closureAt, findSeg } from './track.js';
 import { spawnAmb, spawnCars, updateCars } from './traffic.js';
+import { bossEnd } from './meta.js';
 import { tutTick } from './tutorial.js';
 import { finish, keepAwake, showScreen, toast } from './ui.js';
 
@@ -86,7 +88,7 @@ export function demoTrack(){
 export function damage(a,msg){
   if(G.graceT>0)return;G.graceT=.8;
   const n=Math.max(1,Math.round(a*G.ST.dmg));
-  G.cond=Math.max(G.tut?30:0,G.cond-n);G.hits++;G.flashT=.25;G.shakeT=.25;sfx('hit');
+  G.cond=Math.max(G.tut?30:0,G.cond-n);G.hits++;G.flashT=.25;G.shakeT=.25;sfx('hit');buzz(30);
   toast(msg+'  −'+n+'% paket');
   if(G.cond<=0){
     if(card('sigorta')>0){G.shift.cards.sigorta--;G.cond=30;toast('Sigorta devrede: paket %30');}
@@ -95,7 +97,7 @@ export function damage(a,msg){
 }
 export function crash(msg,dmg){
   if(G.inv>0||G.crashT>0)return;
-  G.crashT=G.ST.crashT;G.crashSide=Math.sign(G.playerX)||1;G.speed*=.3;sfx('crash');
+  G.crashT=G.ST.crashT;G.crashSide=Math.sign(G.playerX)||1;G.speed*=.3;sfx('crash');sparks(0,26);hitStop(.09);buzz(90);
   damage(dmg,msg);
 }
 export function hitHazard(h){
@@ -127,9 +129,13 @@ export function tryHit(){
 export function landHit(best,wp,g){
   {
     best.hp-=wp.pow;best.wind=0;G.shakeT=.15;sfx('impact',{w:wp.id,pan:clamp((best.x-G.playerX)*1.5,-1,1)});
+    sparks(G.kickSide,wp.id==='kick'?8:14,wp.id==='kick'?'#f4eee6':null);hitStop(best.hp<=0?.11:.05);buzz(best.hp<=0?60:25);
     if(best.hp<=0){
-      sfx('down',{pan:clamp((best.x-G.playerX)*1.5,-1,1)});best.vx=G.kickSide*.6;best.down=best.p.id==='orange'?3:5;best.speed*=.5;best.fall=0;best.kick=0;
-      const add=Math.round((15+best.p.hp*10)*(g?2:1));G.bonus+=add;toast(best.p.n+' kurye yerde!  +'+add+' TL');
+      sfx('down',{pan:clamp((best.x-G.playerX)*1.5,-1,1)});best.vx=G.kickSide*.6;best.speed*=.5;best.fall=0;best.kick=0;
+      if(best.boss){best.down=4;bossEnd(true);return;}
+      // second knockdown puts a rival out for the rest of the delivery
+      best.kd=(best.kd||0)+1;best.out=best.kd>=2;best.down=best.out?4:(best.p.id==='orange'?3:5);
+      const add=Math.round((15+best.p.hp*10)*(g?2:1)*(best.out?2:1));G.bonus+=add;toast(best.p.n+(best.out?' kurye saf dışı!  +':' kurye yerde!  +')+add+' TL');
     }else{best.speed*=.8;best.vx=(best.vx||0)+G.kickSide*(.9+.3*wp.pow);best.stun=.45;best.shoved=2.5;best.cool=Math.max(best.cool,1.2);toast(best.p.n+' kurye sendeledi');}
   }
 }
@@ -199,7 +205,7 @@ export function update(dt){
         const diff=(G.speed-c.speed)/maxSpeed;
         if(G.inv>0)G.speed=c.speed*.9;
         else if(diff>G.ST.top*.45)crash(c.msg,14);
-        else{G.speed=c.speed*.85;damage(6,c.msg);}
+        else{G.speed=c.speed*.85;sparks(Math.sign(c.x-G.playerX)||1,10);damage(6,c.msg);}
         G.pos=c.z-playerZ-30;break;
       }
     }
@@ -209,6 +215,7 @@ export function update(dt){
   G.inv=Math.max(0,G.inv-dt);G.kickT=Math.max(0,G.kickT-dt);G.graceT=Math.max(0,G.graceT-dt);G.bumpT=Math.max(0,G.bumpT-dt);
   updateCars(dt);if(G.cars.some(c=>c.dead))G.cars=G.cars.filter(c=>!c.dead);
   for(const r of G.rivals)updateRival(r,dt);
+  if(G.rivals.some(r=>r.dead))G.rivals=G.rivals.filter(r=>!r.dead);
   if(G.hitT>0){G.hitT-=dt;tryHit();}
   G.ambT-=dt;if(G.ambT<=0){G.ambT=35+Math.random()*30;if(!G.cars.some(c=>c.amb))spawnAmb();}
   for(const r of G.rivals){

@@ -1,7 +1,9 @@
 import { sfx } from './audio.js';
 import { PW, RIVALS, clamp, lerp, maxSpeed, playerZ, segL } from './config.js';
 import { G } from './g.js';
+import { buzz, hitStop, sparks } from './fx.js';
 import { card, damage } from './game.js';
+import { bossEnd } from './meta.js';
 import { SPR } from './sprites.js';
 import { toast } from './ui.js';
 
@@ -46,12 +48,18 @@ function laneRisk(r,x,look){
 function crashRival(r,what){
   if(r.down>0)return;
   const pz=G.pos+playerZ,near=Math.abs(r.z-pz)<3500,pan=clamp((r.x-G.playerX)*1.5,-1,1);
-  r.down=r.shoved>0?6:4;r.fall=0;r.speed*=.35;r.vx*=.3;r.wind=0;r.kick=0;
+  r.down=4;r.fall=0;r.speed*=.35;r.vx*=.3;r.wind=0;r.kick=0;
   if(near)sfx('crash',{pan});
+  if(r.boss){   // the boss gets back up, but every wreck costs him
+    r.hp-=3;if(r.shoved>0&&near){sparks(Math.sign(r.x-G.playerX)||1,18);hitStop(.08);}
+    toast('Kara '+what+' çarptı!');r.shoved=0;if(r.hp<=0)bossEnd(true);return;
+  }
+  r.out=true;   // a wrecked rival is out for the rest of this delivery
   if(r.shoved>0){
-    const add=Math.round((15+r.p.hp*10)*1.5*(card('eldiven')>0?2:1));G.bonus+=add;
-    toast(r.p.n+' kurye '+what+' çarptı!  +'+add+' TL');
-  }else if(near)toast(r.p.n+' kurye '+what+' çarptı');
+    const add=Math.round((15+r.p.hp*10)*2*(card('eldiven')>0?2:1));G.bonus+=add;
+    if(near){sparks(Math.sign(r.x-G.playerX)||1,18);hitStop(.08);buzz(50);}
+    toast(r.p.n+' kurye '+what+' çarptı, saf dışı!  +'+add+' TL');
+  }else if(near)toast(r.p.n+' kurye '+what+' çarptı, saf dışı');
   r.shoved=0;
 }
 
@@ -90,7 +98,8 @@ export function updateRival(r,dt){
   if(r.down>0){
     r.down-=dt;r.speed=Math.max(0,r.speed-maxSpeed*1.4*dt);r.z+=r.speed*dt;r.fall=Math.min(1.4,r.fall+dt*5);
     r.vx*=Math.exp(-3*dt);r.x=clamp(r.x+r.vx*dt,-1.2,1.2);
-    if(r.down<=0){r.z=G.pos-1500;r.x=G.playerX>0?-.55:.55;r.speed=G.speed;r.fall=0;r.cool=2;r.hp=r.p.hp;r.vx=0;r.stun=0;r.shoved=0;}
+    if(r.down<=0&&r.out){r.dead=true;return;}
+    if(r.down<=0){const hp0=r.boss?r.hp:r.p.hp;r.z=G.pos-1500;r.x=G.playerX>0?-.55:.55;r.speed=G.speed;r.fall=0;r.cool=2;r.hp=hp0;r.vx=0;r.stun=0;r.shoved=0;}
     return;
   }
   const p=r.p,gap=pz-r.z,cap=Math.min(maxSpeed*.98,G.ST.top*maxSpeed*1.15*p.spd);

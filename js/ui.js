@@ -6,6 +6,7 @@ import { clearInput } from './input.js';
 import { curBike, save, stats, upCost, ups } from './save.js';
 import { rateDelivery, ratingLabel, recordRating, starStr } from './rating.js';
 import { bikeSprites } from './sprites.js';
+import { bossEnd, dailyDone, dailyFinish, nextClue, showClue } from './meta.js';
 import { tutFinish, tutStop } from './tutorial.js';
 
 /* ---------- HUD & UI ---------- */
@@ -24,6 +25,9 @@ export function hudTick(){
   const cdv=G.state==='play'&&G.timeLeft<=10?Math.ceil(G.timeLeft):0,cd=$('cd');
   if(cdv){if(cd.hidden)cd.hidden=false;if(hudCache.cd!==cdv){hudCache.cd=cdv;cd.textContent=cdv;sfx('beep');}}
   else if(!cd.hidden){cd.hidden=true;hudCache.cd=0;}
+  const boss=G.shift&&G.shift.boss?G.rivals.find(r=>r.boss):null,bb=$('bossBar');
+  if(bb.hidden!==!boss)bb.hidden=!boss;
+  if(boss){$('bossHp').style.width=clamp(boss.hp/boss.p.hp,0,1)*100+'%';if(G.MIR)bb.style.top=(G.MIR.y/(G.W/innerWidth)+4)+'px';}
 }
 G.toastTimer=0;
 export function toast(msg,ms,big){const t=$('toast');t.textContent=msg;t.classList.toggle('big',!!big);t.classList.add('show');clearTimeout(G.toastTimer);G.toastTimer=setTimeout(()=>t.classList.remove('show'),ms||1300);}
@@ -33,8 +37,11 @@ export function updateMenu(){
   $('mBike').textContent=curBike().n;
   $('mRating').textContent=ratingLabel();
   $('mShift').textContent='Vardiya #'+(G.S.shifts+1)+' · '+unlocked()+'/6 bölge açık';
+  $('dailyBtn').textContent='GÜNÜN SİPARİŞİ'+(dailyDone()?' ✓':' ×2');
+  const ready=G.S.clues>=5&&!G.S.boss,cb=$('caseBtn');
+  cb.textContent=ready?'HESAPLAŞMA':'DOSYA '+(G.S.boss?'✓':G.S.clues+'/5');cb.classList.toggle('hotb',ready);
 }
-export function hideGameUI(){$('cd').hidden=true;$('hud').hidden=true;$('controls').hidden=true;$('keyhint').hidden=true;$('rivalHint').hidden=true;$('radio').hidden=true;}
+export function hideGameUI(){$('cd').hidden=true;$('hud').hidden=true;$('controls').hidden=true;$('keyhint').hidden=true;$('rivalHint').hidden=true;$('radio').hidden=true;$('bossBar').hidden=true;}
 export function renderResult(o){
   $('resEyebrow').textContent=o.eyebrow;$('resTitle').textContent=o.title;$('resSub').textContent=o.sub;
   const rows=$('resRows');rows.textContent='';
@@ -58,9 +65,11 @@ export function drawCards(){
 }
 export function finish(ok,why){
   if(G.state!=='play'&&G.state!=='arrive')return;
+  if(G.shift&&G.shift.boss){bossEnd(false,why);return;}
   G.state='result';clearInput();hideGameUI();
   if(G.tut){tutFinish();return;}
   const rt=rateDelivery(ok,why),to=G.route.to;recordRating(rt.stars);
+  if(G.shift.daily){dailyFinish(ok,why,rt);return;}
   const eyebrow='VARDİYA #'+(G.shift.L+1)+' · TESLİMAT '+(G.shift.i+1)+'/3';
   const endButtons=[{t:'GARAJA GİT',cls:'cta',fn:showGarage},{t:'YENİ VARDİYA',cls:'ghost',fn:()=>{audioInit();newShift();}},{t:'MENÜ',cls:'ghost',fn:goMenu}];
   if(ok){
@@ -73,9 +82,9 @@ export function finish(ok,why){
       rows.push(['KASA',fmt(G.S.money)]);save();
       renderResult({eyebrow,title:'TESLİM EDİLDİ',sub,rows,picks:drawCards(),buttons:[]});
     }else{
-      const sb=50+G.shift.L*25;G.S.money+=sb;G.shift.earned+=sb;G.S.shifts++;G.S.best=Math.max(G.S.best,G.S.shifts);save();
+      const sb=50+G.shift.L*25;G.S.money+=sb;G.shift.earned+=sb;G.S.shifts++;G.S.best=Math.max(G.S.best,G.S.shifts);save();const clue=nextClue();
       rows.push(['Vardiya bonusu',fmt(sb)],['VARDİYA TOPLAMI',fmt(G.shift.earned),'total'],['KASA',fmt(G.S.money)]);
-      renderResult({eyebrow,title:'VARDİYA TAMAM',sub:sub+'. Üç teslimat da yerine ulaştı.'+(1+G.S.shifts<DISTRICTS.length?' Yeni bölge açıldı: '+DISTRICTS[1+G.S.shifts].name+'.':''),rows,buttons:endButtons});
+      renderResult({eyebrow,title:'VARDİYA TAMAM',sub:sub+'. Üç teslimat da yerine ulaştı.'+(1+G.S.shifts<DISTRICTS.length?' Yeni bölge açıldı: '+DISTRICTS[1+G.S.shifts].name+'.':''),rows,buttons:clue?[{t:'DEVAM',cls:'cta',fn:()=>showClue(clue,endButtons)}]:endButtons});
       G.shift=null;
     }
   }else{

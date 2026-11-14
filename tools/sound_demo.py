@@ -29,7 +29,7 @@ RIDE = """
 const {A,sfx,horn,engineSet,loadTrack,playTrack}=X;
 await loadTrack('ride'); await loadTrack('tense');
 const r=playTrack('ride',0,1,.8), te=playTrack('tense',0,0,.01);
-A.bed.gain.value=.2; A.hush.gain.value=.03;
+A.bed.gain.value=.1; A.hush.gain.value=.018;
 // Mobilet 50: pull away, cruise, brake, pull away again
 const dt=.02; let t=0;
 const run=(sec,p,geared,f)=>{ for(let k=0;k<sec/dt;k++,t+=dt){ const s=f(k*dt/sec); let rpm;
@@ -46,7 +46,7 @@ run(8,1.0,true,u=>({rel:Math.min(1,u*1.1),load:1}));
 run(3,1.0,true,u=>({rel:1,load:1,nitro:u<.8}));
 sfx('nitro',{t:22.5}); horn('lux',20,.2,-.4);
 // tension: last seconds of a delivery
-r.g.gain.setTargetAtTime(.2,26,.45); te.g.gain.setTargetAtTime(1,26,.45);
+r.g.gain.setTargetAtTime(0,26,.7); te.g.gain.setTargetAtTime(1,26,.7);
 run(9,1.0,true,()=>({rel:1,load:.7}));
 sfx('crash',{t:31}); sfx('bell',{t:35});
 engineSet(t,false,.2,.2,false,1);

@@ -26,6 +26,8 @@ Derleme yok; düz ES modülleri.
 | `js/audio.js` | Ses: motor, efektler, kornalar, ortam, hikâye sesleri (hepsi kodla), müzik döngüleri, ses ayarları |
 | `js/rating.js` | Müşteri puanı (1-5 yıldız), bahşiş, ortalama puana göre ücret ±%10 |
 | `js/tutorial.js` | Eğitim rotası "İlk gün", Usta'nın telsiz mesajları |
+| `js/meta.js` | Uzun vadeli hedefler: ipuçları (dosya), Kara ile hesaplaşma, günün siparişi |
+| `js/fx.js` | Darbe hissi: kıvılcım, kısa donma, titreşim |
 | `js/story.js` | Hikâye girişi (6 sahne, canvas çizimleri) |
 | `music/` | Gemini (Lyria) müzikleri, `tools/make_loops.py` ile döngüye çevrilmiş (menü, sürüş, gergin sürüş) |
 | `sw.js`, `manifest.webmanifest`, `icons/` | PWA |
@@ -33,6 +35,7 @@ Derleme yok; düz ES modülleri.
 | `tools/play_tutorial.py` | Bot: hikâye → eğitim → ilk teslimat, ekran görüntüleriyle |
 | `tools/make_loops.py` | Müzik MP3'lerini ölçü hizalı, dikişsiz döngülere çevirir |
 | `tools/sound_demo.py` | Sesleri tarayıcıda çevrimdışı render edip WAV olarak kaydeder |
+| `tools/meta_test.py` | İpucu, hesaplaşma, günün siparişi, saf dışı, ayarlar testleri |
 | `tools/parity.py` | Eski ve yeni sürümü aynı seed/girdiyle çalıştırıp kare kare karşılaştırır |
 
 ## Lokal çalıştırma

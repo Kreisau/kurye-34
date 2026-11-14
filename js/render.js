@@ -1,4 +1,5 @@
 import { $, BIKE_WW, FOGD, RM, camDepth, camH, ctx, cvs, drawDist, lerp, maxSpeed, playerZ, segL } from './config.js';
+import { fxDraw } from './fx.js';
 import { G } from './g.js';
 import { rain } from './game.js';
 import { SPR, rr } from './sprites.js';
@@ -129,6 +130,7 @@ export function drawPlayer(pSeg,pp){
   let y=G.HZ-sc*lerp(pSeg.p1.cy,pSeg.p2.cy,pp)*G.K;
   y+=G.offroad?(Math.random()*2-1)*2.5*sp:Math.sin(G.clock*28)*(pSeg.cobble?1.6:.6)*sp;
   if(G.bumpT>0)y-=Math.sin((1-G.bumpT/.35)*Math.PI)*G.K*.07;
+  G.py=y;G.pdw=dw;
   ctx.save();ctx.translate(G.W/2,y);ctx.rotate(G.lean);ctx.drawImage(img,-dw/2,-dh,dw,dh);
   if(G.nitroT>0){
     const f=.7+Math.random()*.5;
@@ -200,6 +202,7 @@ export function render(){
     for(const sp of s.sprites){const sc=s.p1.s;if(n<pN&&sp.spr.ww*sc*G.K>G.W*.45)continue;drawSprite(sp.spr.img,sp.spr.ww,sc,s.p1.sx+sc*sp.off*G.roadW*G.K,s.p1.sy,s.clip,a,0);}
   }
   drawPlayer(pSeg,pp);
+  fxDraw(ctx);
   if(rain())drawRain();
   ctx.restore();
   if(G.state==='play'||G.state==='count')drawMirrors();

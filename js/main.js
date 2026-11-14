@@ -3,6 +3,7 @@ import { $, STEP } from './config.js';
 import { G } from './g.js';
 import { demoTrack, newShift, update } from './game.js';
 import { QUAL, render, resize } from './render.js';
+import { showCase, startDaily } from './meta.js';
 import { load, save } from './save.js';
 import { initSprites } from './sprites.js';
 import { showStory } from './story.js';
@@ -20,6 +21,8 @@ $('startBtn').addEventListener('click',()=>{audioInit();keepAwake();startFlow();
 $('tutBtn').addEventListener('click',()=>{audioInit();keepAwake();startTutorial();});
 $('storyBtn').addEventListener('click',()=>{audioInit();showStory(goMenu,'MENÜYE DÖN');});
 $('garageBtn').addEventListener('click',()=>{audioInit();showGarage();});
+$('dailyBtn').addEventListener('click',()=>{audioInit();keepAwake();startDaily();});
+$('caseBtn').addEventListener('click',()=>{audioInit();showCase();});
 $('gBack').addEventListener('click',goMenu);
 $('abandonBtn').addEventListener('click',goMenu);
 $('resumeBtn').addEventListener('click',()=>{audioInit();togglePause(false);});
@@ -35,20 +38,25 @@ let setFrom='menu';
 function openSettings(from){
   setFrom=from;const v=vol();
   for(const k of ['music','sfx','amb']){const r=$('v-'+k);r.value=Math.round(v[k]*100);$('v-'+k+'-n').textContent=r.value;}
+  $('s-joy').value=Math.round((G.S.joy||1)*100);$('s-joy-n').textContent=$('s-joy').value;$('s-left').checked=!!G.S.left;
   showScreen('settings');
 }
+const applyHand=()=>document.body.classList.toggle('lefty',!!G.S.left);
+$('s-joy').addEventListener('input',e=>{G.S.joy=e.target.value/100;$('s-joy-n').textContent=e.target.value;});
+$('s-left').addEventListener('change',e=>{G.S.left=e.target.checked?1:0;applyHand();});
 for(const k of ['music','sfx','amb'])$('v-'+k).addEventListener('input',e=>{vol()[k]=e.target.value/100;$('v-'+k+'-n').textContent=e.target.value;applyVol();});
 $('v-sfx').addEventListener('change',()=>sfx('cash'));
 $('sndBtn').addEventListener('click',()=>{audioInit();openSettings('menu');});
 $('pSndBtn').addEventListener('click',()=>openSettings('pause'));
 $('setBack').addEventListener('click',()=>{save();showScreen(setFrom);});
 
-load();resize();initSprites();demoTrack();updateMenu();showScreen('menu');
+load();applyHand();resize();initSprites();demoTrack();updateMenu();showScreen('menu');
 G.last=performance.now();G.acc=0;
 export function frame(now){
   const dt=Math.min(.1,(now-G.last)/1000);G.last=now;
   if(G.state==='play'&&!G.paused){G.perfN++;G.perfT+=dt;if(G.perfN>=120){if(G.perfT/G.perfN>.022&&G.qi<QUAL.length-1){G.qi++;resize();}G.perfN=0;G.perfT=0;}}
-  if(!G.paused){G.acc+=dt;let k=0;while(G.acc>=STEP&&k<8){update(STEP);G.acc-=STEP;k++;}if(k>=8)G.acc=0;}
+  if(G.hitStop>0)G.hitStop-=dt;   // brief freeze on impacts
+  else if(!G.paused){G.acc+=dt;let k=0;while(G.acc>=STEP&&k<8){update(STEP);G.acc-=STEP;k++;}if(k>=8)G.acc=0;}
   render();hudTick();audioTick();
   requestAnimationFrame(frame);
 }

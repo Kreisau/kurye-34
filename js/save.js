@@ -2,7 +2,7 @@ import { BIKES, WPN, clamp } from './config.js';
 import { G } from './g.js';
 
 /* ---------- save ---------- */
-G.S={money:0,owned:['mob'],cur:'mob',up:{},shifts:0,best:0,weapons:['kick'],wpn:'kick',ratings:[],tut:0,story:0,volV:2};
+G.S={money:0,owned:['mob'],cur:'mob',up:{},shifts:0,best:0,weapons:['kick'],wpn:'kick',ratings:[],tut:0,story:0,volV:2,clues:0,boss:0,daily:null,joy:1,left:0};
 export function load(){try{const d=JSON.parse(localStorage.getItem('kurye34')||'{}');
   G.S.money=Math.max(0,d.money|0);
   if(Array.isArray(d.owned))G.S.owned=d.owned.filter(id=>BIKES.some(b=>b.id===id));
@@ -15,6 +15,9 @@ export function load(){try{const d=JSON.parse(localStorage.getItem('kurye34')||'
   if(d.wpn&&G.S.weapons.includes(d.wpn))G.S.wpn=d.wpn;
   if(Array.isArray(d.ratings))G.S.ratings=d.ratings.map(n=>n|0).filter(n=>n>=1&&n<=5).slice(-20);
   G.S.tut=d.tut?1:0;G.S.story=d.story?1:0;
+  G.S.clues=clamp(d.clues|0,0,5);G.S.boss=d.boss?1:0;G.S.left=d.left?1:0;
+  if(typeof d.joy==='number')G.S.joy=clamp(d.joy,.5,1.6);
+  if(d.daily&&typeof d.daily.d==='string')G.S.daily={d:d.daily.d,done:d.daily.done?1:0,best:+d.daily.best||0};
   if(d.vol&&typeof d.vol==='object'&&d.volV===2){G.S.vol={music:.5,sfx:.8,amb:.5};for(const k in G.S.vol)if(typeof d.vol[k]==='number')G.S.vol[k]=clamp(d.vol[k],0,1);}
 }catch(e){}}
 export function save(){try{localStorage.setItem('kurye34',JSON.stringify(G.S));}catch(e){}}

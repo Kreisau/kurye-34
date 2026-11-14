@@ -48,7 +48,7 @@ export const avgRating = () => {
   return a.length ? a.reduce((s, n) => s + n, 0) / a.length : 0;
 };
 // No ratings yet: neutral. Average 5 → +10%, 3 → 0, 1 → −10%.
-export const payMult = () => { const a = avgRating(); return a ? 1 + .05 * (a - 3) : 1; };
+export const payMult = () => { const a = avgRating(); return (a ? 1 + .05 * (a - 3) : 1) * (G.S.boss ? 1.1 : 1); };
 export const starStr = n => '★★★★★'.slice(0, n) + '☆☆☆☆☆'.slice(0, 5 - n);
 export function ratingLabel() {
   const a = G.S.ratings || [];

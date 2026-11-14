@@ -1,4 +1,4 @@
-import { AWN, CAR_COLORS, DISTRICTS, FACADES, RIVALS, SHOPS, THEMES, def, pal, pick, rng, shade } from './config.js';
+import { AWN, BOSS, CAR_COLORS, DISTRICTS, FACADES, RIVALS, SHOPS, THEMES, def, pal, pick, rng, shade } from './config.js';
 import { G } from './g.js';
 import { buildGrads } from './render.js';
 
@@ -513,5 +513,5 @@ export function initSprites(){
   SPR.junk=[0,1,2].map(v=>def(junkSprite(v),300));
   SPR.hafif=def(minivanSprite(),780,{by:.6});
   SPR.klasik=[def(sedan80Sprite('#d8cba8',false),760,{by:.42}),def(sedan80Sprite('#ece8e0',true),760,{by:.42}),def(sedan80Sprite('#7a2a30',false),760,{by:.42})];
-  SPR.rv={};for(const p of RIVALS)SPR.rv[p.id]=[-1,0,1].map(k=>bikeSprite({kick:k,box:p.box,jacket:p.jacket,helmet:p.helmet,label:''}));
+  SPR.rv={};for(const p of RIVALS.concat(BOSS))SPR.rv[p.id]=[-1,0,1].map(k=>bikeSprite({kick:k,box:p.box,jacket:p.jacket,helmet:p.helmet,label:''}));
 }

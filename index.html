@@ -46,6 +46,7 @@
 <div class="toast" id="toast"></div>
 <div class="cd" id="cd" hidden></div>
 <div class="hint" id="rivalHint" hidden>RAKİP ARKADA</div>
+<div class="boss" id="bossBar" hidden><span>KARA</span><i><b id="bossHp"></b></i></div>
 <div class="radio" id="radio" hidden>
   <div class="rhead"><span class="rdot"></span><span>USTA</span><span class="rstep" id="radioStep"></span><button class="rskip" id="tutSkip" type="button">ATLA</button></div>
   <p id="radioTxt"></p>
@@ -65,9 +66,9 @@
 
 <div class="screen" id="menu">
   <div class="card">
-    <div class="eyebrow">İSTANBUL · MOTO KURYE · PROTOTİP 0.20</div>
+    <div class="eyebrow">İSTANBUL · MOTO KURYE · PROTOTİP 0.21</div>
     <h1>KURYE <span class="plate">34</span></h1>
-    <p class="lede">Mobiletle başla, kazandıkça garajı büyüt. Her vardiya 3 teslimat; aralarda kart seç, bir teslimatı kaçırırsan vardiya biter ama para cebinde kalır.</p>
+    <p class="lede">Her vardiya 3 teslimat. Kazan, garajı büyüt, sana çarpanı bul.</p>
     <dl class="facts">
       <dt>KASA</dt><dd id="mMoney">0 TL</dd>
       <dt>PUAN</dt><dd id="mRating">Henüz yok</dd>
@@ -78,11 +79,15 @@
     <p class="how key-only"><b>Gaz otomatik.</b> ← → yön, ↓ fren, Boşluk vur, P duraklat. Arkadan gelen kuryeleri üstteki aynalardan izle.</p>
     <div class="row">
       <button class="cta" id="startBtn" type="button">VARDİYAYA BAŞLA</button>
+      <div class="pair two">
+        <button class="ghost" id="dailyBtn" type="button">GÜNÜN SİPARİŞİ</button>
+        <button class="ghost" id="caseBtn" type="button">DOSYA 0/5</button>
+      </div>
       <button class="ghost" id="garageBtn" type="button">GARAJ</button>
       <div class="pair">
         <button class="ghost" id="tutBtn" type="button">EĞİTİM</button>
         <button class="ghost" id="storyBtn" type="button">HİKÂYE</button>
-        <button class="ghost" id="sndBtn" type="button">SES</button>
+        <button class="ghost" id="sndBtn" type="button">AYARLAR</button>
       </div>
     </div>
   </div>
@@ -144,7 +149,12 @@
 <div class="screen" id="settings" hidden>
   <div class="card">
     <div class="eyebrow">AYARLAR</div>
-    <h2>SES</h2>
+    <h2>AYARLAR</h2>
+    <div class="vols">
+      <label for="s-joy">Joystick hassasiyeti</label><input type="range" id="s-joy" min="60" max="150" step="10"><output id="s-joy-n"></output>
+      <label class="chk"><input type="checkbox" id="s-left"> Solak mod (joystick sağda, butonlar solda)</label>
+    </div>
+    <h3>SES</h3>
     <div class="vols">
       <label for="v-music">Müzik</label><input type="range" id="v-music" min="0" max="100" step="5"><output id="v-music-n"></output>
       <label for="v-sfx">Efektler ve motor</label><input type="range" id="v-sfx" min="0" max="100" step="5"><output id="v-sfx-n"></output>
