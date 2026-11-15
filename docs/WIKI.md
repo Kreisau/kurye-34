@@ -391,7 +391,7 @@ Hesaplaşmada yalnızca bu savaşta gergin müzik çalar. Sürüş sırasında t
 
 Gaz otomatiktir. Ekranın alt ortasındaki **hız göstergesi** anlık hızı km/s olarak gösterir. Mobilde sol tarafta direksiyon joystick'i, sağ tarafta VUR, FREN ve (nitro hakkın varsa) NİTRO butonları bulunur; Ayarlar'dan sol el seçilirse yerleşim aynalanır. Masaüstünde klavye: sol/sağ ok ya da A/D ile direksiyon, aşağı ok ya da S ile fren, `Boşluk` veya `K` ile vur (tekme/silah), `N` veya sol `Shift` ile nitro, `P` veya `Esc` ile duraklatma. Sekme arka plana geçince oyun otomatik duraklar.
 
-Ayarlarda ses seviyeleri (müzik, efekt, ortam), dil (Türkçe / İngilizce) ve el seçimi bulunur. Yan aynalarda arkandaki araçlar ve kuryeler görünür.
+Ayarlardaki **FPS göstergesi** açılınca sol alt köşede saniyedeki kare sayısı (FPS), ortalama çizim süresi (draw), son yarım saniyenin en uzun karesi (max) ve otomatik kalite seviyesi (Q1-Q4) görünür. Oyun yavaş cihazda kare süresi uzarsa kaliteyi kendiliğinden düşürür (çözünürlük azalır, Q3'ten itibaren arka bina sırası çizilmez). Ayarlarda ses seviyeleri (müzik, efekt, ortam), dil (Türkçe / İngilizce) ve el seçimi bulunur. Yan aynalarda arkandaki araçlar ve kuryeler görünür.
 
 ## 20. Test araçları
 

@@ -21,7 +21,7 @@ export function load(){try{const d=JSON.parse(localStorage.getItem('kurye34')||'
   if(Array.isArray(d.ratings))G.S.ratings=d.ratings.map(n=>n|0).filter(n=>n>=1&&n<=5).slice(-20);
   G.S.tut=d.tut?1:0;G.S.story=d.story?1:0;
   if(d.lang==='en')G.S.lang='en';
-  G.S.clues=clamp(d.clues|0,0,5);G.S.boss=d.boss?1:0;G.S.left=d.left?1:0;
+  G.S.clues=clamp(d.clues|0,0,5);G.S.boss=d.boss?1:0;G.S.left=d.left?1:0;G.S.fps=d.fps?1:0;
   if(d.st&&typeof d.st==='object')for(const k in G.S.st)G.S.st[k]=Math.max(0,+d.st[k]||0);
   if(typeof d.joy==='number')G.S.joy=clamp(d.joy,.5,1.6);
   if(d.vol&&typeof d.vol==='object'&&d.volV===2){G.S.vol={music:.5,sfx:.8,amb:.5};for(const k in G.S.vol)if(typeof d.vol[k]==='number')G.S.vol[k]=clamp(d.vol[k],0,1);}

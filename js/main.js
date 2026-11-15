@@ -38,21 +38,30 @@ let setFrom='menu';
 function openSettings(from){
   setFrom=from;const v=vol();
   for(const k of ['music','sfx','amb']){const r=$('v-'+k);r.value=Math.round(v[k]*100);$('v-'+k+'-n').textContent=r.value;}
-  $('s-joy').value=Math.round((G.S.joy||1)*100);$('s-joy-n').textContent=$('s-joy').value;$('s-left').checked=!!G.S.left;$('s-lang').value=G.S.lang||'tr';
+  $('s-joy').value=Math.round((G.S.joy||1)*100);$('s-joy-n').textContent=$('s-joy').value;$('s-left').checked=!!G.S.left;$('s-fps').checked=!!G.S.fps;$('s-lang').value=G.S.lang||'tr';
   showScreen('settings');
 }
 const applyHand=()=>document.body.classList.toggle('lefty',!!G.S.left);
 $('s-joy').addEventListener('input',e=>{G.S.joy=e.target.value/100;$('s-joy-n').textContent=e.target.value;});
 $('s-lang').addEventListener('change',e=>{G.S.lang=e.target.value;save();location.reload();});
 $('s-left').addEventListener('change',e=>{G.S.left=e.target.checked?1:0;applyHand();});
+$('s-fps').addEventListener('change',e=>{G.S.fps=e.target.checked?1:0;$('fps').hidden=!G.S.fps;});
 for(const k of ['music','sfx','amb'])$('v-'+k).addEventListener('input',e=>{vol()[k]=e.target.value/100;$('v-'+k+'-n').textContent=e.target.value;applyVol();});
 $('v-sfx').addEventListener('change',()=>sfx('cash'));
 $('sndBtn').addEventListener('click',()=>{audioInit();openSettings('menu');});
 $('pSndBtn').addEventListener('click',()=>openSettings('pause'));
 $('setBack').addEventListener('click',()=>{save();showScreen(setFrom);});
 
-load();initI18n();applyHand();resize();initSprites();demoTrack();updateMenu();showScreen('menu');
+load();initI18n();applyHand();$('fps').hidden=!G.S.fps;resize();initSprites();demoTrack();updateMenu();showScreen('menu');
 G.last=performance.now();G.acc=0;
+// performance readout (Settings): frames per second, draw time, worst frame of the last half second, auto quality level
+const FP={n:0,t:0,draw:0,worst:0};
+function fpsTick(dt,draw){
+  FP.n++;FP.t+=dt;FP.draw+=draw;FP.worst=Math.max(FP.worst,dt);
+  if(FP.t<.5)return;
+  $('fps').textContent=Math.round(FP.n/FP.t)+' FPS · draw '+(FP.draw/FP.n).toFixed(1)+' ms · max '+Math.round(FP.worst*1000)+' ms · Q'+(G.qi+1)+'/'+QUAL.length;
+  FP.n=0;FP.t=0;FP.draw=0;FP.worst=0;
+}
 export function frame(now){
   let dt=Math.min(.1,(now-G.last)/1000);G.last=now;
   // snap to the display refresh period, so fixed 60 Hz steps don't beat against timer jitter (0 or 2 updates in a frame)
@@ -60,7 +69,7 @@ export function frame(now){
   if(G.state==='play'&&!G.paused){G.perfN++;G.perfT+=dt;if(G.perfN>=120){if(G.perfT/G.perfN>.022&&G.qi<QUAL.length-1){G.qi++;resize();}G.perfN=0;G.perfT=0;}}
   if(G.hitStop>0)G.hitStop-=dt;   // brief freeze on impacts
   else if(!G.paused){G.acc+=dt;let k=0;while(G.acc>=STEP&&k<8){update(STEP);G.acc-=STEP;k++;}if(k>=8)G.acc=0;}
-  render();hudTick();audioTick();
+  const r0=performance.now();render();if(G.S.fps)fpsTick(dt,performance.now()-r0);hudTick();audioTick();
   requestAnimationFrame(frame);
 }
 requestAnimationFrame(frame);

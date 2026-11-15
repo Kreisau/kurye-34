@@ -172,6 +172,7 @@ const EN = {
   '\n\nŞişli’yi al, sonra Kara ile hesaplaş.': '\n\nTake Şişli, then settle it with Kara.',
   'Usta bir adres uzattı: “Kara Şişli’de çalışıyor. Şişli’yi al, son teslimatına yetiş, yüzleş. Dikkat et: sol tarafını göremez.”': 'Usta handed over an address: “Kara works Şişli. Take Şişli, catch his last delivery, face him. Careful: he can’t see his left side.”',
   '+%5 maks. hız, daha çabuk kalkış, daha iyi yol tutuş': '+5% top speed, quicker launch, better grip',
+  'FPS göstergesi (performans kontrolü)': 'FPS counter (performance check)',
   'CEZALAR': 'FINES', 'Kırmızıda geçmek': 'Running a red light', 'Yayaya çarpmak': 'Hitting a pedestrian', '−1 yıldız': '−1 star',
   'Çevirmede 55 km/s üstü': 'Over 55 km/h at a checkpoint', 'Ambulansa yol vermemek': 'Not giving way to an ambulance', 'paket hasarı': 'package damage',
   'LİMİT 55': 'LIMIT 55',
