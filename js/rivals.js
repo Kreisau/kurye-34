@@ -17,21 +17,13 @@ import { toast } from './ui.js';
 // what they crashed into, as Turkish dative ("... çarptı")
 const CAR_NAME = { taxiY: 'taksiye', taxiT: 'taksiye', taxiV: 'taksiye', car: 'arabaya', lux: 'cipe', hafif: 'minivana', van: 'minibüse', klasik: 'eski sedana', hurda: 'kamyonete', dolmus: 'dolmuşa', bus: 'otobüse' };
 
-// Rivals come one at a time: the first starts just behind the line, the rest are queued and join about 16-22 s apart (never more than
-// two on the road), so they don't arrive as a pack. Count: 2, 3 from delivery 8, +1 for the crowd event, +1 for the Kabadayı card.
+// Count: 2, 3 from delivery 8, +1 for the crowd event, +1 for the Kabadayı card (max 4). They start together behind the line,
+// staggered and on alternating sides; each keeps its own side slot so two of them never ride on top of each other.
 export function spawnRivals(){
-  G.rivals=[];G.rivalWait=[];G.rivalT=0;G.rivalLast=0;
+  G.rivals=[];
   const quiet=card('sakin')>0,n=Math.min(4,2+((G.route.d||0)>=8?1:0)+(G.route.ev==='rakip2'?1:0)+(card('kabadayi')>0?1:0));
   const pool=RIVALS.slice();for(let i=pool.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[pool[i],pool[j]]=[pool[j],pool[i]];}
-  for(let i=0;i<n;i++){const p=pool[i],x=i%2?-.55:.55;
-    if(i===0)G.rivals.push(newRival(p,quiet?-4200:-1500,x,0,quiet?7:3));
-    else G.rivalWait.push({t:(quiet?30:16)+(i-1)*22,p,x});}
-}
-export function rivalTick(dt){
-  if(!G.rivalWait||!G.rivalWait.length)return;
-  G.rivalT+=dt;const w=G.rivalWait[0];if(G.rivalT<w.t||G.rivalT-G.rivalLast<16)return;   // at least 16 s between arrivals, even after a wait
-  if(G.rivals.filter(r=>!r.out&&!r.dead&&r.down<=0).length>=2)return;
-  G.rivalWait.shift();G.rivalLast=G.rivalT;G.rivals.push(newRival(w.p,G.pos+playerZ-3500,w.x,G.speed*.9,2));
+  for(let i=0;i<n;i++){const r=newRival(pool[i],(quiet?-4200:-1500)-i*1300,i%2?-.55:.55,0,(quiet?7:3)+i*2);r.slot=i%2?-1:1;r.lag=i*220;G.rivals.push(r);}
 }
 export function newRival(p,z,x,speed,cool){
   return {p,hp:p.hp,z,x,vx:0,speed,down:0,kick:0,wind:0,kside:1,cutT:2.5,cutCd:8,dodge:0,dsd:1,blk:0,cool,fall:0,spr:SPR.rv[p.id],
@@ -104,6 +96,7 @@ function collide(r,dt){
   }
 }
 
+const liveNear=(r,d)=>G.rivals.some(o=>o!==r&&!o.dead&&o.down<=0&&Math.abs(o.z-r.z)<d);
 export function updateRival(r,dt){
   const pz=G.pos+playerZ;
   r.kick-=dt;r.shoved=Math.max(0,r.shoved-dt);r.contactCd=Math.max(0,r.contactCd-dt);
@@ -111,17 +104,17 @@ export function updateRival(r,dt){
     r.down-=dt;r.speed=Math.max(0,r.speed-maxSpeed*1.4*dt);r.z+=r.speed*dt;r.fall=Math.min(1.4,r.fall+dt*5);
     r.vx*=Math.exp(-3*dt);r.x=clamp(r.x+r.vx*dt,-1.2,1.2);
     if(r.down<=0&&r.out){r.dead=true;return;}
-    if(r.down<=0){const hp0=r.boss?r.hp:r.p.hp;r.z=G.pos-1500;r.x=G.playerX>0?-.55:.55;r.speed=G.speed;r.fall=0;r.cool=2;r.hp=hp0;r.vx=0;r.stun=0;r.shoved=0;}
+    if(r.down<=0){const hp0=r.boss?r.hp:r.p.hp;r.z=G.pos-1500-G.rivals.filter(o=>o!==r&&!o.dead&&o.z<G.pos).length*700;r.x=G.playerX>0?-.55:.55;r.speed=G.speed;r.fall=0;r.cool=2;r.hp=hp0;r.vx=0;r.stun=0;r.shoved=0;}
     return;
   }
-  const p=r.p,gap=pz-r.z,cap=Math.min(maxSpeed*.98,G.ST.top*maxSpeed*1.15*p.spd);
+  const p=r.p,gap=pz-r.z-(r.lag||0),cap=Math.min(maxSpeed*.98,G.ST.top*maxSpeed*1.15*p.spd);
   const g2=p.id==='purple'?gap-70:gap;
   let want=clamp(G.speed+clamp(g2*.9,-maxSpeed*.3,maxSpeed*.45)+Math.sin(G.clock*.7)*maxSpeed*.04,0,cap);
   if(p.id==='green'&&gap<-60&&gap>-900&&r.cutT>0){r.cutT-=dt;want=Math.min(cap,Math.max(G.speed*.97,G.ST.top*maxSpeed*.55));}
   if(r.cutT<=0){r.cutCd-=dt;if(r.cutCd<=0){r.cutT=2.5;r.cutCd=8;}}
 
   // where it wants to be relative to the player
-  const side=Math.sign(r.x-G.playerX)||1;
+  const side=r.slot&&liveNear(r,900)?r.slot:(Math.sign(r.x-G.playerX)||1);
   let tx=clamp(G.playerX+side*(p.id==='purple'?.35:.28),-.85,.85);
   if(gap<-60)tx=clamp(lerp(r.x+side*.3,G.playerX,p.id==='green'&&r.cutT<=0?0:p.cut),-.85,.85);
   if(r.dodge>0){r.dodge-=dt;tx=clamp(r.x+r.dsd*.5,-.85,.85);}
@@ -138,6 +131,13 @@ export function updateRival(r,dt){
   // brake for whatever is right in front if it can't get around it in time
   for(const c of G.cars){const dz=c.z-r.z;if(dz>0&&dz<500&&Math.abs(c.x-r.x)<(c.hit+PW)/2+.04)want=Math.min(want,c.speed*.95);}
   if(closedAt(r.x,r.z+450))want=Math.min(want,maxSpeed*.18);
+  // other rivals: don't drive into the one ahead, steer off a rival right alongside
+  for(const o of G.rivals){
+    if(o===r||o.dead||o.down>0)continue;
+    const dz=o.z-r.z,dx=o.x-r.x;
+    if(dz>0&&dz<450&&Math.abs(dx)<.3)want=Math.min(want,o.speed*.97);
+    if(Math.abs(dz)<300&&Math.abs(dx)<.32){const away=-(Math.sign(dx)||r.slot||1);target=clamp(r.x+away*.45,-.85,.85);}
+  }
 
   r.speed+=clamp(want-r.speed,-maxSpeed*.5*dt,maxSpeed*.4*dt);
   r.z+=r.speed*dt;
@@ -149,6 +149,11 @@ export function updateRival(r,dt){
     r.vx+=clamp(wv-r.vx,-3.5*dt,3.5*dt);
   }
   r.x=clamp(r.x+r.vx*dt,-1.3,1.3);
+  for(const o of G.rivals){   // never draw two rivals on top of each other
+    if(o===r||o.dead||o.down>0)continue;
+    const dz=o.z-r.z,dx=o.x-r.x;
+    if(Math.abs(dz)<140&&Math.abs(dx)<.2){const away=-(Math.sign(dx)||r.slot||1);r.x=clamp(r.x+away*Math.min(.2-Math.abs(dx),1.6*dt),-1.1,1.1);if(dz>0)r.z=Math.min(r.z,o.z-140);}
+  }
 
   // shoulder-check: steering into a rival alongside shoves it
   const adx=Math.abs(r.x-G.playerX);

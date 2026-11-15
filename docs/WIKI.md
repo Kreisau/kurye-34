@@ -346,7 +346,7 @@ Cezalar teslimat gelirinden düşer. Aynı liste oyun içinde duraklatma ekranı
 
 Rakipler aynı yolda sürer, trafiğe ve yol çalışmasına bakarak şerit seçer, düşerse o teslimat boyunca saf dışı kalır. Onları **vurarak ya da araca/duvara doğru iterek** düşürürsen bonus alırsın: `(15 + HP × 10) × 2 × çarpan` TL (Ağır El ×2, Kabadayı ×3).
 
-Rakip sayısı: 2 (d ≥ 8 olunca 3), KALABALIK olayı +1, Kabadayı kartı +1; en fazla 4. Rakipler **tek tek** gelir: ilki startın hemen gerisinde başlar, diğerleri sırayla yaklaşık 16-22 sn arayla yolun gerisinden katılır; yolda aynı anda en fazla 2 canlı rakip bulunur. Sessiz Egzoz kartıyla rakipler seni geç fark eder.
+Rakip sayısı: 2 (d ≥ 8 olunca 3), KALABALIK olayı +1, Kabadayı kartı +1; en fazla 4. Hepsi birlikte startın gerisinde, aralıklı ve sırayla sağ/sol tarafta başlar. Her rakibin kendi tarafı vardır ve diğer rakipleri görür: öndekine bindirmez, yanındakinden uzaklaşır, iki rakip üst üste binmez.
 
 | Rakip | Etiket | Hız çarpanı | Saldırganlık | Hasar | Dayanıklılık (HP) | Şerit kesme | İtme gücü | Karakter |
 |---|---|---|---|---|---|---|---|---|

@@ -4,7 +4,7 @@ import { buzz, hitStop, sparks } from './fx.js';
 import { G } from './g.js';
 import { clearInput, input } from './input.js';
 import { layoutMirrors } from './render.js';
-import { rivalTick, spawnRivals, updateRival } from './rivals.js';
+import { spawnRivals, updateRival } from './rivals.js';
 import { payLabel, payMult, ratingLabel } from './rating.js';
 import { curBike, curWpn, stats, ups } from './save.js';
 import { oncHit, oncTarget, streetClear, streetSetup, streetTick } from './street.js';
@@ -260,7 +260,6 @@ export function update(dt){
   G.pvx=dt>0?(G.playerX-px0)/dt:0;   // lateral speed, used for shoulder-checks
   G.inv=Math.max(0,G.inv-dt);G.kickT=Math.max(0,G.kickT-dt);G.graceT=Math.max(0,G.graceT-dt);G.bumpT=Math.max(0,G.bumpT-dt);
   updateCars(dt);if(G.cars.some(c=>c.dead))G.cars=G.cars.filter(c=>!c.dead);
-  if(G.state==='play')rivalTick(dt);
   for(const r of G.rivals)updateRival(r,dt);
   if(G.rivals.some(r=>r.dead))G.rivals=G.rivals.filter(r=>!r.dead);
   streetTick(dt);
