@@ -27,6 +27,8 @@ export function statRows() {
 }
 // the showdown opens once all five clues are in and the last district (Kara's) is taken
 export const bossReady = () => G.S.clues >= CLUES.length && G.S.shifts >= DISTRICTS.length * ZONE_SHIFTS && !G.S.boss;
+// clues an older save is owed (thresholds moved when districts became a conquest), handed out at the menu
+export function owedClues() { const out = []; let c; while ((c = nextClue())) out.push(c); return out; }
 export function nextClue() {
   const c = CLUES[G.S.clues];
   if (!c || G.S.shifts < c.at) return null;
@@ -41,7 +43,9 @@ export function showClue(c, buttons) {
 export function showCase() {
   const n = G.S.clues, ready = bossReady(), next = CLUES[n];
   const body = n ? CLUES.slice(0, n).map((c, i) => (i + 1) + '. ' + c.t + ': ' + c.d).join('\n\n') : 'Henüz ipucu yok. Vardiya bitirdikçe o gece hakkında bir şeyler öğreneceksin.';
-  const tail = G.S.boss ? '\n\nDosya kapandı. Bölge senin: tüm ücretler +%10.' : next ? '\n\nSıradaki ipucu: ' + Math.max(1, next.at - G.S.shifts) + ' vardiya sonra.' : '';
+  const left = next ? next.at - G.S.shifts : 0;
+  const tail = G.S.boss ? '\n\nDosya kapandı. Bölge senin: tüm ücretler +%10.'
+    : (next ? '\n\nSıradaki ipucu: ' + left + ' tam vardiya sonra.' : '') + '\n\nTamamlanan vardiya: ' + G.S.shifts + '. Sadece beş teslimatın hepsi bitirilen vardiyalar sayılır; kasayı erken almak ya da kaybetmek ilerletmez.';
   const buttons = [{ t: 'MENÜ', cls: 'ghost', fn: goMenu }];
   if (ready) buttons.unshift({ t: 'HESAPLAŞMA', cls: 'cta', fn: startBoss });
   renderResult({ eyebrow: 'DOSYA · ' + n + '/' + CLUES.length + ' İPUCU', title: 'KİM ÇARPTI?', sub: body + tail, rows: G.S.boss ? statRows() : [], buttons });

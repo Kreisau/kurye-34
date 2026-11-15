@@ -26,6 +26,12 @@ export function load(){try{const d=JSON.parse(localStorage.getItem('kurye34')||'
   if(typeof d.joy==='number')G.S.joy=clamp(d.joy,.5,1.6);
   if(d.vol&&typeof d.vol==='object'&&d.volV===2){G.S.vol={music:.5,sfx:.8,amb:.5};for(const k in G.S.vol)if(typeof d.vol[k]==='number')G.S.vol[k]=clamp(d.vol[k],0,1);}
 }catch(e){}}
+// wipe all progress (money, bikes, parts, clues, stats, story) but keep the settings, then start over
+export function resetProgress(){
+  const k={volV:2,lang:G.S.lang,joy:G.S.joy,left:G.S.left,fps:G.S.fps};if(G.S.vol)k.vol=G.S.vol;
+  try{localStorage.setItem('kurye34',JSON.stringify(k));}catch(e){}
+  location.reload();
+}
 export function save(){try{localStorage.setItem('kurye34',JSON.stringify(G.S));}catch(e){}}
 export const ups=()=>G.S.upg;
 export const stat=(k,v)=>{G.S.st[k]=(G.S.st[k]||0)+v;};

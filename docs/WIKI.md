@@ -371,6 +371,8 @@ Oyuncu, bir gece kendisini yerden kaldıran Usta'nın yanında kurye olarak çal
 | BÖLGE | 8 (Beşiktaş) |
 | SON TESLİMAT | 10 (Fatih) |
 
+Dosya ekranı tamamlanan vardiya sayısını ve sıradaki ipucuna kaç **tam** vardiya kaldığını gösterir; kasayı erken almak ya da başarısız olmak ilerletmez. Eşikler değiştiği için eski bir kayıtta hak edilmiş ama verilmemiş ipucu varsa oyun açılışta verilir.
+
 Beş ipucu toplanıp **Şişli de alınınca** (12. vardiya) menüde **HESAPLAŞMA** açılır: Kara ile bir kovalamaca. Kara, rakiplerin en güçlüsüdür (hız çarpanı 1,12, saldırganlık 1,7, HP 7). Duvara ya da araca çarpması ona 3 HP kaybettirir. Süre dolarsa Kara kaçar. Yenersen **2.000 TL** ödül alırsın, dosya kapanır ve bölge senin olur: tüm ücretler kalıcı olarak +%10.
 
 Kara yenilince sonuç ekranında oyunun genel istatistikleri (teslimat, yol, kazanılan para, yere serilen kurye, ödenen ceza, tamamlanan vardiya, sürüş süresi) görünür, ardından **SON** sahnesi gelir. Bundan sonra oyun **serbest sürüş** olarak devam eder: vardiyalar aynı kurallarla sürer, ücretler +%10'dur, Dosya ekranında istatistikler görünür.
@@ -391,7 +393,7 @@ Hesaplaşmada yalnızca bu savaşta gergin müzik çalar. Sürüş sırasında t
 
 Gaz otomatiktir. Ekranın alt ortasındaki **hız göstergesi** anlık hızı km/s olarak gösterir. Mobilde sol tarafta direksiyon joystick'i, sağ tarafta VUR, FREN ve (nitro hakkın varsa) NİTRO butonları bulunur; Ayarlar'dan sol el seçilirse yerleşim aynalanır. Masaüstünde klavye: sol/sağ ok ya da A/D ile direksiyon, aşağı ok ya da S ile fren, `Boşluk` veya `K` ile vur (tekme/silah), `N` veya sol `Shift` ile nitro, `P` veya `Esc` ile duraklatma. Sekme arka plana geçince oyun otomatik duraklar.
 
-Ayarlardaki **FPS göstergesi** açılınca sol alt köşede saniyedeki kare sayısı (FPS), ortalama çizim süresi (draw), son yarım saniyenin en uzun karesi (max) ve otomatik kalite seviyesi (Q1-Q4) görünür. Oyun yavaş cihazda kare süresi uzarsa kaliteyi kendiliğinden düşürür (çözünürlük azalır, Q3'ten itibaren arka bina sırası çizilmez). Ayarlarda ses seviyeleri (müzik, efekt, ortam), dil (Türkçe / İngilizce) ve el seçimi bulunur. Yan aynalarda arkandaki araçlar ve kuryeler görünür.
+Ayarlarda **İLERLEMEYİ SIFIRLA** butonu tüm ilerlemeyi (para, motorlar, parçalar, ipuçları, istatistikler, hikâye) siler; ayarlar korunur. Yanlışlıkla basılmasın diye ilk dokunuş butonu 4 saniyeliğine kurar, ikinci dokunuş siler. Ayarlardaki **FPS göstergesi** açılınca sol alt köşede saniyedeki kare sayısı (FPS), ortalama çizim süresi (draw), son yarım saniyenin en uzun karesi (max) ve otomatik kalite seviyesi (Q1-Q4) görünür. Oyun yavaş cihazda kare süresi uzarsa kaliteyi kendiliğinden düşürür (çözünürlük azalır, Q3'ten itibaren arka bina sırası çizilmez). Ayarlarda ses seviyeleri (müzik, efekt, ortam), dil (Türkçe / İngilizce) ve el seçimi bulunur. Yan aynalarda arkandaki araçlar ve kuryeler görünür.
 
 ## 20. Test araçları
 

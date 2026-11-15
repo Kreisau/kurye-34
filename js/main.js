@@ -3,9 +3,9 @@ import { $, STEP } from './config.js';
 import { G } from './g.js';
 import { demoTrack, newShift, update } from './game.js';
 import { QUAL, render, resize } from './render.js';
-import { initI18n } from './i18n.js';
-import { showCase } from './meta.js';
-import { load, save } from './save.js';
+import { L, initI18n } from './i18n.js';
+import { owedClues, showCase, showClue } from './meta.js';
+import { load, resetProgress, save } from './save.js';
 import { initSprites } from './sprites.js';
 import { showStory } from './story.js';
 import { startTutorial } from './tutorial.js';
@@ -50,9 +50,17 @@ for(const k of ['music','sfx','amb'])$('v-'+k).addEventListener('input',e=>{vol(
 $('v-sfx').addEventListener('change',()=>sfx('cash'));
 $('sndBtn').addEventListener('click',()=>{audioInit();openSettings('menu');});
 $('pSndBtn').addEventListener('click',()=>openSettings('pause'));
-$('setBack').addEventListener('click',()=>{save();showScreen(setFrom);});
+$('setBack').addEventListener('click',()=>{rArm=-1e9;$('resetBtn').textContent=L('İLERLEMEYİ SIFIRLA');save();showScreen(setFrom);});
+// two taps: the first arms the button for 4 s, the second wipes progress (no browser dialogs, they freeze the game on some phones)
+let rArm=-1e9;
+$('resetBtn').addEventListener('click',()=>{
+  if(performance.now()-rArm<4000){resetProgress();return;}
+  rArm=performance.now();$('resetBtn').textContent=L('EMİN MİSİN? TÜM İLERLEME SİLİNECEK, TEKRAR BAS');
+  setTimeout(()=>{if(performance.now()-rArm>=3900)$('resetBtn').textContent=L('İLERLEMEYİ SIFIRLA');},4000);
+});
 
 load();initI18n();applyHand();$('fps').hidden=!G.S.fps;resize();initSprites();demoTrack();updateMenu();showScreen('menu');
+{const owed=owedClues();if(owed.length){updateMenu();showClue(owed[owed.length-1],[{t:'DEVAM',cls:'cta',fn:goMenu}]);}}
 G.last=performance.now();G.acc=0;
 // performance readout (Settings): frames per second, draw time, worst frame of the last half second, auto quality level
 const FP={n:0,t:0,draw:0,worst:0};
