@@ -17,7 +17,11 @@ with sync_playwright() as p:
     ev=lambda body: pg.evaluate("(async()=>{"+I+body+"})()")
     arrive="G.rivals=[];G.cars=[];G.inv=99;G.timeLeft=50;G.pos=G.finishZ-C.playerZ-C.segL*9;"
     r=ev("return {upg:G.S.upg,money:G.S.money,cost:SV.upCost(null,0)}")
-    check('old per-bike parts merged; tyres (lv 3) refunded and cleared', r['upg']==[1,0,2,0,0] and r['money']==1000+1900, r)
+    check('old per-bike parts merged, moved to 5 levels (1->2, 2->3); tyres (lv 3) refunded', r['upg']==[2,0,3,0,0] and r['money']==1000+1900 and r['cost']==300, r)
+    r=ev("""const S=await import('/js/sprites.js');const b=SV.curBike();const a=S.bikeSprites(b,'kick',{paint:'std',helm:'std'})[1],c=S.bikeSprites(b,'kick',{paint:'alt',helm:'kro'})[1];
+      const snap=JSON.stringify(G.S);localStorage.setItem('kurye34',JSON.stringify({money:5,cos:{paint:'alt',helm:'xx',own:['p:alt']}}));SV.load();const cos=JSON.parse(JSON.stringify(G.S.cos));localStorage.setItem('kurye34',snap);SV.load();
+      return {diff:a!==c,cos};""")
+    check('paint and helmet make a different sprite; save keeps owned paint, drops unknown helmet', r['diff'] and r['cos']['paint']=='alt' and r['cos']['helm']=='std', r)
     ev("G.S.money=1000;")
     # full shift
     ev("UI.goMenu();GM.newShift();")

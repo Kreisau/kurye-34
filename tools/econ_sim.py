@@ -5,11 +5,11 @@ import random, sys, statistics as st
 NDEL=5; STREAK=[1,1.15,1.3,1.5,1.75]
 KINDS={'YAKIN':(.75,.75),'NORMAL':(1,1),'UZAK':(1.35,1.5)}
 BIKES=[('mob',0,.48),('sc',1200,.6),('k150',3000,.72),('n250',6500,.85),('s600',12000,1)]
-UPC=[200,500,1200]; import os
+UPC=[300,700,1500,3000,5000]; import os
 CLUE_AT=[1,3,5,7,9]; KARA=int(os.environ.get('KARA',12)); PK=float(os.environ.get('PK',15)); TMUL=[1,1,1.12,1,1.08,1]
 # --- typical player (assumptions) ---
 P=dict(fail=.08, cond=.85, used=.70, stars=4, rival=35, fines=20, over_del=22, over_shift=15, kind=('NORMAL','UZAK'))
-WISH=['sc','w:bat','u0','u2','k150','u0','u2','w:chain','u4','n250','u0','u2','u4','w:bar','s600','u4']
+WISH=['sc','w:bat','u0','u2','k150','u0','u2','w:chain','u4','u0','n250','u2','u4','u0','w:bar','u2','u4','s600','u0','u2','u4','u4']
 CARD=1.08   # average effect of the shift card on pay (Bonkör Müşteri +25% picked about a third of the time)
 def run(seed):
     R=random.Random(seed); money=0; shifts=0; secs=0; bike=.48; owned={'mob'}; upg=[0]*5; wi=0; log=[]

@@ -76,12 +76,16 @@ export const BIKES=[
   {id:'n250',n:'Naked 250',lbl:'250',price:6500,top:.85,acc:3.6,grip:1.15,steer:1.2,dur:1,pitch:.88,box:'#1d1a20',jacket:'#262130',helmet:'#1d1a20'},
   {id:'s600',n:'Sport 600',lbl:'600',price:12000,top:1,acc:3,grip:1,steer:1.05,dur:1.15,pitch:.78,box:'#ffc61a',jacket:'#120d22',helmet:'#c4373a'}
 ];
+export const UPMAX=5;
+// Paint and helmet colours (cosmetic only). 'std' is the bike's own colour.
+export const PAINT=[{id:'std',n:'Fabrika',c:null,p:0},{id:'kir',n:'Kırmızı',c:'#c4373a',p:600},{id:'lac',n:'Lacivert',c:'#24418f',p:600},{id:'yes',n:'Yeşil',c:'#2e8a57',p:800},{id:'tur',n:'Turuncu',c:'#ee7a1f',p:800},{id:'mat',n:'Mat siyah',c:'#17151b',p:1200},{id:'alt',n:'Altın',c:'#d4a72c',p:2500}];
+export const HELM=[{id:'std',n:'Fabrika',c:null,p:0},{id:'bey',n:'Beyaz',c:'#f1ece4',p:400},{id:'sar',n:'Sarı',c:'#ffc61a',p:500},{id:'kir',n:'Kırmızı',c:'#d33a3a',p:500},{id:'mav',n:'Mavi',c:'#2f78d6',p:700},{id:'pem',n:'Pembe',c:'#e46aa8',p:900},{id:'kro',n:'Krom',c:'#b9c0c9',p:2000}];
 export const UPG=[
-  {n:'Motor',d:'+%5 maks. hız, daha çabuk kalkış, daha iyi yol tutuş'},
+  {n:'Motor',d:'Seviye başına +%3 maks. hız, daha çabuk kalkış, daha iyi yol tutuş'},
   {n:'Lastik',d:'Virajda daha az savrulma, daha keskin dönüş'},
-  {n:'Çanta',d:'Paket hasarı %12 az'},
+  {n:'Çanta',d:'Seviye başına paket hasarı %7 az'},
   {n:'Mont',d:'Düştüğünde daha çabuk toparlanırsın'},
-  {n:'Nitro',d:'Her seviye, teslimat başına 1 nitro hakkı: 2,5 sn +%25 hız'}
+  {n:'Nitro',d:'Seviye başına teslimatta 1 nitro hakkı: 2,5 sn +%25 hız'}
 ];
 // Shift cards: three of these six are offered when a shift starts; the one you pick lasts the whole shift.
 export const CARDS=[

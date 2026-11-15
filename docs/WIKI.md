@@ -93,13 +93,29 @@ Notlar:
 
 ## 4. Parçalar (yükseltmeler)
 
-Üç parça vardır: Motor, Çanta, Nitro. (0.36'da Lastik ve Mont kaldırıldı; etkileri Motor'a geçti, eski kayıtlarda harcanan para iade edilir.) Her parça 3 seviyeye kadar gelişir. Seviye bedeli: 1. seviye 200 TL, 2. seviye 500 TL, 3. seviye 1.200 TL.
+Üç parça vardır: Motor, Çanta, Nitro. Her biri **5 seviyeye** kadar gelişir. Seviye bedelleri: 300, 700, 1.500, 3.000, 5.000 TL (bir parçanın tamamı 10.500 TL).
 
-| Parça | Seviye başına etki |
-|---|---|
-| Motor | +%5 maksimum hız, daha çabuk kalkış (−%6 hızlanma süresi), virajda %7 daha az savrulma, direksiyon +%4 |
-| Çanta | Paket hasarı −%12 |
-| Nitro | Her seviye, teslimat başına 1 nitro hakkı |
+| Parça | Seviye başına etki | 5. seviyede toplam |
+|---|---|---|
+| Motor | +%3 maksimum hız, −%3,6 hızlanma süresi, virajda −%4,2 savrulma, direksiyon +%2,4 | +%15 hız, −%18 hızlanma süresi, −%21 savrulma, +%12 direksiyon |
+| Çanta | Paket hasarı −%7,2 | −%36 |
+| Nitro | Teslimat başına +1 nitro hakkı | 5 nitro |
+
+Geçmiş: 0.36'da Lastik ve Mont kaldırıldı (etkileri Motor'a geçti, harcanan para iade edildi). 0.39'da parçalar 3'ten 5 seviyeye çıktı; eski kayıtlarda 1/2/3 seviyeler 2/3/5 olur, toplam güç aynı kalır.
+
+## Görünüm (kozmetik)
+
+Garajın GÖRÜNÜM bölümünde motor boyası ve kask rengi alınır. Oynanışa etkisi yoktur. Alınan renk kalıcıdır; bir kere alınan renge dokununca giyilir. Boya, arkadan görünen kaportada ve çantanın alt şeridinde görünür.
+
+| Motor boyası | Fiyat | Kask | Fiyat |
+|---|---|---|---|
+| Fabrika | 0 | Fabrika | 0 |
+| Kırmızı | 600 | Beyaz | 400 |
+| Lacivert | 600 | Sarı | 500 |
+| Yeşil | 800 | Kırmızı | 500 |
+| Turuncu | 800 | Mavi | 700 |
+| Mat siyah | 1.200 | Pembe | 900 |
+| Altın | 2.500 | Krom | 2.000 |
 
 ## 5. Silahlar
 
@@ -379,13 +395,13 @@ Kara yenilince sonuç ekranında oyunun genel istatistikleri (teslimat, yol, kaz
 
 ### Oyun süresi ve ekonomi hedefi
 
-`tools/econ_sim.py` oyunun kendi formülleriyle "orta seviye oyuncuyu" (4 yıldız, %85 paket, sürenin %70'i, teslimat başına %8-15 başarısızlık) modeller. Hedef: Kara'ya 2-3 saatte ulaşmak, o noktada 5 motor ve parçaların çoğu alınmış olsun. Mevcut ayarla (0.36) model medyan 127-164 dakika veriyor; 150'lik motor yaklaşık 4. vardiyada, 250'lik 7., Sport 600 11. vardiyada alınıyor. vardiyada alınıyor, 20 kartın sonuncusu 10. vardiyada açılıyor. Bu bir model; gerçek oyuncu süresi playtest ile doğrulanmalı.
+`tools/econ_sim.py` oyunun kendi formülleriyle "orta seviye oyuncuyu" (4 yıldız, %85 paket, sürenin %70'i, teslimat başına %8-15 başarısızlık) modeller. Hedef: Kara'ya 2-3 saatte ulaşmak, o noktada 5 motor ve parçaların çoğu alınmış olsun. Mevcut ayarla (0.39) model medyan 127-164 dakika veriyor; 150'lik motor yaklaşık 4. vardiyada, 250'lik 7., Sport 600 12. vardiyada alınıyor. Kara'ya varınca 15 parça seviyesinin yaklaşık 11'i alınmış oluyor; kalanı ve kozmetikler serbest sürüşe kalıyor.
 
 Hesaplaşmada yalnızca bu savaşta gergin müzik çalar. Sürüş sırasında telsizden Usta, 34'ün iç sesi ve rakipler hikâye repliklerini ilerleme durumuna göre söyler.
 
 ## 18. Nitro
 
-- Teslimat başına hakkın: Nitro parçası seviyesi.
+- Teslimat başına hakkın: Nitro parçası seviyesi (en fazla 5).
 - Kullanınca **2,5 saniye boyunca** üst hız ×1,25 ve hızlanma ×2.
 - Kamera nitroda hafifçe geri çekilir (Reduce Motion açıksa kamera efektleri kapalıdır).
 

@@ -1,5 +1,5 @@
 import { audioInit, sfx, sfxStars } from './audio.js';
-import { $, BIKES, CARDS, DISTRICTS, NDEL, STREAK, ZONE_SHIFTS, KMH, M_PER_SEG, UPG, WPN, clamp, el, fmt, maxSpeed, num, playerZ, segL } from './config.js';
+import { $, BIKES, CARDS, DISTRICTS, NDEL, STREAK, ZONE_SHIFTS, KMH, M_PER_SEG, UPG, UPMAX, PAINT, HELM, WPN, clamp, el, fmt, maxSpeed, num, playerZ, segL } from './config.js';
 import { G } from './g.js';
 import { isEN } from './i18n.js';
 import { card, conquered, demoTrack, inPot, newShift, prepDelivery, zone } from './game.js';
@@ -150,7 +150,7 @@ export function showGarage(){
 export function renderGarage(){
   const b=curBike(),u=ups(b.id),st=stats(b,u);
   $('gMoney').textContent=fmt(G.S.money);$('gName').textContent=b.n;
-  const pv=$('gPrev'),g=pv.getContext('2d');g.clearRect(0,0,pv.width,pv.height);g.drawImage(bikeSprites(b,G.S.wpn)[G.S.wpn==='kick'?1:2],0,0,pv.width,pv.height);
+  const pv=$('gPrev'),g=pv.getContext('2d');g.clearRect(0,0,pv.width,pv.height);g.drawImage(bikeSprites(b,G.S.wpn,G.S.cos)[G.S.wpn==='kick'?1:2],0,0,pv.width,pv.height);
   const bars=$('gBars');bars.textContent='';
   const bar=(k,v)=>{const i=el('i'),f=el('b');f.style.width=Math.round(clamp(v,.04,1)*100)+'%';i.append(f);bars.append(el('span',null,k),i);};
   bar('HIZ '+Math.round(st.top*KMH)+' km/sa',st.top);
@@ -161,14 +161,25 @@ export function renderGarage(){
   UPG.forEach((up,k)=>{
     if(k===1||k===3)return;   // tyres and jacket were folded into the engine
     const lv=u[k]||0,row=el('div','item'),info=el('div'),t=el('div','t',up.n),pips=el('span','pips');
-    for(let i=0;i<3;i++)pips.append(el('i',i<lv?'on':null));
+    for(let i=0;i<UPMAX;i++)pips.append(el('i',i<lv?'on':null));
     t.append(pips);info.append(t,el('div','d',up.d));
     const btn=el('button','buy');btn.type='button';
-    if(lv>=3){btn.textContent='MAKS';btn.disabled=true;}
+    if(lv>=UPMAX){btn.textContent='MAKS';btn.disabled=true;}
     else{const c=upCost(b,lv);btn.textContent=fmt(c);btn.disabled=G.S.money<c;
       btn.addEventListener('click',()=>{if(G.S.money<c)return;G.S.money-=c;u[k]=lv+1;save();sfx('cash');toast(up.n+' seviye '+u[k]);renderGarage();});}
     row.append(info,btn);ul.append(row);
   });
+  // looks: paint and helmet swatches; tap an owned one to wear it, tap a new one to buy and wear it
+  const cl=$('gCos');cl.textContent='';const cs=G.S.cos;
+  for(const [kind,list,key,lab] of[['p',PAINT,'paint','Motor boyası'],['h',HELM,'helm','Kask']]){
+    const row=el('div','crow');row.append(el('span','clab',lab));const sw=el('div','sws');
+    for(const it of list){const own=cs.own.includes(kind+':'+it.id),on=cs[key]===it.id,b2=el('button','sw'+(on?' on':'')+(own?'':' lock'));b2.type='button';
+      b2.style.setProperty('--c',it.c||(kind==='p'?'#2a2533':b.helmet));b2.title=it.n;b2.setAttribute('aria-label',it.n+(own?'':' · '+fmt(it.p)));
+      b2.append(el('i'),el('small',null,own?(on?'✓':''):fmt(it.p)));
+      if(!own&&G.S.money<it.p)b2.disabled=true;
+      b2.addEventListener('click',()=>{if(!own){if(G.S.money<it.p)return;G.S.money-=it.p;cs.own.push(kind+':'+it.id);sfx('cash');toast(it.n+' alındı');}else sfx('beep');cs[key]=it.id;save();renderGarage();});
+      sw.append(b2);}
+    row.append(sw);cl.append(row);}
   const wl=$('gWpn');wl.textContent='';
   for(const wp of WPN){
     const own=G.S.weapons.includes(wp.id),sel=wp.id===G.S.wpn,row=el('div','item'+(sel?' sel':'')),info=el('div');
@@ -191,7 +202,7 @@ export function renderGarage(){
       btn.addEventListener('click',()=>{if(G.S.money<bk.price)return;G.S.money-=bk.price;G.S.owned.push(bk.id);G.S.cur=bk.id;save();sfx('cash');toast(bk.n+' garajda');renderGarage();});}
     row.append(info,btn);bl.append(row);
   }
-  G.PSPR=bikeSprites(b,G.S.wpn);
+  G.PSPR=bikeSprites(b,G.S.wpn,G.S.cos);
 }
 
 /* ---------- buttons ---------- */

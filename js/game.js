@@ -83,7 +83,7 @@ export function startMission(){
   const b=curBike();
   setTheme(G.route.D);
   buildTrack(G.route,G.route.seed);
-  G.ST=stats(b,ups(b.id),G.shift.cards);G.PSPR=bikeSprites(b,G.S.wpn);
+  G.ST=stats(b,ups(b.id),G.shift.cards);G.PSPR=bikeSprites(b,G.S.wpn,G.S.cos);
   G.slipT=0;G.bumpT=0;G.graceT=0;G.ambT=15+Math.random()*20;G.pos=0;G.playerX=0;G.speed=0;G.lean=0;G.crashT=0;G.inv=0;G.kickT=0;G.cond=100;G.hits=0;G.bonus=0;G.timeLeft=G.route.time;G.flashT=0;G.shakeT=0;
   G.playerX=(G.route.side0||1)*.72;G.nitroN=ups(b.id)[4]||0;G.nitroT=0;G.arriveT=0;
   radioReset();$('moneyLbl').textContent=inPot()?'VARDİYA':'KASA';
@@ -101,7 +101,7 @@ export function demoTrack(){
   const D=DISTRICTS[zone()];setTheme(D);
   G.route={D,A:prof(D.pool[0]),B:prof(D.pool[1]),from:'',to:'',len:1200,time:0,curv:D.curv,hill:D.hill,up:D.up,pay:0,d:0,ev:null,seed:13};
   G.ST=stats(curBike(),ups(G.S.cur));
-  buildTrack(G.route,G.route.seed);G.pos=0;spawnCars();G.rivals=[];streetClear();G.PSPR=bikeSprites(curBike(),G.S.wpn);
+  buildTrack(G.route,G.route.seed);G.pos=0;spawnCars();G.rivals=[];streetClear();G.PSPR=bikeSprites(curBike(),G.S.wpn,G.S.cos);
 }
 
 /* ---------- update ---------- */

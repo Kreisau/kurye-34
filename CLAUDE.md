@@ -16,7 +16,8 @@ personal goes into it (no names, contact details or anything about the owner bey
   player banks (cash-out) or finishes all five. A failed delivery loses the pot. Only full shifts count for progress.
 - Cards live in `CARDS` (`js/config.js`): six cards, three offered when a shift starts, the pick lasts the whole shift.
 - Districts are conquered in order, `ZONE_SHIFTS` (2) full shifts each; clues come with the first five conquests, Kara waits in the last district. After the ending the player picks the district (`G.S.fz`).
-- Parts (engine, bag, nitro; indexes 0, 2, 4 of `G.S.upg`) belong to the rider, not to a bike. Indexes 1 and 3 are retired.
+- Parts (engine, bag, nitro; indexes 0, 2, 4 of `G.S.upg`, 5 levels, `UPMAX`) belong to the rider, not to a bike. Indexes 1 and 3 are retired.
+- Cosmetics (paint, helmet; `PAINT`/`HELM` in config, `G.S.cos`) change only the rider's sprite, never gameplay.
 - Story lines spoken during rides are in `js/radio.js`, keyed by case-file progress.
 
 - Game systems are documented in `docs/WIKI.md`. When a rule, price, stat, fine or card changes, update the wiki in the same commit.

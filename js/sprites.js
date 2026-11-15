@@ -1,4 +1,4 @@
-import { AWN, BOSS, CAR_COLORS, DISTRICTS, FACADES, RIVALS, SHOPS, THEMES, def, pal, pick, rng, shade } from './config.js';
+import { AWN, BOSS, CAR_COLORS, DISTRICTS, FACADES, HELM, PAINT, RIVALS, SHOPS, THEMES, def, pal, pick, rng, shade } from './config.js';
 import { G } from './g.js';
 import { buildGrads } from './render.js';
 
@@ -43,7 +43,8 @@ export function bikeSprite(o){
     const b=h-4;
     g.fillStyle='rgba(0,0,0,.35)';g.beginPath();g.ellipse(cx,b-1,34,6,0,0,Math.PI*2);g.fill();
     g.fillStyle='#15111a';rr(g,cx-9,b-46,18,46,8);g.fill();
-    g.fillStyle='#2a2533';rr(g,cx-13,b-58,26,14,4);g.fill();
+    g.fillStyle=o.paint||'#2a2533';rr(g,cx-17,b-60,34,17,5);g.fill();   // rear fairing: carries the paint
+    if(o.paint){g.fillStyle='rgba(255,255,255,.18)';g.fillRect(cx-15,b-58,30,3);}
     g.fillStyle='#f4eee6';g.fillRect(cx-12,b-70,24,10);
     g.fillStyle='#ff3b3b';g.fillRect(cx-8,b-77,16,6);
     g.strokeStyle='#22202c';g.lineWidth=11;g.lineCap='round';g.lineJoin='round';
@@ -64,6 +65,7 @@ export function bikeSprite(o){
     g.fillStyle=o.helmet;g.beginPath();g.arc(cx,b-152,15,0,Math.PI*2);g.fill();
     g.fillStyle='rgba(0,0,0,.25)';g.fillRect(cx-15,b-150,30,4);
     g.fillStyle=o.box;rr(g,cx-29,b-130,58,46,5);g.fill();
+    if(o.paint){g.fillStyle=o.paint;g.fillRect(cx-29,b-92,58,6);}   // bag base trim in the bike's paint
     g.fillStyle=shade(o.box,.18);g.fillRect(cx-29,b-130,58,7);
     g.fillStyle=o.box==='#ffc61a'?'#120d22':'#f4eee6';g.font='bold 15px sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillText(o.label,cx,b-104);
   });
@@ -488,7 +490,10 @@ export function setTheme(D){
   G.NEAR=NEARS[D.theme]||(NEARS[D.theme]=makeNear());
   buildGrads();
 }
-export function bikeSprites(b,w){w=w||'kick';const key=b.id+w;return BIKESPR[key]||(BIKESPR[key]=[-1,0,1].map(k=>bikeSprite({kick:k,box:b.box,jacket:b.jacket,helmet:b.helmet,label:b.lbl,wpn:w})));}
+// the rider's own bike: paint and helmet colour come from the save (G.S.cos); rivals keep their own colours
+export function bikeSprites(b,w,cos){w=w||'kick';const pc=cos&&(PAINT.find(p=>p.id===cos.paint)||{}).c,hc=cos&&(HELM.find(h=>h.id===cos.helm)||{}).c;
+  const key=b.id+w+(pc||'')+(hc||'');
+  return BIKESPR[key]||(BIKESPR[key]=[-1,0,1].map(k=>bikeSprite({kick:k,box:b.box,jacket:b.jacket,helmet:hc||b.helmet,paint:pc||null,label:b.lbl,wpn:w})));}
 export function initSprites(){
   const R=rng(2024);
   SPR.rail=def(railSprite(),620);SPR.ferry=def(ferrySprite(),3400);SPR.durak=def(stopSprite(),1100);
