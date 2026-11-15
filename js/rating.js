@@ -2,8 +2,7 @@ import { clamp, pick } from './config.js';
 import { G } from './g.js';
 
 /* ---------- customer rating & tips ---------- */
-// Stars come from package condition, time left and number of hits.
-// The rolling average of the last 20 ratings moves offer pay by up to ±10%.
+// Stars come from package condition and time left; they set the tip. The rolling average of the last 20 is shown in the menu.
 const KEEP = 20;
 
 const LINES = {
@@ -57,8 +56,4 @@ export const starStr = n => '★★★★★'.slice(0, n) + '☆☆☆☆☆'.sl
 export function ratingLabel() {
   const a = G.S.ratings || [];
   return a.length ? '★ ' + avgRating().toFixed(1).replace('.', ',') + ' (' + a.length + ')' : 'Henüz yok';
-}
-export function payLabel() {
-  const p = Math.round((payMult() - 1) * 100);
-  return p ? (p > 0 ? 'ücret +%' : 'ücret −%') + Math.abs(p) : '';
 }

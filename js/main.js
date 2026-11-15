@@ -9,11 +9,11 @@ import { load, resetProgress, save } from './save.js';
 import { initSprites } from './sprites.js';
 import { showStory } from './story.js';
 import { startTutorial } from './tutorial.js';
-import { goMenu, hudTick, keepAwake, showGarage, showScreen, togglePause, updateMenu } from './ui.js';
+import { cashOut, goMenu, hudTick, keepAwake, quitShift, showGarage, showScreen, togglePause, updateMenu } from './ui.js';
 
 // First start: story, then the tutorial for new players; returning players go straight to a shift.
 function startFlow(){
-  const fresh=!G.S.tut&&G.S.shifts===0;
+  const fresh=!G.S.tut&&G.S.shifts===0&&G.S.pd===0;
   const go=()=>fresh?startTutorial():newShift();
   if(G.S.story)go();
   else showStory(()=>{G.S.story=1;save();go();},fresh?'İLK GÜNE BAŞLA':'VARDİYAYA BAŞLA');
@@ -24,9 +24,9 @@ $('storyBtn').addEventListener('click',()=>{audioInit();showStory(goMenu,'MENÜY
 $('garageBtn').addEventListener('click',()=>{audioInit();showGarage();});
 $('caseBtn').addEventListener('click',()=>{audioInit();showCase();});
 $('gBack').addEventListener('click',goMenu);
-$('abandonBtn').addEventListener('click',goMenu);
+$('abandonBtn').addEventListener('click',()=>{if(G.shift&&G.shift.earned>0&&!G.shift.boss)cashOut();else goMenu();});
 $('resumeBtn').addEventListener('click',()=>{audioInit();togglePause(false);});
-$('quitBtn').addEventListener('click',()=>{save();goMenu();});
+$('quitBtn').addEventListener('click',quitShift);
 $('pauseBtn').addEventListener('click',()=>togglePause(true));
 $('muteBtn').addEventListener('click',()=>{setMuted(!G.muted);$('muteBtn').textContent=G.muted?'SESSİZ':'SES';});
 // Audio needs a user gesture (iOS); the first tap or key anywhere starts it, so the menu music can play.
@@ -38,7 +38,7 @@ let setFrom='menu';
 function openSettings(from){
   setFrom=from;const v=vol();
   for(const k of ['music','sfx','amb']){const r=$('v-'+k);r.value=Math.round(v[k]*100);$('v-'+k+'-n').textContent=r.value;}
-  $('s-joy').value=Math.round((G.S.joy||1)*100);$('s-joy-n').textContent=$('s-joy').value;$('s-left').checked=!!G.S.left;$('s-fps').checked=!!G.S.fps;$('s-lang').value=G.S.lang||'tr';
+  $('s-joy').value=Math.round((G.S.joy||1)*100);$('s-joy-n').textContent=$('s-joy').value;$('s-left').checked=!!G.S.left;$('s-fps').checked=!!G.S.fps;$('s-lang').value=G.S.lang||'tr';$('s-lang').disabled=from==='pause';
   showScreen('settings');
 }
 const applyHand=()=>document.body.classList.toggle('lefty',!!G.S.left);

@@ -2,7 +2,7 @@ import { sfx } from './audio.js';
 import { PW, RIVALS, clamp, lerp, maxSpeed, playerZ, segL } from './config.js';
 import { G } from './g.js';
 import { buzz, hitStop, sparks } from './fx.js';
-import { card, damage, rivalMult } from './game.js';
+import { damage, rivalBase, rivalMult } from './game.js';
 import { rivalDownLine } from './radio.js';
 import { bossEnd } from './meta.js';
 import { SPR } from './sprites.js';
@@ -17,13 +17,13 @@ import { toast } from './ui.js';
 // what they crashed into, as Turkish dative ("... çarptı")
 const CAR_NAME = { taxiY: 'taksiye', taxiT: 'taksiye', taxiV: 'taksiye', car: 'arabaya', lux: 'cipe', hafif: 'minivana', van: 'minibüse', klasik: 'eski sedana', hurda: 'kamyonete', dolmus: 'dolmuşa', bus: 'otobüse' };
 
-// Count: 2, 3 from delivery 8, +1 for the crowd event, +1 for the Kabadayı card (max 4). They start together behind the line,
+// Count: 2, 3 from delivery 8, +1 for the crowd event (max 4). They start together behind the line,
 // staggered and on alternating sides; each keeps its own side slot so two of them never ride on top of each other.
 export function spawnRivals(){
   G.rivals=[];
-  const quiet=false,n=Math.min(4,2+((G.route.d||0)>=8?1:0)+(G.route.ev==='rakip2'?1:0));
+  const n=Math.min(4,2+((G.route.d||0)>=8?1:0)+(G.route.ev==='rakip2'?1:0));
   const pool=RIVALS.slice();for(let i=pool.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[pool[i],pool[j]]=[pool[j],pool[i]];}
-  for(let i=0;i<n;i++){const r=newRival(pool[i],(quiet?-4200:-1500)-i*1300,i%2?-.55:.55,0,(quiet?7:3)+i*2);r.slot=i%2?-1:1;r.lag=i*220;G.rivals.push(r);}
+  for(let i=0;i<n;i++){const r=newRival(pool[i],-1500-i*1300,i%2?-.55:.55,0,3+i*2);r.slot=i%2?-1:1;r.lag=i*220;G.rivals.push(r);}
 }
 export function newRival(p,z,x,speed,cool){
   return {p,hp:p.hp,z,x,vx:0,speed,down:0,kick:0,wind:0,kside:1,cutT:2.5,cutCd:8,dodge:0,dsd:1,blk:0,cool,fall:0,spr:SPR.rv[p.id],
@@ -60,7 +60,7 @@ function crashRival(r,what){
   }
   r.out=true;   // a wrecked rival is out for the rest of this delivery
   if(r.shoved>0){
-    G.S.st.kd++;const add=Math.round((15+r.p.hp*10)*2*rivalMult());G.bonus+=add;rivalDownLine(r);
+    G.S.st.kd++;const add=Math.round(rivalBase(r.p.hp)*2*rivalMult());G.bonus+=add;rivalDownLine(r);
     if(near){sparks(Math.sign(r.x-G.playerX)||1,18);hitStop(.04);buzz(50);}
     toast(r.p.n+' kurye '+what+' çarptı, saf dışı!  +'+add+' TL');
   }else if(near)toast(r.p.n+' kurye '+what+' çarptı, saf dışı');
@@ -107,7 +107,7 @@ export function updateRival(r,dt){
     if(r.down<=0){const hp0=r.boss?r.hp:r.p.hp;r.z=G.pos-1500-G.rivals.filter(o=>o!==r&&!o.dead&&o.z<G.pos).length*700;r.x=G.playerX>0?-.55:.55;r.speed=G.speed;r.fall=0;r.cool=2;r.hp=hp0;r.vx=0;r.stun=0;r.shoved=0;}
     return;
   }
-  const p=r.p,gap=pz-r.z-(r.lag||0),cap=Math.min(maxSpeed*.98,G.ST.top*maxSpeed*1.15*p.spd);
+  const p=r.p,gap=pz-r.z-(r.lag||0),cap=Math.min(maxSpeed*1.3,G.ST.top*maxSpeed*1.15*p.spd);
   const g2=p.id==='purple'?gap-70:gap;
   let want=clamp(G.speed+clamp(g2*.9,-maxSpeed*.3,maxSpeed*.45)+Math.sin(G.clock*.7)*maxSpeed*.04,0,cap);
   if(p.id==='green'&&gap<-60&&gap>-900&&r.cutT>0){r.cutT-=dt;want=Math.min(cap,Math.max(G.speed*.97,G.ST.top*maxSpeed*.55));}
@@ -167,9 +167,12 @@ export function updateRival(r,dt){
   if(r.down>0)return;
 
   r.cool-=dt;
+  // Kara's second half: below half health he attacks far more often
+  if(r.boss&&!r.rage&&r.hp<=p.hp/2){r.rage=true;r.cool=0;toast('Kara öfkelendi!',1800,true);}
+  const ag=p.aggr*(r.rage?1.7:1);
   const inWin=gap>=-60&&gap<=120&&adx>=.1&&adx<=.38;
   if(r.wind>0){
     r.wind-=dt;
     if(r.wind<=0){r.kick=.3;if(inWin&&G.crashT<=0&&G.inv<=0&&(Math.sign(G.playerX-r.x)||1)===r.kside){G.playerX+=r.kside*p.push;G.speed*=.88;damage(p.dmg,p.n+' kurye vurdu');}}
-  }else if(G.crashT<=0&&r.cool<=0&&r.stun<=0&&inWin&&Math.random()<dt*1.4*p.aggr){r.wind=.3;r.kside=Math.sign(G.playerX-r.x)||1;r.cool=(1.8+Math.random()*1.5)/p.aggr;}
+  }else if(G.crashT<=0&&r.cool<=0&&r.stun<=0&&inWin&&Math.random()<dt*1.4*ag){r.wind=.3;r.kside=Math.sign(G.playerX-r.x)||1;r.cool=(1.8+Math.random()*1.5)/ag;}
 }

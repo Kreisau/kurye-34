@@ -120,7 +120,7 @@ export function tutFinish() {
   sfxStars(rt.stars); if (rt.tip && G.AC) sfx('cash', { t: G.AC.currentTime + .25 + rt.stars * .16 });
   renderResult({
     eyebrow: 'İLK GÜN · EĞİTİM', title: 'İLK TESLİMAT',
-    sub: '“' + rt.comment + '” · Yeldeğirmeni. Usta: “' + (rt.stars >= 4 ? 'İyi iş.' : rt.stars === 3 ? 'Fena değil.' : 'Paketi hırpaladın ama ilk gün sayılır.') + ' Müşteriler seni 1-5 yıldızla puanlar; puanın yüksek kaldıkça siparişler daha iyi öder. Gerçek vardiyada süre işler.”',
+    sub: '“' + rt.comment + '” · Yeldeğirmeni. Usta: “' + (rt.stars >= 4 ? 'İyi iş.' : rt.stars === 3 ? 'Fena değil.' : 'Paketi hırpaladın ama ilk gün sayılır.') + ' Müşteriler seni 1-5 yıldızla puanlar; yıldız yükseldikçe bahşiş büyür. Gerçek vardiyada süre işler.”',
     rows: [['Müşteri puanı', starStr(rt.stars), 'stars'], ['Taşıma ücreti', fmt(PAY)], ['Bahşiş', fmt(rt.tip)], ['KASA', fmt(G.S.money), 'total']],
     buttons: [{ t: 'VARDİYAYA BAŞLA', cls: 'cta', fn: () => { audioInit(); newShift(); } }, { t: 'GARAJ', cls: 'ghost', fn: showGarage }, { t: 'MENÜ', cls: 'ghost', fn: goMenu }],
   });

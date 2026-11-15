@@ -1,7 +1,7 @@
 import { horn, sfx } from './audio.js';
 import { KMH, def, drawDist, maxSpeed, playerZ, rng, segL } from './config.js';
 import { G } from './g.js';
-import { card, crash } from './game.js';
+import { crash } from './game.js';
 import { buzz, hitStop, sparks } from './fx.js';
 import { mk, rr } from './sprites.js';
 import { toast } from './ui.js';
@@ -11,7 +11,12 @@ import { toast } from './ui.js';
 export const S = { lights: [], peds: [], dogs: [], cops: [], onc: [], oncT: 0 };
 let IMG = null;
 const CYCLE = 13, GREEN = 6.8, YELLOW = 8;   // seconds: green until 6.8, yellow until 8, red until 13
-const PED_FINE = 100, COP_FINE = 150, COP_LIMIT = 55, ONC_BONUS = 60, RED_FINE = 75;
+const COP_LIMIT = 55;
+// Fines are a share of the level's base fee (40 + d*15), so they sting the same early and late: red light 30%, pedestrian
+// 50%, speeding through a checkpoint 60%. The wrong-way courier bonus grows the same way rivals do.
+const baseFee = () => 40 + ((G.route && G.route.d) || 0) * 15;
+const fineOf = f => Math.max(10, Math.round(baseFee() * f / 5) * 5);
+const oncBonus = () => Math.round(30 * (1 + ((G.route && G.route.d) || 0) / 12));
 
 function sprites() {
   if (IMG) return;
@@ -157,7 +162,7 @@ export function streetTick(dt) {
     l.was = l.st === 'red';
     if (!l.passed && pz > l.z + segL) {   // crossed the stop line
       l.passed = true;
-      if (l.st === 'red' && G.state === 'play') { G.fine += RED_FINE; G.flashT = Math.max(G.flashT, .12); toast('Kırmızıda geçtin: ' + RED_FINE + ' TL ceza', 2400); sfx('whistle'); }
+      if (l.st === 'red' && G.state === 'play') { const f = fineOf(.3); G.fine += f; G.flashT = Math.max(G.flashT, .12); toast('Kırmızıda geçtin: ' + f + ' TL ceza', 2400); sfx('whistle'); }
     }
   }
   for (const p of S.peds) {
@@ -165,8 +170,8 @@ export function streetTick(dt) {
     p.x += p.dir * p.v * hurry * dt;
     if (!p.flee && canHit && Math.abs(p.z - pz) < 70 && Math.abs(p.x - G.playerX) < .12) {
       p.flee = true; p.dir = Math.sign(p.x - G.playerX) || p.dir;
-      canHit = false; G.pedHit = true; G.fine += PED_FINE; crash('Yayaya çarptın', 18);
-      toast('Yayaya çarptın: ' + PED_FINE + ' TL ceza, puan düştü', 2400);
+      canHit = false; G.pedHit = true; const f = fineOf(.5); G.fine += f; crash('Yayaya çarptın', 18);
+      toast('Yayaya çarptın: ' + f + ' TL ceza, puan düştü', 2400);
     }
   }
   if (S.peds.length) S.peds = S.peds.filter(p => Math.abs(p.x) < 1.6 && p.z > pz - 2000);
@@ -175,7 +180,7 @@ export function streetTick(dt) {
     if (!c.warn && dz > 0 && dz < Math.max(14000, G.speed * 4)) { c.warn = true; toast('İleride polis çevirmesi: ' + COP_LIMIT + ' km/s altına yavaşla', 2600); sfx('whistle'); }
     if (!c.done && dz < 0) {
       c.done = true;
-      if (G.speed / maxSpeed * KMH > COP_LIMIT) { G.fine += COP_FINE; toast('Çevirmede limit aşıldı (' + COP_LIMIT + ' km/s): ' + COP_FINE + ' TL ceza', 2600); sfx('whistle'); }
+      if (G.speed / maxSpeed * KMH > COP_LIMIT) { const f = fineOf(.6); G.fine += f; toast('Çevirmede limit aşıldı (' + COP_LIMIT + ' km/s): ' + f + ' TL ceza', 2600); sfx('whistle'); }
       else toast('Kontrol tamam, kask yerinde', 1600);
     }
   }
@@ -222,7 +227,7 @@ export function oncHit(wp, side, glove) {
     const gz = o.z - pz, dx = o.x - G.playerX, ahead = wp.za + (G.speed + o.v) / 30;   // two frames of closing distance: the hit lands as it passes, not from afar
     if (gz < -wp.zb || gz > ahead || Math.abs(dx) < .06 || Math.abs(dx) > wp.lmax * (glove ? 1.2 : 1) + .04 || Math.sign(dx) !== side) continue;
     o.ko = true; o.fall = 0; o.vx = side * .7;
-    const add = ONC_BONUS * (glove ? 2 : 1); G.bonus += add;
+    const add = oncBonus() * (glove ? 2 : 1); G.bonus += add;
     const pan = Math.max(-1, Math.min(1, dx * 1.5));
     sfx('impact', { w: wp.id, pan }); sfx('down', { pan }); sparks(side, 16); hitStop(.06); buzz(60); G.shakeT = .15;
     toast('Ters yön kuryesini devirdin!  +' + add + ' TL', 1800);

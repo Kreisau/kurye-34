@@ -1,21 +1,21 @@
 import { sfx, sfxStars } from './audio.js';
-import { $, BOSS, DISTRICTS, ZONE_SHIFTS, fmt, num, playerZ, prof } from './config.js';
+import { $, BOSS, DISTRICTS, ZONE_DEL, fmt, num, playerZ, prof } from './config.js';
 import { G } from './g.js';
-import { startMission } from './game.js';
+import { level, startMission } from './game.js';
 import { clearInput } from './input.js';
 import { newRival } from './rivals.js';
 import { payMult, starStr } from './rating.js';
-import { save } from './save.js';
+import { curBike, save, stats, ups } from './save.js';
 import { distStr, goMenu, hideGameUI, renderResult, showGarage, toast } from './ui.js';
 
-/* ---------- long-term goals: the case file, the showdown, the daily order ---------- */
-// One clue per finished shift once the shift count reaches `at`. Five clues unlock the showdown with Kara.
+/* ---------- long-term goals: the case file, the showdown, the ending ---------- */
+// One clue per conquered district (`at` = districts taken). Five clues plus the last district unlock the showdown with Kara.
 export const CLUES = [
-  { at: 2, t: 'KIRIK AYNA', d: 'Usta: “Seni yerden kaldırdığım gece asfaltta kırık bir ayna buldum. Sol ayna, siyah.” Sana çarpan motorun sol aynası yok.' },
-  { at: 4, t: 'IŞIKLARI KAPALI', d: 'Köşedeki çaycı o geceyi hatırlıyor: “Siyah kasklı biri ışıkları kapalı geçti. Kutusu da simsiyahtı, üstünde tek harf yoktu.”' },
-  { at: 6, t: '34 NUMARA', d: 'Bir müşteri cebindeki fişe baktı: “Bu sipariş numarası değil, kurye numarası. Eskiden bu mahallede 34 numaralı bir kurye vardı. Bir gece ortadan kayboldu.” O kurye sendin.' },
-  { at: 8, t: 'BÖLGE', d: 'Yere serdiğin rakiplerden biri konuştu: “Kara’yı mı arıyorsun? Senin eski bölgeni o aldı. Sen kaybolunca en çok o kazandı.”' },
-  { at: 10, t: 'SON TESLİMAT', d: 'Usta bir adres uzattı: “Kara Şişli’de çalışıyor. Şişli’yi al, son teslimatına yetiş, yüzleş. Dikkat et: sol tarafını göremez.”' },
+  { at: 1, t: 'KIRIK AYNA', d: 'Usta: “Seni yerden kaldırdığım gece asfaltta kırık bir ayna buldum. Sol ayna, siyah.” Sana çarpan motorun sol aynası yok.' },
+  { at: 2, t: 'IŞIKLARI KAPALI', d: 'Köşedeki çaycı o geceyi hatırlıyor: “Siyah kasklı biri ışıkları kapalı geçti. Kutusu da simsiyahtı, üstünde tek harf yoktu.”' },
+  { at: 3, t: '34 NUMARA', d: 'Bir müşteri cebindeki fişe baktı: “Bu sipariş numarası değil, kurye numarası. Eskiden bu mahallede 34 numaralı bir kurye vardı. Bir gece ortadan kayboldu.” O kurye sendin.' },
+  { at: 4, t: 'BÖLGE', d: 'Yere serdiğin rakiplerden biri konuştu: “Kara’yı mı arıyorsun? Senin eski bölgeni o aldı. Sen kaybolunca en çok o kazandı.”' },
+  { at: 5, t: 'SON TESLİMAT', d: 'Usta bir adres uzattı: “Kara Şişli’de çalışıyor. Şişli’yi al, son teslimatına yetiş, yüzleş. Dikkat et: sol tarafını göremez.”' },
 ];
 const BOSS_PRIZE = 2000;
 
@@ -26,12 +26,12 @@ export function statRows() {
     ['Yenen ceza', fmt(Math.round(s.fines))], ['Tamamlanan vardiya', String(G.S.shifts)], ['Sürüş süresi', hm]];
 }
 // the showdown opens once all five clues are in and the last district (Kara's) is taken
-export const bossReady = () => G.S.clues >= CLUES.length && G.S.shifts >= DISTRICTS.length * ZONE_SHIFTS && !G.S.boss;
+export const bossReady = () => G.S.clues >= CLUES.length && G.S.pd >= DISTRICTS.length * ZONE_DEL && !G.S.boss;
 // clues an older save is owed (thresholds moved when districts became a conquest), handed out at the menu
 export function owedClues() { const out = []; let c; while ((c = nextClue())) out.push(c); return out; }
 export function nextClue() {
   const c = CLUES[G.S.clues];
-  if (!c || G.S.shifts < c.at) return null;
+  if (!c || G.S.pd < c.at * ZONE_DEL) return null;
   G.S.clues++; save();
   return c;
 }
@@ -42,10 +42,10 @@ export function showClue(c, buttons) {
 }
 export function showCase() {
   const n = G.S.clues, ready = bossReady(), next = CLUES[n];
-  const body = n ? CLUES.slice(0, n).map((c, i) => (i + 1) + '. ' + c.t + ': ' + c.d).join('\n\n') : 'Henüz ipucu yok. Vardiya bitirdikçe o gece hakkında bir şeyler öğreneceksin.';
-  const left = next ? next.at - G.S.shifts : 0;
+  const body = n ? CLUES.slice(0, n).map((c, i) => (i + 1) + '. ' + c.t + ': ' + c.d).join('\n\n') : 'Henüz ipucu yok. Bölgeleri aldıkça o gece hakkında bir şeyler öğreneceksin.';
+  const left = next ? next.at * ZONE_DEL - G.S.pd : 0;
   const tail = G.S.boss ? '\n\nDosya kapandı. Bölge senin: tüm ücretler +%10.'
-    : (next ? '\n\nSıradaki ipucu: ' + left + ' tam vardiya sonra.' : '') + '\n\nTamamlanan vardiya: ' + G.S.shifts + '. Sadece beş teslimatın hepsi bitirilen vardiyalar sayılır; kasayı erken almak ya da kaybetmek ilerletmez.';
+    : (next ? '\n\nSıradaki ipucu: ' + left + ' teslimat sonra, bölgeyi alınca.' : ready ? '' : '\n\nŞişli’yi al, sonra Kara ile hesaplaş.') + '\n\nHer başarılı teslimat bölgeyi ilerletir. Kasayı kaybetmek ya da erken almak ilerlemeyi geri almaz.';
   const buttons = [{ t: 'MENÜ', cls: 'ghost', fn: goMenu }];
   if (ready) buttons.unshift({ t: 'HESAPLAŞMA', cls: 'cta', fn: startBoss });
   renderResult({ eyebrow: 'DOSYA · ' + n + '/' + CLUES.length + ' İPUCU', title: 'KİM ÇARPTI?', sub: body + tail, rows: G.S.boss ? statRows() : [], buttons });
@@ -53,9 +53,10 @@ export function showCase() {
 
 /* ---------- showdown ---------- */
 export function startBoss() {
-  const D = DISTRICTS[DISTRICTS.length - 1], a = D.pool[0], b = D.pool[1];
-  G.shift = { L: G.S.shifts, i: 0, cards: {}, earned: 0, boss: true };
-  G.route = { D, kind: 'HESAPLAŞMA', rest: 'Usta Moto Kurye', from: a, to: b, A: prof(a), B: prof(b), len: 2400, time: 150, curv: D.curv, hill: D.hill * .7, up: D.up, pay: 0, d: 6, ev: null, seed: 34034 };
+  // the road is long enough that it cannot run out before the clock does, whatever the bike: only time or the package ends it
+  const D = DISTRICTS[DISTRICTS.length - 1], a = D.pool[0], b = D.pool[1], T = 150, len = Math.ceil(stats(curBike(), ups(), {}).top * 60 * T * 1.12) + 300;
+  G.shift = { L: level(), i: 0, cards: {}, earned: 0, boss: true };
+  G.route = { D, kind: 'HESAPLAŞMA', rest: 'Usta Moto Kurye', from: a, to: b, A: prof(a), B: prof(b), len, time: T, curv: D.curv, hill: D.hill * .7, up: D.up, pay: 0, d: 6, ev: null, seed: 34034 };
   startMission();
   const r = newRival(BOSS, G.pos + playerZ + 500, -.4, 0, 4); r.boss = true;
   G.rivals = [r];
@@ -82,7 +83,7 @@ export function bossEnd(win, why) {
     G.state = 'result'; clearInput(); hideGameUI(); G.shift = null; sfx('fail');
     renderResult({
       eyebrow: 'HESAPLAŞMA', title: 'KARA KAÇTI',
-      sub: why === 'pkg' ? 'Kara seni yere serdi ve gözden kayboldu. Sopa ya da zincirle, bir de daha hızlı bir motorla şansın artar.' : 'Yol bitti, Kara trafiğe karıştı. Onu arabalara ya da duvara doğru itmeyi dene: her kazada ağır hasar alır.',
+      sub: why === 'pkg' ? 'Kara seni yere serdi ve gözden kayboldu. Sopa, zincir ya da levye onu daha çabuk düşürür; Çanta parçası da seni ayakta tutar.' : 'Süre doldu, Kara trafiğe karıştı. Onu arabalara ya da duvara doğru itmeyi dene: her kazada ağır hasar alır.',
       rows: [], buttons: [{ t: 'TEKRAR DENE', cls: 'cta', fn: startBoss }, { t: 'GARAJ', cls: 'ghost', fn: showGarage }, { t: 'MENÜ', cls: 'ghost', fn: goMenu }],
     });
   }

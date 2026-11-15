@@ -25,14 +25,14 @@ const STORY = [
   [['USTA', 'Çaycı yalan söylemez. Işıkları kapalı giden adam bir şeyden kaçıyordur.'], ['34', 'Karanlıkta farsız bir motor. Bu görüntü rüyalarımda da var.']],
   [['USTA', '34 numara sendin evlat. Bu mahallede en hızlı sendin.'], ['34', 'Müşteriler beni tanıyor. Ben onları tanımıyorum.']],
   [['USTA', 'Kara senin bölgeni aldı. Bölge almak için adam ezmek gerekmezdi ama.'], ['34', 'Kara. İsmi duyunca sol omzum sızlıyor.']],
-  [['USTA', 'Hazırsan menüden hesaplaşmaya git. Sol tarafını göremez, unutma.'], ['34', 'Bu gece bitecek. Ya o düşecek ya yine ben.']],
-  [['USTA', 'Bölge artık senin. Ama Kara’yı o gece kim gönderdi, onu hâlâ bilmiyoruz.'], ['34', 'Adımı hâlâ hatırlamıyorum. Şimdilik numaram yetiyor.']],
+  [['USTA', 'Önce Şişli’yi al, sonra menüden hesaplaşmaya git. Sol tarafını göremez, unutma.'], ['34', 'Bu gece bitecek. Ya o düşecek ya yine ben.']],
+  [['USTA', 'Bölge artık senin. Kara da artık kimsenin yolunu kesmiyor.'], ['34', 'Adımı hâlâ hatırlamıyorum. Şimdilik numaram yetiyor.']],
 ];
 const RIVAL = {
   red: { n: 'ALEV', intro: ['Bu cadde benim. Geri bas, çaylak.', '34 mü? Sana öldü diyorlardı.'], down: ['Tamam, tamam! Düştüğümü Kara’ya söyleme.'] },
   green: { n: 'ÇEVİK', intro: ['Yakalayabilirsen konuşuruz.', 'Paketini ben götüreyim, sen dinlen.'], down: ['O gece Kara’nın arkasındaydım. Fren lambası hiç yanmadı.'] },
   orange: { n: 'TOSUN', intro: ['Yol dar, ben genişim. Kusura bakma.', 'Usta’ya selam söyle. Hâlâ borcu var bana.'], down: ['Eskiden beraber çay içerdik biz. Hatırlamıyor musun?'] },
-  purple: { n: 'GECE', intro: ['Seni gören olmadı. Beni de görmezler.', 'Geri dönmeyecektin 34.'], down: ['Asıl şunu sor: Kara’ya parayı kim verdi?'] },
+  purple: { n: 'GECE', intro: ['Seni gören olmadı. Beni de görmezler.', 'Geri dönmeyecektin 34.'], down: ['Kara seni o gece bilerek bekledi. Bölgeyi istiyordu.'] },
   boss: { n: 'KARA', intro: ['34. Mezardan mı çıktın?'], down: [] },
 };
 

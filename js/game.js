@@ -1,5 +1,5 @@
 import { audioInit, sfx } from './audio.js';
-import { $, BIKES, BRK, CARDS, NDEL, ZONE_SHIFTS, STREAK, CENT, DEC, DISTRICTS, EVENTS, M_PER_SEG, OFFDEC, OFFLIM, PW, RESTS, clamp, el, fmt, lerp, maxSpeed, num, pdesc, pick, playerZ, prof, segL } from './config.js';
+import { $, BIKES, BRK, CARDS, NDEL, ZONE_DEL, LVL_DEL, TOPCAP, ZREF, STREAK, CENT, DEC, DISTRICTS, EVENTS, M_PER_SEG, OFFDEC, OFFLIM, PW, RESTS, clamp, el, fmt, lerp, maxSpeed, num, pdesc, pick, playerZ, prof, segL } from './config.js';
 import { buzz, hitStop, sparks } from './fx.js';
 import { G } from './g.js';
 import { clearInput, input } from './input.js';
@@ -27,16 +27,19 @@ export const card=id=>G.shift?G.shift.cards[id]||0:0;
 // a normal shift: earnings sit in the shift pot until it is banked
 export const inPot=()=>!!(G.shift&&!G.tut&&!G.shift.boss);
 export const rivalMult=()=>card('eldiven')>0?2:1;
+// Knock-down bonus: modest at the start (so fighting is a bonus, not the main income), growing with the level like the fees do.
+export const rivalBase=hp=>(8+hp*5)*(1+((G.route&&G.route.d)||0)/12);
 export const rain=()=>G.route&&G.route.ev==='yagmur'&&G.state!=='menu';
 
 /* ---------- shift flow ---------- */
-export function newShift(){G.shift={L:G.S.shifts,i:0,cards:{},earned:0};showShiftCards();}
-// Districts are taken one by one: ZONE_SHIFTS full shifts in a district conquer it and open the next. After the ending
-// the player picks any district (G.S.fz).
-export const conquered=()=>Math.min(DISTRICTS.length,Math.floor(G.S.shifts/ZONE_SHIFTS));
+export const level=()=>Math.min(DISTRICTS.length*ZONE_DEL/LVL_DEL,Math.floor(G.S.pd/LVL_DEL));   // stops rising once every district is taken
+export function newShift(){G.shift={L:level(),i:0,cards:{},earned:0};showShiftCards();}
+// Districts are taken one by one: ZONE_DEL successful deliveries in a district conquer it and open the next. A lost pot or an
+// early cash-out costs money, never progress. After the ending the player picks any district (G.S.fz).
+export const conquered=()=>Math.min(DISTRICTS.length,Math.floor(G.S.pd/ZONE_DEL));
 export const zone=()=>G.S.boss?G.S.fz:Math.min(DISTRICTS.length-1,conquered());
 export const KINDS=[{k:'YAKIN',len:.75,pay:.75},{k:'NORMAL',len:1,pay:1},{k:'UZAK',len:1.35,pay:1.5}];
-// Each shift is a time of day: it sets the light, how busy the roads are and a pay bonus.
+// Each shift is a time of day: it sets the light and how busy the roads are.
 export const TOD=[
   {k:'SABAH',traf:1.15,theme:()=>'morning'},
   {k:'ÖĞLEN',traf:1,theme:()=>'day'},
@@ -44,22 +47,27 @@ export const TOD=[
   {k:'GECE',traf:.7,theme:D=>D.theme==='neon'?'neon':'night'}
 ];
 export const tod=L=>TOD[L%TOD.length];
-// Time budget from the rider's own bike: a clean run needs about half of its top speed, so faster bikes get more spare time
-// (better stars and tips) and slow bikes are not set up to fail. It tightens a little with progress, not with the payout.
-export function refSpeed(d,cards){const top=stats(curBike(),ups(),cards||{}).top;return(.24+.23*(top-.48))*(1+Math.min(.2,d*.008));}
+// Time budget: the district's reference bike at half its top speed. A rider on a slower bike gets a floor instead (a clean run
+// at 62% of the own top speed), so the delivery is always possible but tight; a faster bike or a speed card is pure spare time.
+export function timeFor(len,z){
+  const own=stats(curBike(),ups(),{}).top;
+  return Math.max(len/(60*ZREF[z]*.5)+10,len/(60*own*.62)+8);
+}
 export function makeOffer(kind){
-  const L=G.shift.L,i=G.shift.i,d=L*3+i,T=tod(L),D0=DISTRICTS[zone()],D=Object.assign({},D0,{theme:T.theme(D0),traf:D0.traf*T.traf}),loop=Math.floor(L/DISTRICTS.length);
-  const len=Math.round(Math.min(2400,(600+d*90)*kind.len)),ref=refSpeed(d,G.shift.cards);
-  const time=Math.round((len/(60*ref)+10)*D.tmul+8*card('kisayol'));
+  const L=G.shift.L,i=G.shift.i,d=L*3+i,T=tod(L),D0=DISTRICTS[zone()],D=Object.assign({},D0,{theme:T.theme(D0),traf:D0.traf*T.traf});
+  // the base length stops growing at 1780 so the three kinds stay apart (1335 / 1780 / 2400 segments at most)
+  const len=Math.round(Math.min(2400,Math.min(1780,600+d*90)*kind.len));
+  const time=Math.round(timeFor(len,zone())*D.tmul+8*card('kisayol'));
   const chance=[L>=2?.2:0,.4,.6,.7,.8][i];
   const ev=Math.random()<chance?pick(Math.random,Object.keys(EVENTS)):null;
   const pool=D.pool.slice(),a=pool.splice(Math.floor(Math.random()*pool.length),1)[0],b=pick(Math.random,pool);
-  return{D,kind:kind.k,rest:pick(Math.random,RESTS),from:a,to:b,A:prof(a),B:prof(b),len,time,curv:D.curv*(1+loop*.15),hill:D.hill,up:D.up,
+  return{D,kind:kind.k,rest:pick(Math.random,RESTS),from:a,to:b,A:prof(a),B:prof(b),len,time,curv:D.curv,hill:D.hill,up:D.up,
     pay:Math.round((40+d*15)*kind.pay*(ev?1.2:1)*(1+.25*card('bahsis'))*payMult()*STREAK[i]),d,ev,seed:(Math.random()*1e9)|0};
 }
 export function prepDelivery(){
   const offers=KINDS.map(makeOffer);
-  $('bEyebrow').textContent='VARDİYA #'+(G.shift.L+1)+' · '+tod(G.shift.L).k+' · '+DISTRICTS[zone()].name+' · TESLİMAT '+(G.shift.i+1)+'/'+NDEL+(G.shift.i?' · ÜCRET ×'+num(STREAK[G.shift.i],2):'')+(G.S.boss?' · ÜCRETLER +%10':'');
+  $('abandonBtn').textContent=G.shift.earned>0?'KASAYI AL VE BİTİR · '+fmt(G.shift.earned):'MENÜ';
+  $('bEyebrow').textContent='VARDİYA · '+tod(G.shift.L).k+' · '+DISTRICTS[zone()].name+' · TESLİMAT '+(G.shift.i+1)+'/'+NDEL+(G.shift.i?' · ÜCRET ×'+num(STREAK[G.shift.i],2):'')+(G.S.boss?' · ÜCRETLER +%10':'');
   const box=$('offers');box.textContent='';
   for(const o of offers){
     const b=el('button','order');b.type='button';
@@ -82,8 +90,9 @@ export function prepDelivery(){
 export function startMission(){
   const b=curBike();
   setTheme(G.route.D);
+  G.ST=stats(b,ups(b.id),G.shift.cards);
   buildTrack(G.route,G.route.seed);
-  G.ST=stats(b,ups(b.id),G.shift.cards);G.PSPR=bikeSprites(b,G.S.wpn,G.S.cos);
+  G.PSPR=bikeSprites(b,G.S.wpn,G.S.cos);
   G.slipT=0;G.bumpT=0;G.graceT=0;G.ambT=15+Math.random()*20;G.pos=0;G.playerX=0;G.speed=0;G.lean=0;G.crashT=0;G.inv=0;G.kickT=0;G.cond=100;G.hits=0;G.bonus=0;G.timeLeft=G.route.time;G.flashT=0;G.shakeT=0;
   G.playerX=(G.route.side0||1)*.72;G.nitroN=ups(b.id)[4]||0;G.nitroT=0;G.arriveT=0;
   radioReset();$('moneyLbl').textContent=inPot()?'VARDİYA':'KASA';
@@ -158,13 +167,16 @@ export function landHit(best,wp,g){
       if(best.boss){best.down=4;bossEnd(true);return;}
       // second knockdown puts a rival out for the rest of the delivery
       best.kd=(best.kd||0)+1;best.out=best.kd>=2;best.down=best.out?4:(best.p.id==='orange'?3:5);
-      G.S.st.kd++;const add=Math.round((15+best.p.hp*10)*rivalMult()*(best.out?2:1));G.bonus+=add;rivalDownLine(best);toast(best.p.n+(best.out?' kurye saf dışı!  +':' kurye yerde!  +')+add+' TL');
+      G.S.st.kd++;const add=Math.round(rivalBase(best.p.hp)*rivalMult()*(best.out?2:1));G.bonus+=add;rivalDownLine(best);toast(best.p.n+(best.out?' kurye saf dışı!  +':' kurye yerde!  +')+add+' TL');
     }else{best.speed*=.8;best.vx=(best.vx||0)+G.kickSide*(.9+.3*wp.pow);best.stun=.45;best.shoved=2.5;best.cool=Math.max(best.cool,1.2);toast(best.p.n+' kurye sendeledi');}
   }
 }
 export function bgScroll(seg,dz){G.farOff+=.0015*seg.curve*dz/segL;G.nearOff+=.003*seg.curve*dz/segL;}
 
 export function update(dt){
+  // sub-step when anything covers most of a segment in one step, so collisions and hazards are never skipped
+  if(G.state==='play'){let vm=G.speed;for(const r of G.rivals)if(r.speed>vm)vm=r.speed;for(const c of G.cars)if(c.speed>vm)vm=c.speed;
+    if(vm*dt>segL*.8&&dt>1/480){update(dt/2);update(dt/2);return;}}
   G.clock+=dt;if(G.state==='play')G.S.st.t+=dt;
   const pSeg=findSeg(G.pos+playerZ),startPos=G.pos,px0=G.playerX;
   G.flashT=Math.max(0,G.flashT-dt);G.shakeT=Math.max(0,G.shakeT-dt);
@@ -186,7 +198,7 @@ export function update(dt){
     return;
   }
   if(G.state!=='play')return;
-  const sp=G.speed/maxSpeed,top=Math.min(maxSpeed,G.ST.top*maxSpeed*(G.nitroT>0?1.25:1)),acc=top/G.ST.accT*(G.nitroT>0?2:1);
+  const sp=G.speed/maxSpeed,top=Math.min(maxSpeed*TOPCAP,G.ST.top*maxSpeed*(G.nitroT>0?1.25:1)),acc=top/G.ST.accT*(G.nitroT>0?2:1);
   G.nitroT=Math.max(0,G.nitroT-dt);
   G.pos+=G.speed*dt;
   if(G.crashT>0){

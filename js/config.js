@@ -72,11 +72,16 @@ G.TH=THEMES.dusk;G.DIS=DISTRICTS[0];G.FOG=G.TH.fog;G.FARC=G.TH.far;G.NEARC=G.TH.
 export const BIKES=[
   {id:'mob',n:'Mobilet 50',lbl:'50',price:0,top:.48,acc:5.5,grip:.8,steer:.85,dur:1.1,pitch:1.45,box:'#9a8f7d',jacket:'#3b3a4a',helmet:'#e8e2da'},
   {id:'sc',n:'Scooter 125',lbl:'125',price:1200,top:.6,acc:4.8,grip:1,steer:1,dur:1,pitch:1.2,box:'#d9d4c7',jacket:'#2b2d42',helmet:'#ffc61a'},
-  {id:'k150',n:'Kurye 150',lbl:'150',price:3000,top:.72,acc:4.2,grip:.95,steer:.95,dur:.9,pitch:1,box:'#2a6fb0',jacket:'#1f2a3a',helmet:'#f4eee6'},
+  {id:'k150',n:'Kurye 150',lbl:'150',price:3000,top:.72,acc:4.2,grip:1.05,steer:1.05,dur:.9,pitch:1,box:'#2a6fb0',jacket:'#1f2a3a',helmet:'#f4eee6'},
   {id:'n250',n:'Naked 250',lbl:'250',price:6500,top:.85,acc:3.6,grip:1.15,steer:1.2,dur:1,pitch:.88,box:'#1d1a20',jacket:'#262130',helmet:'#1d1a20'},
-  {id:'s600',n:'Sport 600',lbl:'600',price:12000,top:1,acc:3,grip:1,steer:1.05,dur:1.15,pitch:.78,box:'#ffc61a',jacket:'#120d22',helmet:'#c4373a'}
+  {id:'s600',n:'Sport 600',lbl:'600',price:12000,top:1,acc:3,grip:1.25,steer:1.25,dur:1.05,pitch:.78,box:'#ffc61a',jacket:'#120d22',helmet:'#c4373a'}
 ];
 export const UPMAX=5;
+// Top speed may exceed maxSpeed (one segment per 60 Hz step) up to TOPCAP: update() sub-steps when anything moves that fast.
+export const TOPCAP=1.3;
+// Reference top speed per district (the bike a player is expected to ride there): delivery time comes from this, not from the
+// rider's own bike, so a faster bike means spare time.
+export const ZREF=[.48,.54,.62,.70,.78,.85];
 // Paint and helmet colours (cosmetic only). 'std' is the bike's own colour.
 export const PAINT=[{id:'std',n:'Fabrika',c:null,p:0},{id:'kir',n:'Kırmızı',c:'#c4373a',p:600},{id:'lac',n:'Lacivert',c:'#24418f',p:600},{id:'yes',n:'Yeşil',c:'#2e8a57',p:800},{id:'tur',n:'Turuncu',c:'#ee7a1f',p:800},{id:'mat',n:'Mat siyah',c:'#17151b',p:1200},{id:'alt',n:'Altın',c:'#d4a72c',p:2500}];
 export const HELM=[{id:'std',n:'Fabrika',c:null,p:0},{id:'bey',n:'Beyaz',c:'#f1ece4',p:400},{id:'sar',n:'Sarı',c:'#ffc61a',p:500},{id:'kir',n:'Kırmızı',c:'#d33a3a',p:500},{id:'mav',n:'Mavi',c:'#2f78d6',p:700},{id:'pem',n:'Pembe',c:'#e46aa8',p:900},{id:'kro',n:'Krom',c:'#b9c0c9',p:2000}];
@@ -89,14 +94,15 @@ export const UPG=[
 ];
 // Shift cards: three of these six are offered when a shift starts; the one you pick lasts the whole shift.
 export const CARDS=[
-  {id:'termos',t:'Termos Çanta',d:'Paket hasarı %30 az.'},
+  {id:'termos',t:'Termos Çanta',d:'Paket hasarı %25 az.'},
   {id:'kisayol',t:'Kısa Yol',d:'Her teslimata +8 sn.'},
   {id:'bahsis',t:'Bonkör Müşteri',d:'Taşıma ücreti +%25.'},
   {id:'turbo',t:'Karbüratör Ayarı',d:'Maks. hız +%8.'},
   {id:'eldiven',t:'Ağır El',d:'Vuruş menzili +%30, rakip bonusu iki katı.'},
   {id:'sigorta',t:'Kargo Sigortası',d:'Paket bir kez dağılmaktan kurtulur, %30 ile devam edersin.'}
 ];
-export const ZONE_SHIFTS=2,NDEL=5,STREAK=[1,1.15,1.3,1.5,1.75];
+// A district is taken with ZONE_DEL successful deliveries; every LVL_DEL deliveries raise the level (pay, route length, traffic).
+export const ZONE_DEL=12,LVL_DEL=6,NDEL=5,STREAK=[1,1.15,1.3,1.5,1.75];
 export const EVENTS={
   yagmur:{t:'YAĞMUR',d:'Yol kaygan: virajda daha çok savrulursun.'},
   trafik:{t:'YOĞUN TRAFİK',d:'Yolda her zamankinden fazla araç var.'},
@@ -122,7 +128,7 @@ export const WPN=[
   {id:'bar',n:'Levye',d:'Her kuryeyi tek vuruşta yere serer.',price:3000,zb:80,za:150,lmax:.42,pow:3}
 ];
 // the hit-and-run courier; only appears in the showdown (js/meta.js)
-export const BOSS={id:'boss',n:'Kara',box:'#16131c',jacket:'#0b0a10',helmet:'#16131c',lbl:'KARA',spd:1.12,aggr:1.7,dmg:11,hp:7,cut:.5,push:.28};
+export const BOSS={id:'boss',n:'Kara',box:'#16131c',jacket:'#0b0a10',helmet:'#16131c',lbl:'KARA',spd:1.12,aggr:1.7,dmg:11,hp:16,cut:.5,push:.28};
 export const RIVALS=[
   {id:'red',n:'Kırmızı',box:'#d8343a',jacket:'#3a1a1e',helmet:'#d8343a',lbl:'ALEV',spd:1.05,aggr:2.2,dmg:12,hp:2,cut:.2,push:.3},
   {id:'green',n:'Yeşil',box:'#2fae5e',jacket:'#1d3a2a',helmet:'#e8e2da',lbl:'ÇEVİK',spd:1.18,aggr:.6,dmg:6,hp:1,cut:1,push:.18},

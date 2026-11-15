@@ -1,6 +1,6 @@
 import { CARTYPES, LANES, PW, clamp, drawDist, maxSpeed, pick, playerZ, segL } from './config.js';
 import { G } from './g.js';
-import { card, damage } from './game.js';
+import { damage } from './game.js';
 import { SPR } from './sprites.js';
 import { lightsAhead } from './street.js';
 import { toast } from './ui.js';
@@ -29,7 +29,7 @@ export function spawnCars(){G.cars=[];const d=G.route.d||0;const n=Math.min(17,M
 export function spawnAmb(){
   const lane=LANES[1];
   G.cars.push({spr:SPR.amb,hit:SPR.amb.ww*.88/G.roadW,msg:'Ambulansa çarptın',k:'amb',amb:true,wild:true,bus:false,st:'drive',cool:0,done:-1,sig:0,sigT:0,
-    base:Math.min(maxSpeed*.98,G.ST.top*maxSpeed*1.3+maxSpeed*.05),speed:G.ST.top*maxSpeed,x:lane,tl:lane,lt:99,z:G.pos+playerZ-4600,blockT:0,fined:false,passed:false,dead:false,brk:false});
+    base:G.ST.top*maxSpeed*1.3+maxSpeed*.05,speed:G.ST.top*maxSpeed,x:lane,tl:lane,lt:99,z:G.pos+playerZ-4600,blockT:0,fined:false,passed:false,dead:false,brk:false});
 }
 // A lane change is only ever started when the car is out of the rider's reach (about 1.5 s ahead or more, or already behind),
 // and it is announced first: indicator for a second, then the move. So it can be read and dodged, not just survived by luck.
@@ -40,7 +40,9 @@ export function wantLane(c,lx){
   c.pend=lx;c.sigT=c.wild?.8:1;c.sig=Math.sign(lx-c.x)||1;
 }
 export function busWant(c,dt,want){
-  if(c.st==='drive'){if(c.yld)return want;const s=G.stopsZ.find(z=>z>c.z+250);if(s!==undefined&&s!==c.done&&s-c.z<2400){c.st='pull';c.sz=s;c.tl=.9;}return want;}
+  if(c.st==='drive'){if(c.yld)return want;const s=G.stopsZ.find(z=>z>c.z+250);if(s!==undefined&&s!==c.done&&s-c.z<2400){
+      // a bus that would have to cut across lanes next to the rider skips this stop
+      if(nearLane(c.x)!==2&&nearRider(c))c.done=s;else{c.st='pull';c.sz=s;c.tl=.9;c.sig=1;}}return want;}
   if(c.st==='pull'){const rem=c.sz-c.z;if(rem<60){c.st='stop';c.wait=2.5+Math.random()*2;return 0;}return Math.min(want,Math.max(250,rem*1.3));}
   if(c.st==='stop'){c.wait-=dt;const busy=G.cars.some(o=>o!==c&&Math.abs(o.x-LANES[2])<.3&&o.z>c.z-300&&o.z<c.z+600);
     if(c.wait<=0&&(!busy||c.wait<-3)){c.st='merge';c.tl=LANES[2];c.done=c.sz;}return 0;}
@@ -48,7 +50,7 @@ export function busWant(c,dt,want){
   return want*.6;
 }
 export function updateCars(dt){
-  const pz=G.pos+playerZ,calm=false;
+  const pz=G.pos+playerZ;
   const amb=G.cars.find(o=>o.amb);
   for(const c of G.cars){
     let lead=null,lg=1e9;
@@ -64,15 +66,16 @@ export function updateCars(dt){
     if(c.k==='dolmus'){
       c.ht-=dt;
       if(c.st==='drive'&&c.ht<=0&&!c.yld){const ahead=c.z-pz;
-        if(nearLane(c.x)!==2){if(laneFree(LANES[2],c,450)){c.tl=LANES[2];c.ht=1.5;}else c.ht=3;}
-        else if(ahead>300&&ahead<3500&&Math.abs(c.x-c.tl)<.05){c.st='halt';c.wait=2+Math.random()*1.5;c.tl=.85;c.ht=8+Math.random()*8;}
+        // same rule as every lane change: signalled, and never within the rider's reach; it only stops for passengers well ahead or behind
+        if(nearLane(c.x)!==2){if(laneFree(LANES[2],c,450))wantLane(c,LANES[2]);c.ht=2.5;}
+        else if((ahead<-400||(ahead>Math.max(1800,G.speed*1.5)&&ahead<6000))&&Math.abs(c.x-c.tl)<.05){c.st='halt';c.wait=2+Math.random()*1.5;c.tl=.85;c.sig=1;c.ht=8+Math.random()*8;}
         else c.ht=2;}
       if(c.st==='halt'){c.wait-=dt;want=0;if(c.wait<=0){c.st='drive';c.tl=LANES[nearLane(c.x)];}}
     }
     if(c.k==='hurda'&&G.state==='play'){
       c.drop-=dt;
       if(c.drop<=0){c.drop=5+Math.random()*5;const ahead=c.z-pz,idx=Math.floor(c.z/segL)-1,sg=G.segs[idx];
-        if(ahead>500&&ahead<3200&&sg&&!sg.hz&&idx<G.segs.length-drawDist)sg.hz={t:'junk',x:clamp(c.x+(Math.random()-.5)*.2,-.9,.9),w:.2,hit:false,v:Math.floor(Math.random()*3)};}
+        if(ahead>Math.max(1800,G.speed*1.5)&&ahead<6000&&sg&&!sg.hz&&idx<G.segs.length-drawDist)sg.hz={t:'junk',x:clamp(c.x+(Math.random()-.5)*.2,-.9,.9),w:.2,hit:false,v:Math.floor(Math.random()*3)};}
     }
     const shut=j=>G.closures.some(k=>k.lane===j&&c.z>k.z0-1400&&c.z<k.z1);
     // Emergency corridor: the ambulance keeps to the middle of the road; everything ahead of it pulls to the sides
@@ -84,7 +87,7 @@ export function updateCars(dt){
       c.honk=!!(lead&&lg<1400&&lead.speed<c.base*.8);
       if(lead&&lead.p&&lg<900){c.blockT+=dt;if(c.blockT>1.3&&!c.fined){c.fined=true;damage(8,'Ambulansa yol vermedin');}}
       for(const r of G.rivals){const g=r.z-c.z;if(g>-100&&g<900&&r.down<=0&&!(r.dodge>0)&&Math.abs(r.x-c.x)<.32){r.dodge=1.2;r.dsd=Math.sign(r.x-c.x)||(Math.random()<.5?-1:1);}}
-      if(!c.passed&&c.z>pz+150){c.passed=true;c.base=maxSpeed*1.15;if(!c.fined&&G.state==='play'){G.bonus+=10;toast('Ambulansa yol verdin  +10 TL');}}
+      if(!c.passed&&c.z>pz+150){c.passed=true;c.base=Math.max(maxSpeed*1.15,G.ST.top*maxSpeed*1.45);if(!c.fined&&G.state==='play'){G.bonus+=10;toast('Ambulansa yol verdin  +10 TL');}}
     }else if(amb&&c.z>amb.z-150&&c.z-amb.z<3000){
       if(!c.yld){
         const cl=nearLane(c.x);
@@ -100,18 +103,18 @@ export function updateCars(dt){
       c.sig=0;c.sigT=0;
       want=Math.min(want,c.base*.5);
     }else if(c.yld){c.yld=0;if(c.st==='drive')c.tl=LANES[nearLane(c.x)];}
-    const free=c.st==='drive'&&!c.yld,still=calm&&c.cat==='taxi';
+    const free=c.st==='drive'&&!c.yld;
     c.cool-=dt;
     if(c.sigT>0){c.sigT-=dt;if(c.sigT<=0){if(laneFree(c.pend,c,500)&&!nearRider(c))c.tl=c.pend;else c.sig=0;}}
     else if(c.sig&&Math.abs(c.x-c.tl)<.04)c.sig=0;
     if(lead&&lg<1500){
-      if(free&&c.cool<=0&&lead.speed<c.base*.8&&!still&&!(c.sigT>0)){
+      if(free&&c.cool<=0&&lead.speed<c.base*.8&&!(c.sigT>0)){
         const li=nearLane(c.tl);
         for(const j of(Math.random()<.5?[li-1,li+1]:[li+1,li-1]))if(j>=0&&j<3&&laneFree(LANES[j],c,c.wild?450:700)){wantLane(c,LANES[j]);c.cool=2.5;break;}
       }
       want=Math.min(want,lead.speed+(lg-450)*1.2);
     }
-    if(c.wild&&!still&&free){c.lt-=dt;if(c.lt<=0){c.lt=((c.k==='klasik'||c.k==='lux'||c.k==='taxiY')?1:c.k==='hurda'?9:1.5)+Math.random()*3;if(Math.random()<.5){const li=nearLane(c.tl),j=pick(Math.random,[li-1,li+1].filter(i=>i>=0&&i<3));if(laneFree(LANES[j],c,450))wantLane(c,LANES[j]);}}}
+    if(c.wild&&free){c.lt-=dt;if(c.lt<=0){c.lt=((c.k==='klasik'||c.k==='lux'||c.k==='taxiY')?1:c.k==='hurda'?9:1.5)+Math.random()*3;if(Math.random()<.5){const li=nearLane(c.tl),j=pick(Math.random,[li-1,li+1].filter(i=>i>=0&&i<3));if(laneFree(LANES[j],c,450))wantLane(c,LANES[j]);}}}
     want=Math.max(0,want);
     if(want<c.speed-maxSpeed*.01||c.speed<maxSpeed*.02)c.brkT=.35;else c.brkT=Math.max(0,(c.brkT||0)-dt);
     c.brk=c.brkT>0;

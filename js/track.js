@@ -14,7 +14,7 @@ export function signature(pf,R){
   else for(let i=0;i<3;i++)addRoad(15,15,15,0,(i%2?-1:1)*25);
 }
 export const lastY=()=>G.segs.length?G.segs[G.segs.length-1].p2.wy:0;
-export function addSeg(curve,y){const n=G.segs.length;G.segs.push({index:n,p1:{wy:lastY(),wz:n*segL},p2:{wy:y,wz:(n+1)*segL},curve,sprites:[],hz:null,cl:null,clk:null,color:(G.TH.cobble?n%2:Math.floor(n/3)%2)?G.PAL.dark:G.PAL.light,clip:0,fog:1,looped:false});}
+export function addSeg(curve,y){const n=G.segs.length;G.segs.push({index:n,p1:{wy:lastY(),wz:n*segL},p2:{wy:y,wz:(n+1)*segL},curve,sprites:[],hz:null,bw:false,cl:null,clk:null,color:(G.TH.cobble?n%2:Math.floor(n/3)%2)?G.PAL.dark:G.PAL.light,clip:0,fog:1,looped:false});}
 export function addRoad(e,h,l,c,y){e=Math.round(e);h=Math.round(h);l=Math.round(l);const sy=lastY(),ey=sy+y*segL,t=e+h+l;
   for(let n=0;n<e;n++)addSeg(easeIn(0,c,n/e),easeInOut(sy,ey,n/t));
   for(let n=0;n<h;n++)addSeg(c,easeInOut(sy,ey,(e+n)/t));
@@ -78,7 +78,10 @@ export function buildTrack(rt,seed){
   const dd=rt.d||0,wb=.12,wp=.29*D.pot,wo=.23*(rt.ev==='yagmur'?1.4:1),tot=wb+wp+wo;
   for(let n=60+Math.floor(SR()*30);n<fi-20;){
     const r=SR()*tot,t=r<wb?'bump':r<wb+wp?'pot':'oil';
-    if(t==='bump'){G.segs[n].hz={t,x:0,w:2.4,hit:false};G.segs[n-12].sprites.push({spr:SPR.sign,off:1.1});}
+    if(t==='bump'){G.segs[n].hz={t,x:0,w:2.4,hit:false};
+      const wn=Math.min(n-14,Math.max(16,Math.round(((G.ST&&G.ST.top)||.6)*60*1.3)));
+      G.segs[n-wn].sprites.push({spr:SPR.sign,off:1.1});
+      for(const f of[1,.66,.33])G.segs[n-Math.max(3,Math.round(wn*f))].bw=true;}
     else G.segs[n].hz={t,x:pick(SR,LANES)+(SR()-.5)*.2,w:t==='pot'?.24:.5,hit:false,r:SR()};
     n+=Math.max(20,Math.round(1.44*(32+SR()*50)/(1+Math.min(.6,dd*.03))/Math.sqrt(D.pot)));   // ~35% fewer potholes and oil, speed bumps as often as before
   }

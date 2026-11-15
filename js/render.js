@@ -37,6 +37,15 @@ export function jag(cx,cy,rx,ry,seed,col){
   for(let i=0;i<12;i++){const a=i/12*Math.PI*2,k=.7+.3*Math.abs(Math.sin(seed*91.7+i*2.3)),x=cx+Math.cos(a)*rx*k,y=cy+Math.sin(a)*ry*k;i?ctx.lineTo(x,y):ctx.moveTo(x,y);}
   ctx.closePath();ctx.fill();
 }
+// white rumble bands across the road: they announce a speed bump early enough to brake
+export function drawBands(s,a){
+  if(s.p1.cz<=camDepth||s.p2.sy>=s.clip)return;
+  const L=(u,v,t)=>u+(v-u)*t,x1=s.p1.sx,y1=s.p1.sy,w1=s.p1.sw*.94,x2=s.p2.sx,y2=s.p2.sy,w2=s.p2.sw*.94;
+  ctx.globalAlpha=a*.85;
+  for(const [t0,t1] of[[.05,.4],[.6,.95]]){const xa=L(x1,x2,t0),ya=L(y1,y2,t0),wa=L(w1,w2,t0),xb=L(x1,x2,t1),yb=L(y1,y2,t1),wb=L(w1,w2,t1);
+    poly(xa-wa,ya,xa+wa,ya,xb+wb,yb,xb-wb,yb,'#efe9dd');}
+  ctx.globalAlpha=1;
+}
 export function drawHazard(s,a){
   const h=s.hz;if(s.p1.cz<=camDepth||s.p2.sy>=s.clip)return;
   const x1=s.p1.sx,y1=s.p1.sy,w1=s.p1.sw,x2=s.p2.sx,y2=s.p2.sy,w2=s.p2.sw;
@@ -52,7 +61,7 @@ export function drawHazard(s,a){
   }else if(y1-y2>=1){
     const wa=(w1+w2)/2,ex=(x1+x2)/2+h.x*wa,ey=(y1+y2)/2,rx=h.w/2*wa,ry=Math.max(1,(y1-y2)*.5);
     if(h.t==='pot'){
-      jag(ex,ey,rx*1.2,ry*1.3,h.r,'#8a7f86');
+      jag(ex,ey,rx*1.35,ry*1.45,h.r,'#cfc4ae');   // pale broken-asphalt rim: readable against the dark road from a distance
       jag(ex,ey+ry*.08,rx*.95,ry,h.r+.37,'#0b0910');
       ctx.fillStyle='rgba(0,0,0,.6)';ctx.fillRect(ex-rx*.8,ey-ry*.7,rx*1.6,Math.max(1,ry*.35));
       ctx.fillStyle='rgba(130,110,90,.6)';ctx.beginPath();ctx.ellipse(ex,ey+ry*.4,rx*.55,ry*.28,0,0,Math.PI*2);ctx.fill();
@@ -224,6 +233,7 @@ export function render(){
   const pN=Math.floor((G.pos+playerZ)/segL)-base.index;
   for(let n=drawDist-1;n>0;n--){
     const s=G.segs[(base.index+n)%N],a=Math.max(.12,s.fog);
+    if(s.bw)drawBands(s,a);
     if(s.hz)drawHazard(s,a);
     // cars and couriers inside this segment are farther than its edge sprites (barriers, poles), so draw them first, far to near
     const b=B[n];

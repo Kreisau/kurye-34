@@ -32,13 +32,13 @@ with sync_playwright() as p:
     ev("const l=S.lights[0];G.pos=l.z-C.playerZ-1500;G.playerX=-.33;for(let k=0;k<3;k++)GM.update(1/60);G.paused=true;(await import('/js/render.js')).render();"); pg.wait_for_timeout(150); shot('red-light')
     r=ev("""const l=S.lights[0];const run=st=>{l.passed=false;G.fine=0;G.pos=l.z-C.playerZ-800;l.off=((st==='red'?10:2)-G.clock%13+13)%13;for(let i=0;i<40;i++){G.inv=99;G.speed=C.maxSpeed*.4;GM.update(1/60);}return G.fine;};
       const a=run('red'),b=run('green');l.off=(9-G.clock%13+13)%13;l.was=false;G.pos=l.z-C.playerZ-1500;for(let k=0;k<30;k++){G.speed=0;GM.update(1/60);}return {red:a,green:b,peds:S.peds.length};""")
-    check('running a red light is fined, green is not', r['red']==75 and r['green']==0 and r['peds']>=1, r)
+    fee=ev('return 40+G.route.d*15'); check('running a red light is fined 30% of the base fee, green is not', abs(r['red']-fee*.3)<=5 and r['red']>=10 and r['green']==0 and r['peds']>=1, (r,fee))
     r=ev("""S.lights.forEach(l=>l.passed=true);const p=S.peds[0];p.x=.2;G.fine=0;G.inv=0;G.crashT=0;G.graceT=0;G.pos=p.z-C.playerZ;G.playerX=p.x;const c0=G.cond;GM.update(1/60);return {fine:G.fine,pedHit:G.pedHit,crash:G.crashT>0,lost:c0-G.cond,flee:!!p.flee};""")
-    check('hitting a pedestrian: fine, rating flag, crash', r['fine']==100 and r['pedHit'] and r['crash'] and r['flee'], r)
+    check('hitting a pedestrian: fine (50% of the base fee), rating flag, crash', abs(r['fine']-fee*.5)<=5 and r['pedHit'] and r['crash'] and r['flee'], r)
     # checkpoint
     r=ev("""G.crashT=0;G.inv=99;G.fine=0;S.peds=[];S.cops=[{n:0,z:pz()+600,side:1,warn:false,done:false}];G.speed=C.maxSpeed*.45;for(let k=0;k<90;k++){G.speed=C.maxSpeed*.45;GM.update(1/60);}const a=G.fine;
       S.cops=[{n:0,z:pz()+600,side:1,warn:false,done:false}];for(let k=0;k<400&&!S.cops[0].done;k++){G.speed=C.maxSpeed*.2;GM.update(1/60);}return {fast:a,slow:G.fine-a};""")
-    check('checkpoint: fast fined, slow not', r['fast']==150 and r['slow']==0, r)
+    check('checkpoint: fast fined (60% of the base fee), slow not', abs(r['fast']-fee*.6)<=5 and r['slow']==0, (r,fee))
     ev("G.pos=S.cops[0].z-C.playerZ-2600;G.playerX=0;GM.update(1/60);(await import('/js/render.js')).render();"); pg.wait_for_timeout(150); shot('cop')
     # speedometer: limit tag and colour while a checkpoint is coming up, red-blue edge pulse
     ev("G.paused=false;G.state='play';S.cops=[{n:0,z:pz()+9000,side:1,warn:true,done:false}];G.speed=C.maxSpeed*.5;"); pg.wait_for_timeout(250)
