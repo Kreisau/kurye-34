@@ -59,7 +59,12 @@ with sync_playwright() as p:
         ev(pg,"const r=G.rivals[0];r.down=0;G.kickSide=1;for(let i=0;i<4&&r.hp>0;i++)GM.landHit(r,C.WPN[0],false);"); pg.wait_for_timeout(1900)
         r=res(pg); m1=ev(pg,"return G.S.money"); check(tag+' boss win + prize', r['title']=='HESAP KAPANDI' and m1-m0==2000, (r['title'],m1-m0))
         if OUT: pg.screenshot(path=f'{OUT}/{tag}-ending.png')
+        check(tag+' ending shows lifetime stats', 'Teslimat' in pg.inner_text('#resRows') and 'Sürüş süresi' in pg.inner_text('#resRows'), pg.inner_text('#resRows')[:120])
         click(pg,'#resBtns button:last-child'); pg.wait_for_timeout(300)
+        r=res(pg); check(tag+' closing scene', r['title']=='DOSYA KAPANDI', r['title'])
+        if OUT: pg.screenshot(path=f'{OUT}/{tag}-end2.png')
+        click(pg,'#resBtns button:first-child'); pg.wait_for_timeout(300)
+        check(tag+' free ride in menu', 'Serbest sürüş' in pg.inner_text('#lede'), pg.inner_text('#lede'))
         check(tag+' case closed, pay +10%', pg.inner_text('#caseBtn')=='DOSYA ✓' and abs(ev(pg,"return (await import('/js/rating.js')).payMult()/ (1+.05*((await import('/js/rating.js')).avgRating()-3)||1)")-1.1)<.2)
         # settings
         click(pg,'#sndBtn'); pg.wait_for_timeout(200)

@@ -53,7 +53,7 @@ Birimler: hız `km/s` olarak ekranda görünür, tam hız (`maxSpeed`) 130 km/s 
 `d = vardiya no × 3 + teslimat no` (0'dan başlar) ilerleme sayacıdır.
 
 - **Uzunluk:** `min(2400, (600 + d × 90) × tür)` segment (1,2 km ile 4,8 km arası).
-- **Taşıma ücreti:** `(40 + d × 18) × tür × olay × bahşiş kartı × puan çarpanı × vardiya saati × seri çarpanı × kart çarpanları`. Olay varsa ×1,2.
+- **Taşıma ücreti:** `(40 + d × 15) × tür × olay × bahşiş kartı × puan çarpanı × vardiya saati × seri çarpanı × kart çarpanları`. Olay varsa ×1,2.
 - **Süre:** `uzunluk / (60 × ref) + 10` saniye, bölge çarpanıyla (Karaköy ×1,12, Fatih ×1,08).
   `ref = (0,24 + 0,23 × (motorun üst hızı − 0,48)) × (1 + min(0,2, d × 0,008))`.
   Süre, kullandığın motorun gerçek hızına göre hesaplanır; temiz bir sürüş her motorda sürenin kabaca %65'ini kullanır. Hızlı motor daha çok boş süre bırakır (yıldız ve bahşiş getirir).
@@ -392,11 +392,17 @@ Oyuncu, bir gece kendisini yerden kaldıran Usta'nın yanında kurye olarak çal
 |---|---|
 | KIRIK AYNA | 1 |
 | IŞIKLARI KAPALI | 3 |
-| 34 NUMARA | 5 |
-| BÖLGE | 7 |
-| SON TESLİMAT | 9 |
+| 34 NUMARA | 6 |
+| BÖLGE | 9 |
+| SON TESLİMAT | 12 |
 
 Beş ipucu toplanınca menüde **HESAPLAŞMA** açılır: Kara ile bir kovalamaca. Kara, rakiplerin en güçlüsüdür (hız çarpanı 1,12, saldırganlık 1,7, HP 7). Duvara ya da araca çarpması ona 3 HP kaybettirir. Süre dolarsa Kara kaçar. Yenersen **2.000 TL** ödül alırsın, dosya kapanır ve bölge senin olur: tüm ücretler kalıcı olarak +%10.
+
+Kara yenilince sonuç ekranında oyunun genel istatistikleri (teslimat, yol, kazanılan para, yere serilen kurye, ödenen ceza, tamamlanan vardiya, sürüş süresi) görünür, ardından **SON** sahnesi gelir. Bundan sonra oyun **serbest sürüş** olarak devam eder: vardiyalar aynı kurallarla sürer, ücretler +%10'dur, Dosya ekranında istatistikler görünür.
+
+### Oyun süresi ve ekonomi hedefi
+
+`tools/econ_sim.py` oyunun kendi formülleriyle "orta seviye oyuncuyu" (4 yıldız, %85 paket, sürenin %70'i, teslimat başına %8-15 başarısızlık) modeller. Hedef: Kara'ya 2-3 saatte ulaşmak, o noktada 5 motor, 20 kart ve parçaların çoğu açılmış olsun. Mevcut ayarla model medyan 127-166 dakika veriyor; 150'lik motor yaklaşık 4. vardiyada, 250'lik 7., Sport 600 11. vardiyada alınıyor, 20 kartın sonuncusu 10. vardiyada açılıyor. Bu bir model; gerçek oyuncu süresi playtest ile doğrulanmalı.
 
 Hesaplaşmada yalnızca bu savaşta gergin müzik çalar. Sürüş sırasında telsizden Usta, 34'ün iç sesi ve rakipler hikâye repliklerini ilerleme durumuna göre söyler.
 

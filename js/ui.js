@@ -50,6 +50,7 @@ export function updateMenu(){
   $('mRating').textContent=ratingLabel();
   $('mShift').textContent='Vardiya #'+(G.S.shifts+1)+' · '+unlocked()+'/6 bölge açık';
   $('dailyBtn').textContent='GÜNÜN SİPARİŞİ'+(dailyDone()?' ✓':' ×2');
+  $('lede').textContent=G.S.boss?'Dosya kapandı. Serbest sürüş: istediğin kadar vardiya, tüm ücretler +%10.':'Her vardiya 5 teslimat. Kasayı al ya da riske gir. Sana çarpanı bul.';
   const ready=G.S.clues>=5&&!G.S.boss,cb=$('caseBtn');
   cb.textContent=ready?'HESAPLAŞMA':'DOSYA '+(G.S.boss?'✓':G.S.clues+'/5');cb.classList.toggle('hotb',ready);
 }
@@ -93,11 +94,12 @@ export function finish(ok,why){
   G.state='result';clearInput();hideGameUI();
   if(G.tut){tutFinish();return;}
   const rt=rateDelivery(ok,why),to=G.route.to;recordRating(rt.stars);
+  if(ok){G.S.st.del++;G.S.st.km+=G.route.len*M_PER_SEG/1000;}G.S.st.fines+=G.fine||0;
   if(G.shift.daily){dailyFinish(ok,why,rt);return;}
   const eyebrow='VARDİYA #'+(G.shift.L+1)+' · TESLİMAT '+(G.shift.i+1)+'/'+NDEL;
   if(ok){
     const pay=Math.round(G.route.pay*G.cond/100),tb=Math.round(G.timeLeft*1.5)*(card('kombo')>0?2:1),fine=Math.round((G.fine||0)*(card('cezasiz')>0?.5:1)),total=Math.max(0,pay+tb+G.bonus+rt.tip-fine);
-    G.shift.earned+=total;
+    G.shift.earned+=total;G.S.st.earned+=total;
     const rows=[['Müşteri puanı',starStr(rt.stars),'stars'],['Paket durumu',G.cond+'%'],['Kalan süre',Math.min(100,Math.max(0,Math.round(100*G.timeLeft/Math.max(1,G.route.time))))+'%'],['Taşıma ücreti ('+G.cond+'%)',fmt(pay)],['Süre bonusu ('+num(G.timeLeft,1)+' sn)',fmt(tb)],['Bahşiş',fmt(rt.tip)],['Rakip bonusu',fmt(G.bonus)]].concat(fine?[['Cezalar','−'+fmt(fine)]]:[],[['BU TESLİMAT',fmt(total),'total']]);
     const sub='“'+rt.comment+'” · '+to;
     sfxStars(rt.stars);if(rt.tip&&G.AC)sfx('cash',{t:G.AC.currentTime+.25+rt.stars*.16});

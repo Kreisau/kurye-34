@@ -52,7 +52,7 @@ export function makeOffer(kind){
   const ev=Math.random()<chance?pick(Math.random,Object.keys(EVENTS)):null;
   const pool=D.pool.slice(),a=pool.splice(Math.floor(Math.random()*pool.length),1)[0],b=pick(Math.random,pool);
   return{D,kind:kind.k,rest:pick(Math.random,RESTS),from:a,to:b,A:prof(a),B:prof(b),len,time,curv:D.curv*(1+loop*.15),hill:D.hill,up:D.up,
-    pay:Math.round((40+d*18)*kind.pay*(ev?1.2:1)*(1+.25*card('bahsis'))*payMult()*T.pay*STREAK[i]*(card('cam')?2:1)*Math.pow(1.6,card('ekspres'))),d,ev,seed:(Math.random()*1e9)|0};
+    pay:Math.round((40+d*15)*kind.pay*(ev?1.2:1)*(1+.25*card('bahsis'))*payMult()*T.pay*STREAK[i]*(card('cam')?2:1)*Math.pow(1.6,card('ekspres'))),d,ev,seed:(Math.random()*1e9)|0};
 }
 export function prepDelivery(){
   const offers=KINDS.map(makeOffer);
@@ -155,14 +155,14 @@ export function landHit(best,wp,g){
       if(best.boss){best.down=4;bossEnd(true);return;}
       // second knockdown puts a rival out for the rest of the delivery
       best.kd=(best.kd||0)+1;best.out=best.kd>=2;best.down=best.out?4:(best.p.id==='orange'?3:5);
-      const add=Math.round((15+best.p.hp*10)*rivalMult()*(best.out?2:1));G.bonus+=add;if(card('aynaci')>0)G.timeLeft+=6;rivalDownLine(best);toast(best.p.n+(best.out?' kurye saf dışı!  +':' kurye yerde!  +')+add+' TL');
+      G.S.st.kd++;const add=Math.round((15+best.p.hp*10)*rivalMult()*(best.out?2:1));G.bonus+=add;if(card('aynaci')>0)G.timeLeft+=6;rivalDownLine(best);toast(best.p.n+(best.out?' kurye saf dışı!  +':' kurye yerde!  +')+add+' TL');
     }else{best.speed*=.8;best.vx=(best.vx||0)+G.kickSide*(.9+.3*wp.pow);best.stun=.45;best.shoved=2.5;best.cool=Math.max(best.cool,1.2);toast(best.p.n+' kurye sendeledi');}
   }
 }
 export function bgScroll(seg,dz){G.farOff+=.0015*seg.curve*dz/segL;G.nearOff+=.003*seg.curve*dz/segL;}
 
 export function update(dt){
-  G.clock+=dt;
+  G.clock+=dt;if(G.state==='play')G.S.st.t+=dt;
   const pSeg=findSeg(G.pos+playerZ),startPos=G.pos,px0=G.playerX;
   G.flashT=Math.max(0,G.flashT-dt);G.shakeT=Math.max(0,G.shakeT-dt);
   if(G.state==='menu'){

@@ -60,7 +60,7 @@ function crashRival(r,what){
   }
   r.out=true;   // a wrecked rival is out for the rest of this delivery
   if(r.shoved>0){
-    const add=Math.round((15+r.p.hp*10)*2*rivalMult());G.bonus+=add;if(card('aynaci')>0)G.timeLeft+=6;rivalDownLine(r);
+    G.S.st.kd++;const add=Math.round((15+r.p.hp*10)*2*rivalMult());G.bonus+=add;if(card('aynaci')>0)G.timeLeft+=6;rivalDownLine(r);
     if(near){sparks(Math.sign(r.x-G.playerX)||1,18);hitStop(.04);buzz(50);}
     toast(r.p.n+' kurye '+what+' çarptı, saf dışı!  +'+add+' TL');
   }else if(near)toast(r.p.n+' kurye '+what+' çarptı, saf dışı');

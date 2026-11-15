@@ -13,12 +13,18 @@ import { distStr, goMenu, hideGameUI, renderResult, showGarage, toast } from './
 export const CLUES = [
   { at: 1, t: 'KIRIK AYNA', d: 'Usta: “Seni yerden kaldırdığım gece asfaltta kırık bir ayna buldum. Sol ayna, siyah.” Sana çarpan motorun sol aynası yok.' },
   { at: 3, t: 'IŞIKLARI KAPALI', d: 'Köşedeki çaycı o geceyi hatırlıyor: “Siyah kasklı biri ışıkları kapalı geçti. Kutusu da simsiyahtı, üstünde tek harf yoktu.”' },
-  { at: 5, t: '34 NUMARA', d: 'Bir müşteri cebindeki fişe baktı: “Bu sipariş numarası değil, kurye numarası. Eskiden bu mahallede 34 numaralı bir kurye vardı. Bir gece ortadan kayboldu.” O kurye sendin.' },
-  { at: 7, t: 'BÖLGE', d: 'Yere serdiğin rakiplerden biri konuştu: “Kara’yı mı arıyorsun? Senin eski bölgeni o aldı. Sen kaybolunca en çok o kazandı.”' },
-  { at: 9, t: 'SON TESLİMAT', d: 'Usta bir adres uzattı: “Kara bu gece son teslimatını yapıyor. Yetişirsen yüzleşirsin. Dikkat et: sol tarafını göremez.”' },
+  { at: 6, t: '34 NUMARA', d: 'Bir müşteri cebindeki fişe baktı: “Bu sipariş numarası değil, kurye numarası. Eskiden bu mahallede 34 numaralı bir kurye vardı. Bir gece ortadan kayboldu.” O kurye sendin.' },
+  { at: 9, t: 'BÖLGE', d: 'Yere serdiğin rakiplerden biri konuştu: “Kara’yı mı arıyorsun? Senin eski bölgeni o aldı. Sen kaybolunca en çok o kazandı.”' },
+  { at: 12, t: 'SON TESLİMAT', d: 'Usta bir adres uzattı: “Kara bu gece son teslimatını yapıyor. Yetişirsen yüzleşirsin. Dikkat et: sol tarafını göremez.”' },
 ];
 const BOSS_PRIZE = 2000;
 
+// lifetime numbers, shown on the ending screen and in the closed case file
+export function statRows() {
+  const s = G.S.st, m = Math.round(s.t / 60), hm = (m >= 60 ? Math.floor(m / 60) + ' sa ' : '') + (m % 60) + ' dk';
+  return [['Teslimat', String(s.del)], ['Yol', num(s.km, 1) + ' km'], ['Kazanılan', fmt(Math.round(s.earned))], ['Yere serilen kurye', String(s.kd)],
+    ['Yenen ceza', fmt(Math.round(s.fines))], ['Tamamlanan vardiya', String(G.S.shifts)], ['Sürüş süresi', hm]];
+}
 export function nextClue() {
   const c = CLUES[G.S.clues];
   if (!c || G.S.shifts < c.at) return null;
@@ -36,7 +42,7 @@ export function showCase() {
   const tail = G.S.boss ? '\n\nDosya kapandı. Bölge senin: tüm ücretler +%10.' : next ? '\n\nSıradaki ipucu: ' + Math.max(1, next.at - G.S.shifts) + ' vardiya sonra.' : '';
   const buttons = [{ t: 'MENÜ', cls: 'ghost', fn: goMenu }];
   if (ready) buttons.unshift({ t: 'HESAPLAŞMA', cls: 'cta', fn: startBoss });
-  renderResult({ eyebrow: 'DOSYA · ' + n + '/' + CLUES.length + ' İPUCU', title: 'KİM ÇARPTI?', sub: body + tail, rows: [], buttons });
+  renderResult({ eyebrow: 'DOSYA · ' + n + '/' + CLUES.length + ' İPUCU', title: 'KİM ÇARPTI?', sub: body + tail, rows: G.S.boss ? statRows() : [], buttons });
 }
 
 /* ---------- showdown ---------- */
@@ -62,8 +68,8 @@ export function bossEnd(win, why) {
       renderResult({
         eyebrow: 'KİM ÇARPTI? · SON', title: 'HESAP KAPANDI',
         sub: 'Kara’nın kaskı asfaltta yuvarlandı. “Seni bölgeden atmak istedim, öldürmek değil” dedi. “Fren tutmadı.”\n\nAdını hâlâ hatırlamıyorsun. Ama numaran var, bölgen var, bir de Usta’nın dükkânı. Şimdilik yeter.',
-        rows: first ? [['Usta’dan prim', fmt(BOSS_PRIZE)], ['Bölge senin', 'tüm ücretler +%10'], ['KASA', fmt(G.S.money), 'total']] : [['KASA', fmt(G.S.money), 'total']],
-        buttons: [{ t: 'GARAJA GİT', cls: 'cta', fn: showGarage }, { t: 'MENÜ', cls: 'ghost', fn: goMenu }],
+        rows: (first ? [['Usta’dan prim', fmt(BOSS_PRIZE)], ['Bölge senin', 'tüm ücretler +%10']] : []).concat(statRows(), [['KASA', fmt(G.S.money), 'total']]),
+        buttons: [{ t: 'SON', cls: 'cta', fn: showEnding }],
       });
     }, 1300);
   } else {
@@ -74,6 +80,15 @@ export function bossEnd(win, why) {
       rows: [], buttons: [{ t: 'TEKRAR DENE', cls: 'cta', fn: startBoss }, { t: 'GARAJ', cls: 'ghost', fn: showGarage }, { t: 'MENÜ', cls: 'ghost', fn: goMenu }],
     });
   }
+}
+
+// the closing scene: the story is over, the city stays open
+export function showEnding() {
+  renderResult({
+    eyebrow: 'KURYE 34 · SON', title: 'DOSYA KAPANDI',
+    sub: 'Usta dükkânın kepengini yarıya kadar indirdi, iki çay koydu. “Kaskını bırakmıyorsun, değil mi?” dedi.\n\nBırakmıyorsun. Şehir hâlâ aç, siparişler hâlâ geliyor. Artık kimseden kaçmıyorsun.\n\nOyunu bitirdin. Serbest sürüşte istediğin kadar vardiya alabilirsin; tüm ücretler +%10.',
+    rows: [], buttons: [{ t: 'SERBEST SÜRÜŞ', cls: 'cta', fn: goMenu }, { t: 'GARAJ', cls: 'ghost', fn: showGarage }],
+  });
 }
 
 /* ---------- daily order ---------- */
@@ -87,7 +102,7 @@ export function startDaily() {
   const pool = D.pool.slice(), a = pool.splice(Math.floor(R() * pool.length), 1)[0], b = pick(R, pool), ev = pick(R, Object.keys(EVENTS));
   G.shift = { L: G.S.shifts, i: 0, cards: {}, earned: 0, daily: key };
   G.route = { D, kind: 'GÜNÜN SİPARİŞİ', rest: pick(R, RESTS), from: a, to: b, A: prof(a), B: prof(b), len, time: Math.round((len / (60 * ref) + 10) * D.tmul),
-    curv: D.curv, hill: D.hill, up: D.up, pay: Math.round((40 + d * 18) * kind.pay * 1.2 * payMult()), d, ev, seed: (R() * 1e9) | 0 };
+    curv: D.curv, hill: D.hill, up: D.up, pay: Math.round((40 + d * 15) * kind.pay * 1.2 * payMult()), d, ev, seed: (R() * 1e9) | 0 };
   startMission();
   $('route').textContent = 'GÜNÜN SİPARİŞİ · ' + a + ' → ' + b;
 }

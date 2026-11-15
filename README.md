@@ -46,6 +46,7 @@ Derleme yok; düz ES modülleri.
 | `tools/i18n_check.py` | İngilizcede çevrilmeden kalan metinleri listeler |
 | `tools/bike_vis_test.py` | Motorun her ekran boyutunda ve yokuşta ekranda kaldığını ölçer |
 | `tools/rival_spawn_test.py` | 4 rakip, 6 rota: iki rakip üst üste binmiyor |
+| `tools/econ_sim.py` | Ekonomi modeli: orta seviye oyuncunun Kara'ya kaç dakikada ulaştığı ve o ana kadar neler aldığı |
 | `tools/camera_test.py` | Sabit ve dinamik kamerayı yokuşlu rotada karşılaştırır |
 | `tools/street_test.py` | Işık, yaya, çevirme, köpek, ters yön, ceza ve günün saati testleri |
 | `tools/shift_test.py` | Vardiya kuralları: 5 teslimat, vardiya kasası, kasayı alma, kaybedince kasanın gitmesi, kart açılması, lanetli kartlar, telsiz |

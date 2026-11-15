@@ -155,6 +155,11 @@ const EN = {
   'SABAH': 'MORNING', 'ÖĞLEN': 'NOON', 'AKŞAM': 'EVENING', 'GECE': 'NIGHT',
   // results
   'GARAJA GİT': 'GO TO GARAGE', 'YENİ VARDİYA': 'NEW SHIFT', 'MENÜ': 'MENU', 'DEVAM': 'CONTINUE', 'TEKRAR DENE': 'TRY AGAIN',
+  'Teslimat': 'Deliveries', 'Yol': 'Distance', 'Kazanılan': 'Earned', 'Yere serilen kurye': 'Couriers knocked down', 'Yenen ceza': 'Fines paid',
+  'Tamamlanan vardiya': 'Shifts completed', 'Sürüş süresi': 'Riding time', ' sa ': ' h ', ' dk': ' min', 'SON': 'THE END', 'KURYE 34 · SON': 'KURYE 34 · THE END',
+  'DOSYA KAPANDI': 'CASE CLOSED', 'SERBEST SÜRÜŞ': 'FREE RIDE',
+  'Usta dükkânın kepengini yarıya kadar indirdi, iki çay koydu. “Kaskını bırakmıyorsun, değil mi?” dedi.\n\nBırakmıyorsun. Şehir hâlâ aç, siparişler hâlâ geliyor. Artık kimseden kaçmıyorsun.\n\nOyunu bitirdin. Serbest sürüşte istediğin kadar vardiya alabilirsin; tüm ücretler +%10.': 'Usta pulled the shutter halfway down and poured two teas. “You’re not hanging up the helmet, are you?” he said.\n\nYou’re not. The city is still hungry, the orders keep coming. You’re not running from anyone anymore.\n\nYou finished the game. In free ride you can take as many shifts as you like; all pay +10%.',
+  'Dosya kapandı. Serbest sürüş: istediğin kadar vardiya, tüm ücretler +%10.': 'Case closed. Free ride: as many shifts as you like, all pay +10%.',
   'CEZALAR': 'FINES', 'Kırmızıda geçmek': 'Running a red light', 'Yayaya çarpmak': 'Hitting a pedestrian', '−1 yıldız': '−1 star',
   'Çevirmede 55 km/s üstü': 'Over 55 km/h at a checkpoint', 'Ambulansa yol vermemek': 'Not giving way to an ambulance', 'paket hasarı': 'package damage',
   'LİMİT 55': 'LIMIT 55',
