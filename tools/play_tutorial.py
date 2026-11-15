@@ -55,6 +55,7 @@ with sync_playwright() as p:
     pg.screenshot(path=f'{OUT}/3-tut-result.png')
     res_tut = pg.inner_text('#result'); st_tut = S()
     pg.evaluate("[...document.querySelectorAll('#resBtns button')][0].click()"); pg.wait_for_timeout(400)
+    pg.evaluate("document.querySelector('#picks button').click()"); pg.wait_for_timeout(300)
     brief = pg.inner_text('#bEyebrow')
     pg.evaluate("document.querySelector('#offers button').click()")
     t1 = time.time()

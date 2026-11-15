@@ -19,7 +19,7 @@ with sync_playwright() as p:
     # time of day
     tods=ev("const out=[];for(let L=0;L<4;L++){G.shift={L,i:0,cards:{},earned:0};const o=GM.makeOffer(GM.KINDS[1]);out.push([GM.tod(L).k,o.D.theme]);}G.shift=null;return out;")
     check('time of day per shift', [t[0] for t in tods]==['SABAH','ÖĞLEN','AKŞAM','GECE'] and tods[0][1]=='morning' and tods[1][1]=='day' and tods[3][1] in('night','neon'), tods)
-    click('#startBtn'); pg.wait_for_timeout(300); eb=pg.inner_text('#bEyebrow'); check('brief shows time', 'AKŞAM +%10' in eb, eb)
+    click('#startBtn'); pg.wait_for_timeout(300); click('#picks button'); pg.wait_for_timeout(300); eb=pg.inner_text('#bEyebrow'); check('brief shows time and district', 'AKŞAM' in eb and '+%' not in eb, eb)
     click('#offers button:last-child'); pg.wait_for_timeout(1700)
     ev("let k=0;while(!S.lights.length&&++k<40){G.route=GM.makeOffer(GM.KINDS[2]);GM.startMission();G.state='play';}")
     s=ev("G.timeLeft=999;return {lights:S.lights.length,xw:G.segs.filter(s=>s.xw).length,cops:S.cops.length,dogs:S.dogs.length,d:G.route.d}")

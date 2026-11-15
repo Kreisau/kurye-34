@@ -77,37 +77,22 @@ export const BIKES=[
   {id:'s600',n:'Sport 600',lbl:'600',price:12000,top:1,acc:3,grip:1,steer:1.05,dur:1.15,pitch:.78,box:'#ffc61a',jacket:'#120d22',helmet:'#c4373a'}
 ];
 export const UPG=[
-  {n:'Motor',d:'+%5 maks. hız, daha çabuk kalkış'},
+  {n:'Motor',d:'+%5 maks. hız, daha çabuk kalkış, daha iyi yol tutuş'},
   {n:'Lastik',d:'Virajda daha az savrulma, daha keskin dönüş'},
   {n:'Çanta',d:'Paket hasarı %12 az'},
   {n:'Mont',d:'Düştüğünde daha çabuk toparlanırsın'},
   {n:'Nitro',d:'Her seviye, teslimat başına 1 nitro hakkı: 2,5 sn +%25 hız'}
 ];
-// Shift cards. The first 10 are always in the pool; the rest unlock one per completed shift (G.S.cu), in this order.
-// curse: strong but with a price; at most one is offered at a time.
+// Shift cards: three of these six are offered when a shift starts; the one you pick lasts the whole shift.
 export const CARDS=[
-  {id:'termos',t:'Termos Çanta',d:'Paket hasarı %30 az.',stack:true},
-  {id:'taksici',t:'Taksici Dayı',d:'Taksiler şerit değiştirmez.'},
-  {id:'kisayol',t:'Kısa Yol',d:'Kalan teslimatlara +8 sn.',stack:true},
-  {id:'bahsis',t:'Bonkör Müşteri',d:'Taşıma ücreti +%25.',stack:true},
-  {id:'turbo',t:'Karbüratör Ayarı',d:'Maks. hız +%8.',stack:true},
+  {id:'termos',t:'Termos Çanta',d:'Paket hasarı %30 az.'},
+  {id:'kisayol',t:'Kısa Yol',d:'Her teslimata +8 sn.'},
+  {id:'bahsis',t:'Bonkör Müşteri',d:'Taşıma ücreti +%25.'},
+  {id:'turbo',t:'Karbüratör Ayarı',d:'Maks. hız +%8.'},
   {id:'eldiven',t:'Ağır El',d:'Vuruş menzili +%30, rakip bonusu iki katı.'},
-  {id:'sigorta',t:'Kargo Sigortası',d:'Paket bir kez dağılmaktan kurtulur, %30 ile devam edersin.'},
-  {id:'kask',t:'Çelik Kask',d:'Düştüğünde iki kat hızlı kalkarsın.'},
-  {id:'yolbilir',t:'Ara Sokak Bilgisi',d:'Virajda savrulma %25 az.'},
-  {id:'sakin',t:'Sessiz Egzoz',d:'Rakip kurye seni geç fark eder.'},
-  {id:'nitrokart',t:'Yedek Tüp',d:'Her teslimatta +1 nitro.',stack:true},
-  {id:'cam',t:'Cam Eşya',d:'Taşıma ücreti iki katı. Paket iki kat kırılgan.',curse:true},
-  {id:'aynaci',t:'Dikiz Ustası',d:'Yere serdiğin her rakip +6 sn kazandırır.'},
-  {id:'kombo',t:'Seri Teslimat',d:'Süre bonusu iki katı.'},
-  {id:'frensiz',t:'Balata Bitik',d:'Maks. hız +%15. Fren yarı güçte.',curse:true},
-  {id:'yildiz',t:'Tatlı Dil',d:'Müşteri puanı +1 yıldız.'},
-  {id:'ekspres',t:'Ekspres Sipariş',d:'Taşıma ücreti +%60. Süre %20 kısa.',curse:true,stack:true},
-  {id:'cezasiz',t:'Tanıdık Polis',d:'Cezalar yarıya iner.'},
-  {id:'kabadayi',t:'Kabadayı',d:'Rakip bonusu üç katı. Her teslimatta fazladan bir rakip.',curse:true},
-  {id:'zirh',t:'Çelik Tampon',d:'Araçlara hafif sürtünme pakete zarar vermez.'}
+  {id:'sigorta',t:'Kargo Sigortası',d:'Paket bir kez dağılmaktan kurtulur, %30 ile devam edersin.'}
 ];
-export const BASE_CARDS=10,NDEL=5,STREAK=[1,1.15,1.3,1.5,1.75];
+export const ZONE_SHIFTS=2,NDEL=5,STREAK=[1,1.15,1.3,1.5,1.75];
 export const EVENTS={
   yagmur:{t:'YAĞMUR',d:'Yol kaygan: virajda daha çok savrulursun.'},
   trafik:{t:'YOĞUN TRAFİK',d:'Yolda her zamankinden fazla araç var.'},

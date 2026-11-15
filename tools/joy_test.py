@@ -12,7 +12,7 @@ with sync_playwright() as p:
     pg.on('pageerror',lambda e:errs.append(str(e))); pg.route('**/fonts.g*/**',lambda r:r.abort())
     pg.add_init_script("localStorage.setItem('kurye34',JSON.stringify({money:0,shifts:2,tut:1,story:1}))")
     pg.goto(BASE+'/'); pg.wait_for_timeout(400)
-    pg.evaluate("document.getElementById('startBtn').click()"); pg.wait_for_timeout(200)
+    pg.evaluate("document.getElementById('startBtn').click()"); pg.wait_for_timeout(200); pg.evaluate("document.querySelector('#picks button').click()"); pg.wait_for_timeout(200)
     pg.evaluate("document.querySelector('#offers button').click()"); pg.wait_for_timeout(3500)
     ok=True
     # 1) normal drag right and release

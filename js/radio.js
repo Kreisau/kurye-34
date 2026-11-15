@@ -68,7 +68,7 @@ export function storyTick(dt) {
     if (first || rv.boss || Math.random() < .35) radioSay(L.n, L.intro[first ? 0 : Math.floor(Math.random() * L.intro.length)]);
   }
   // one story line per delivery, a third of the way in; lines advance in order and loop within the current chapter
-  if (!R.story && G.shift && !G.shift.boss && !G.shift.daily && pz > G.finishZ * .33) {
+  if (!R.story && G.shift && !G.shift.boss && pz > G.finishZ * .33) {
     R.story = true;
     const ch = STORY[G.S.boss ? 6 : Math.min(5, G.S.clues)], l = ch[G.S.sl % ch.length]; G.S.sl++;
     radioSay(l[0], l[1]);

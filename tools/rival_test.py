@@ -17,7 +17,7 @@ with sync_playwright() as p:
     pg.on('pageerror', lambda e: errs.append(str(e))); pg.route('**/fonts.g*/**', lambda r: r.abort())
     pg.add_init_script("localStorage.setItem('kurye34',JSON.stringify({money:0,shifts:6,tut:1,story:1}))")
     pg.goto(BASE + '/'); pg.wait_for_timeout(500)
-    pg.evaluate("document.getElementById('startBtn').click()"); pg.wait_for_timeout(300)
+    pg.evaluate("document.getElementById('startBtn').click()"); pg.wait_for_timeout(300); pg.evaluate("document.querySelector('#picks button').click()"); pg.wait_for_timeout(200)
     pg.evaluate("document.querySelectorAll('#offers button')[2].click()"); pg.wait_for_timeout(1800)
     pg.evaluate("""(async()=>{const {G}=await import('/js/g.js');const C=await import('/js/config.js');const R=await import('/js/rivals.js');
       const pz=G.pos+C.playerZ; G.rivals=C.RIVALS.slice(0,3).map((p,i)=>R.newRival(p,pz-600-i*500,[-.6,0,.6][i],G.speed,3)); G.timeLeft=999;})()""")

@@ -45,7 +45,8 @@ STEPS=[
  ('menu','#menu',"UI.goMenu();"),
  ('garage','#garage,#toast',"UI.showGarage();UI.toast('Mont seviye 1',99999);"),
  ('settings','#settings',"document.getElementById('sndBtn').click();"),
- ('brief','#brief',"UI.goMenu();G.shift={L:7,i:1,cards:{eldiven:1,sigorta:2,kisayol:1},earned:0};GM.prepDelivery();"),
+ ('shift-cards','#result',"UI.goMenu();G.shift={L:7,i:0,cards:{},earned:0};UI.showShiftCards();"),
+ ('brief','#brief',"UI.goMenu();G.shift={L:7,i:1,cards:{eldiven:1},earned:0};GM.prepDelivery();"),
  ('result-pick','#result',"G.shift={L:7,i:0,cards:{},earned:0};G.route=GM.makeOffer(GM.KINDS[2]);GM.startMission();G.state='play';G.fine=150;G.bonus=85;UI.finish(true);"),
  ('result-final','#result',"G.shift={L:7,i:2,cards:{},earned:300};G.route=GM.makeOffer(GM.KINDS[2]);GM.startMission();G.state='play';UI.finish(true);"),
  ('result-fail','#result',"G.shift={L:7,i:1,cards:{},earned:120};G.route=GM.makeOffer(GM.KINDS[2]);GM.startMission();G.state='play';UI.finish(false,'time');"),
@@ -55,7 +56,7 @@ STEPS=[
  ('pause','#pause',"UI.goMenu();G.shift={L:7,i:0,cards:{},earned:0};G.route=GM.makeOffer(GM.KINDS[2]);GM.startMission();G.state='play';UI.togglePause(true);"),
  ('hud','#hud,#toast,#cd,#controls,#bossBar,#mirrors',"UI.togglePause(false);G.timeLeft=7.3;G.state='play';UI.toast('Turuncu kurye kaldırımdaki engele çarptı, saf dışı!  +110 TL',99999);UI.hudTick();"),
  ('hud-radio','#hud,#toast,#cd,#radio,#controls,#mirrors',"const RD=await import('/js/radio.js');RD.radioReset();RD.radioSay('USTA','Kara senin bölgeni aldı. Bölge almak için adam ezmek gerekmezdi ama.');G.paused=false;G.timeLeft=7.3;await new Promise(r=>setTimeout(r,400));G.paused=true;UI.toast('Turuncu kurye kaldırımdaki engele çarptı, saf dışı!  +110 TL',99999);UI.hudTick();await new Promise(r=>setTimeout(r,100));UI.hudTick();"),
- ('result-pick2','#result',"G.paused=false;UI.goMenu();G.S.cu=10;G.shift={L:7,i:1,cards:{cam:1},earned:640};G.route=GM.makeOffer(GM.KINDS[2]);GM.startMission();G.state='play';UI.finish(true);"),
+ ('result-pick2','#result',"G.paused=false;UI.goMenu();G.shift={L:7,i:1,cards:{eldiven:1},earned:640};G.route=GM.makeOffer(GM.KINDS[2]);GM.startMission();G.state='play';UI.finish(true);"),
  ('tutorial','#hud,#radio,#controls',"UI.goMenu();TU.startTutorial();"),
 ]
 res={}

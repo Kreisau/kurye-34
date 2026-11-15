@@ -14,8 +14,9 @@ personal goes into it (no names, contact details or anything about the owner bey
 ## Game rules worth knowing
 - A shift is 5 deliveries (`NDEL`). Earnings sit in the shift pot (`G.shift.earned`) and reach `G.S.money` only when the
   player banks (cash-out) or finishes all five. A failed delivery loses the pot. Only full shifts count for progress.
-- Cards live in `CARDS` (`js/config.js`): the first 10 are always available, the rest unlock one per completed shift.
-- Parts (engine, tyres, bag, jacket, nitro) belong to the rider (`G.S.upg`), not to a bike.
+- Cards live in `CARDS` (`js/config.js`): six cards, three offered when a shift starts, the pick lasts the whole shift.
+- Districts are conquered in order, `ZONE_SHIFTS` (2) full shifts each; clues come with the first five conquests, Kara waits in the last district. After the ending the player picks the district (`G.S.fz`).
+- Parts (engine, bag, nitro; indexes 0, 2, 4 of `G.S.upg`) belong to the rider, not to a bike. Indexes 1 and 3 are retired.
 - Story lines spoken during rides are in `js/radio.js`, keyed by case-file progress.
 
 - Game systems are documented in `docs/WIKI.md`. When a rule, price, stat, fine or card changes, update the wiki in the same commit.

@@ -35,7 +35,7 @@ export function rateDelivery(ok, why) {
   // they did; running over a pedestrian still costs a star. Thresholds, so a clean on-time run reliably lands 4-5 stars.
   const score = .65 * G.cond / 100 + .35 * Math.min(1, tr / .25);
   const base = score >= .9 ? 5 : score >= .75 ? 4 : score >= .55 ? 3 : score >= .35 ? 2 : 1;
-  const stars = clamp(base - (G.pedHit ? 1 : 0) + (G.shift && G.shift.cards && G.shift.cards.yildiz ? 1 : 0), 1, 5);
+  const stars = clamp(base - (G.pedHit ? 1 : 0) , 1, 5);
   const tip = Math.round(r.pay * TIP[stars] * generosity(r.B) / 5) * 5;
   const pool = r.ev === 'yagmur' && stars >= 3 ? LINES[stars].concat(RAIN) : LINES[stars];
   return { stars, tip, comment: pick(Math.random, pool) };
@@ -51,7 +51,8 @@ export const avgRating = () => {
   return a.length ? a.reduce((s, n) => s + n, 0) / a.length : 0;
 };
 // No ratings yet: neutral. Average 5 → +10%, 3 → 0, 1 → −10%.
-export const payMult = () => { const a = avgRating(); return (a ? 1 + .05 * (a - 3) : 1) * (G.S.boss ? 1.1 : 1); };
+// Stars only set the tip. The one pay bonus is the closed case file: +10% once Kara is beaten.
+export const payMult = () => G.S.boss ? 1.1 : 1;
 export const starStr = n => '★★★★★'.slice(0, n) + '☆☆☆☆☆'.slice(0, 5 - n);
 export function ratingLabel() {
   const a = G.S.ratings || [];

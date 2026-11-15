@@ -31,7 +31,7 @@ Derleme yok; düz ES modülleri.
 | `js/rating.js` | Müşteri puanı (1-5 yıldız), bahşiş, ortalama puana göre ücret ±%10 |
 | `js/radio.js` | Telsiz: eğitim kutusunun yerleşimi ve sürüş sırasında hikâye replikleri (Usta, 34'ün iç sesi, rakipler) |
 | `js/tutorial.js` | Eğitim rotası "İlk gün", Usta'nın telsiz mesajları |
-| `js/meta.js` | Uzun vadeli hedefler: ipuçları (dosya), Kara ile hesaplaşma, günün siparişi |
+| `js/meta.js` | Uzun vadeli hedefler: ipuçları (dosya), Kara ile hesaplaşma, bitiş ve istatistikler |
 | `js/fx.js` | Darbe hissi: kıvılcım, kısa donma, titreşim |
 | `js/street.js` | Sokak hayatı: trafik ışıkları ve yaya geçitleri, yayalar, polis çevirmesi, sokak köpekleri, ters yönden gelen kuryeler (vurulabilir, +60 TL) |
 | `js/i18n.js` | İngilizce katmanı: ekrana giden her metni çevirir (Ayarlar → Dil) |
@@ -42,14 +42,14 @@ Derleme yok; düz ES modülleri.
 | `tools/play_tutorial.py` | Bot: hikâye → eğitim → ilk teslimat, ekran görüntüleriyle |
 | `tools/make_loops.py` | Müzik MP3'lerini ölçü hizalı, dikişsiz döngülere çevirir |
 | `tools/sound_demo.py` | Sesleri tarayıcıda çevrimdışı render edip WAV olarak kaydeder |
-| `tools/meta_test.py` | İpucu, hesaplaşma, günün siparişi, saf dışı, ayarlar testleri |
+| `tools/meta_test.py` | Bölge fethi, ipucu, hesaplaşma, bitiş, serbest sürüş, saf dışı, ayarlar testleri |
 | `tools/i18n_check.py` | İngilizcede çevrilmeden kalan metinleri listeler |
 | `tools/bike_vis_test.py` | Motorun her ekran boyutunda ve yokuşta ekranda kaldığını ölçer |
 | `tools/rival_spawn_test.py` | 4 rakip, 6 rota: iki rakip üst üste binmiyor |
 | `tools/econ_sim.py` | Ekonomi modeli: orta seviye oyuncunun Kara'ya kaç dakikada ulaştığı ve o ana kadar neler aldığı |
 | `tools/camera_test.py` | Sabit ve dinamik kamerayı yokuşlu rotada karşılaştırır |
 | `tools/street_test.py` | Işık, yaya, çevirme, köpek, ters yön, ceza ve günün saati testleri |
-| `tools/shift_test.py` | Vardiya kuralları: 5 teslimat, vardiya kasası, kasayı alma, kaybedince kasanın gitmesi, kart açılması, lanetli kartlar, telsiz |
+| `tools/shift_test.py` | Vardiya kuralları: vardiya kartı, 5 teslimat, vardiya kasası, kasayı alma, kaybedince kasanın gitmesi, Şişli koşulu, parça iadesi, telsiz |
 | `tools/amb_test.py` | Ambulans: 16 rotada trafiğe sıkışmıyor, geçtikten sonra yakalanmıyor |
 | `tools/ui_scan.py` | Tüm ekranları TR/EN ve 6 ekran boyutunda tarar; çakışan, kesilen, ekran dışına taşan öğeleri listeler |
 | `tools/parity.py` | Eski ve yeni sürümü aynı seed/girdiyle çalıştırıp kare kare karşılaştırır |

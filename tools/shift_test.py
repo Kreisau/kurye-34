@@ -1,5 +1,5 @@
 """Shift rules: 5 deliveries, earnings stay in the shift pot until banked, cash-out, losing the pot on failure,
-card unlocks, cursed cards, rider-wide parts, story radio.
+shift card, district conquest, rider-wide parts (removed parts refunded), story radio.
 Usage: python3 tools/shift_test.py http://127.0.0.1:8765"""
 import sys
 from playwright.sync_api import sync_playwright
@@ -16,45 +16,55 @@ with sync_playwright() as p:
     pg.goto(BASE+'/'); pg.wait_for_timeout(500)
     ev=lambda body: pg.evaluate("(async()=>{"+I+body+"})()")
     arrive="G.rivals=[];G.cars=[];G.inv=99;G.timeLeft=50;G.pos=G.finishZ-C.playerZ-C.segL*9;"
-    r=ev("return {upg:G.S.upg,cu:G.S.cu,cost:SV.upCost(null,0)}")
-    check('old per-bike parts merged into rider parts; cards unlocked from past shifts', r['upg']==[1,3,2,0,0] and r['cu']==2, r)
+    r=ev("return {upg:G.S.upg,money:G.S.money,cost:SV.upCost(null,0)}")
+    check('old per-bike parts merged; tyres (lv 3) refunded and cleared', r['upg']==[1,0,2,0,0] and r['money']==1000+1900, r)
+    ev("G.S.money=1000;")
     # full shift
-    ev("UI.goMenu();GM.newShift();"); pots=[]
+    ev("UI.goMenu();GM.newShift();")
+    c=ev("return {t:document.getElementById('resTitle').textContent,n:document.querySelectorAll('#picks button').length}")
+    check('shift opens with a card pick (3 of 6)', c['t']=='KARTINI SEÇ' and c['n']==3, c)
+    pg.evaluate("document.querySelector('#picks button').click()"); pg.wait_for_timeout(200)
+    held=ev("return Object.keys(G.shift.cards)"); pots=[]
     for i in range(5):
         pg.evaluate("document.querySelector('#offers button').click()"); pg.wait_for_timeout(1500)
         ev(arrive); pg.wait_for_timeout(2600)
-        s=ev("return {money:G.S.money,pot:G.shift?G.shift.earned:null,i:G.shift?G.shift.i:null,picks:document.querySelectorAll('#picks button').length,title:document.getElementById('resTitle').textContent,shifts:G.S.shifts,cu:G.S.cu}")
+        s=ev("return {money:G.S.money,pot:G.shift?G.shift.earned:null,i:G.shift?G.shift.i:null,cards:Object.keys(G.shift?G.shift.cards:{}),title:document.getElementById('resTitle').textContent,shifts:G.S.shifts,sub:document.getElementById('resSub').textContent}")
         pots.append(s)
-        if i<4: pg.evaluate("document.querySelector('#picks button').click()"); pg.wait_for_timeout(200)
-    check('money stays out of the bank during the shift', all(x['money']==1000 and x['pot']>0 and x['picks']==3 for x in pots[:4]), [(x['money'],x['pot']) for x in pots[:4]])
-    check('fifth delivery banks the pot, counts the shift, unlocks a card', pots[4]['money']>1000+pots[3]['pot'] and pots[4]['shifts']==3 and pots[4]['cu']==3 and pots[4]['title']=='VARDİYA TAMAM', pots[4])
+        if i<4: pg.evaluate("document.querySelector('#resBtns button').click()"); pg.wait_for_timeout(200)
+    check('money stays out of the bank during the shift', all(x['money']==1000 and x['pot']>0 and x['cards']==held for x in pots[:4]) and len(held)==1, [(x['money'],x['pot']) for x in pots[:4]])
+    check('fifth delivery banks the pot, counts the shift, conquers the district (shift 4 = Üsküdar done)', pots[4]['money']>1000+pots[3]['pot'] and pots[4]['shifts']==3 and pots[4]['title']=='VARDİYA TAMAM' and 'Üsküdar: 1/2' in pots[4]['sub'], pots[4])
     m0=pots[4]['money']
     # cash out after the second delivery
-    ev("UI.goMenu();GM.newShift();")
+    ev("UI.goMenu();GM.newShift();"); pg.evaluate("document.querySelector('#picks button').click()"); pg.wait_for_timeout(200)
     for i in range(2):
         pg.evaluate("document.querySelector('#offers button').click()"); pg.wait_for_timeout(1500); ev(arrive); pg.wait_for_timeout(2600)
-        if i==0: pg.evaluate("document.querySelector('#picks button').click()"); pg.wait_for_timeout(200)
-    pot=ev("return G.shift.earned"); pg.evaluate("document.querySelector('#resBtns button').click()"); pg.wait_for_timeout(200)
+        if i==0: pg.evaluate("document.querySelector('#resBtns button').click()"); pg.wait_for_timeout(200)
+    pot=ev("return G.shift.earned"); pg.evaluate("document.querySelector('#resBtns button:last-child').click()"); pg.wait_for_timeout(200)
     s=ev("return {money:G.S.money,shifts:G.S.shifts,title:document.getElementById('resTitle').textContent,shift:G.shift}")
     check('cash-out banks the pot without counting the shift', s['money']==m0+pot and s['shifts']==3 and s['title']=='KASA ALINDI' and s['shift'] is None, s)
     m1=s['money']
     # fail on the second delivery
-    ev("UI.goMenu();GM.newShift();")
+    ev("UI.goMenu();GM.newShift();"); pg.evaluate("document.querySelector('#picks button').click()"); pg.wait_for_timeout(200)
     pg.evaluate("document.querySelector('#offers button').click()"); pg.wait_for_timeout(1500); ev(arrive); pg.wait_for_timeout(2600)
-    pg.evaluate("document.querySelector('#picks button').click()"); pg.wait_for_timeout(200)
+    pg.evaluate("document.querySelector('#resBtns button').click()"); pg.wait_for_timeout(200)
     pg.evaluate("document.querySelector('#offers button').click()"); pg.wait_for_timeout(1500)
     ev("G.rivals=[];G.cars=[];G.timeLeft=.05;"); pg.wait_for_timeout(600)
     s=ev("return {money:G.S.money,title:document.getElementById('resTitle').textContent,rows:document.getElementById('resRows').textContent}")
     check('failing loses the pot, bank untouched', s['money']==m1 and s['title']=='VARDİYA BİTTİ' and 'Kaybedilen' in s['rows'], s)
-    # cards
-    r=ev("""UI.goMenu();G.shift={L:3,i:0,cards:{},earned:0};const base=[];for(let k=0;k<40;k++)base.push(GM.makeOffer(GM.KINDS[1]).pay);G.shift.cards={cam:1};const cam=[];for(let k=0;k<40;k++)cam.push(GM.makeOffer(GM.KINDS[1]).pay);
-      const avg=a=>a.reduce((x,y)=>x+y)/a.length;const st0=SV.stats(SV.curBike(),SV.ups(),{}),st1=SV.stats(SV.curBike(),SV.ups(),{cam:1,frensiz:1});
-      G.S.cu=10;let curses=0,n=0;G.shift.cards={};for(let k=0;k<200;k++){const d=UI.drawCards();n+=d.length;curses=Math.max(curses,d.filter(c=>c.curse).length);}
-      G.shift.i=3;const late=[];for(let k=0;k<40;k++)late.push(GM.makeOffer(GM.KINDS[1]).pay);G.shift=null;
-      return {ratio:+(avg(cam)/avg(base)).toFixed(2),dmg:+(st1.dmg/st0.dmg).toFixed(2),top:+(st1.top/st0.top).toFixed(2),maxCurse:curses,drawn:n,streak:avg(late)>avg(base)*1.3};""")
-    check('cursed cards: double pay, double damage, faster; at most one curse per draw; later deliveries pay more', 1.7<r['ratio']<2.4 and r['dmg']==2 and r['top']==1.15 and r['maxCurse']==1 and r['drawn']==600 and r['streak'], r)
+    # cards and pay
+    r=ev("""UI.goMenu();G.shift={L:3,i:0,cards:{},earned:0};const avg=a=>a.reduce((x,y)=>x+y)/a.length;const base=[];for(let k=0;k<60;k++)base.push(GM.makeOffer(GM.KINDS[1]).pay);
+      G.shift.cards={bahsis:1};const b=[];for(let k=0;k<60;k++)b.push(GM.makeOffer(GM.KINDS[1]).pay);
+      const st0=SV.stats(SV.curBike(),SV.ups(),{}),st1=SV.stats(SV.curBike(),SV.ups(),{termos:1,turbo:1});
+      const seen=new Set();for(let k=0;k<200;k++)UI.drawCards().forEach(c=>seen.add(c.id));
+      G.shift.cards={};G.shift.i=3;const late=[];for(let k=0;k<60;k++)late.push(GM.makeOffer(GM.KINDS[1]).pay);G.shift=null;
+      return {bahsis:+(avg(b)/avg(base)).toFixed(2),dmg:+(st1.dmg/st0.dmg).toFixed(2),top:+(st1.top/st0.top).toFixed(2),seen:seen.size,streak:avg(late)>avg(base)*1.3};""")
+    check('cards: +25% pay, -30% damage, +8% speed; all six get offered; later deliveries pay more', 1.15<r['bahsis']<1.35 and r['dmg']==0.7 and r['top']==1.08 and r['seen']==6 and r['streak'], r)
+    # conquest: Kara's showdown needs all clues and the last district
+    r=ev("""const M=await import('/js/meta.js');const s0=G.S.shifts,c0=G.S.clues;G.S.clues=5;G.S.shifts=10;const a=M.bossReady();G.S.shifts=12;const b=M.bossReady();
+      const z=GM.zone();G.S.shifts=s0;G.S.clues=c0;return {a,b,z};""")
+    check('showdown opens only after Şişli (shift 12) is taken', r['a'] is False and r['b'] is True and r['z']==5, r)
     # story radio
-    ev("UI.goMenu();GM.newShift();"); pg.evaluate("document.querySelector('#offers button').click()"); pg.wait_for_timeout(1500)
+    ev("UI.goMenu();GM.newShift();"); pg.evaluate("document.querySelector('#picks button').click()"); pg.wait_for_timeout(200); pg.evaluate("document.querySelector('#offers button').click()"); pg.wait_for_timeout(1500)
     ev("G.rivals=[];G.cars=[];G.inv=99;G.timeLeft=99;G.pos=G.finishZ*.4;"); pg.wait_for_timeout(700)
     s=ev("const r=document.getElementById('radio');return {shown:!r.hidden&&r.classList.contains('talk'),who:document.getElementById('radioWho').textContent,txt:document.getElementById('radioTxt').textContent}")
     check('story line on the radio during the ride', s['shown'] and s['who'] in('USTA','34') and len(s['txt'])>15, s)

@@ -276,3 +276,8 @@ h3{font:700 13px/1 var(--ui);letter-spacing:.16em;color:var(--muted)}
 @media (min-width:700px) and (min-height:600px){.spd{zoom:1.35}}
 @media (prefers-reduced-motion:reduce){.copfx.on{animation:none;box-shadow:inset 0 0 80px 10px rgba(150,70,210,.3)}}
 @media (hover:hover) and (pointer:fine){.spd{bottom:calc(env(safe-area-inset-bottom,0px) + 62px)}}
+
+/* free ride: district picker in the menu */
+.zpick{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 10px}
+.zchip{font:700 12px/1 var(--ui);letter-spacing:.06em;padding:8px 10px;border-radius:999px;border:1.5px solid var(--line,rgba(255,255,255,.25));background:transparent;color:var(--muted);cursor:pointer}
+.zchip.on{background:var(--gold,#ffc61a);color:#1d1a20;border-color:transparent}

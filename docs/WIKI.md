@@ -23,22 +23,21 @@ Birimler: hız `km/s` olarak ekranda görünür, tam hız (`maxSpeed`) 130 km/s 
 15. [Rakip kuryeler](#15-rakip-kuryeler)
 16. [Müşteri puanı ve bahşiş](#16-müşteri-puanı-ve-bahşiş)
 17. [Hikâye: dosya, ipuçları, Kara](#17-hikâye-dosya-ipuçları-kara)
-18. [Günün siparişi](#18-günün-siparişi)
-19. [Nitro](#19-nitro)
-20. [Kontroller](#20-kontroller)
-21. [Test araçları](#21-test-araçları)
+18. [Nitro](#18-nitro)
+19. [Kontroller](#19-kontroller)
+20. [Test araçları](#20-test-araçları)
 
 ---
 
 ## 1. Oyun akışı
 
-1. Menüden vardiya başlatılır. Her vardiya **5 teslimattır** (`NDEL`).
+1. Menüden vardiya başlatılır. Her vardiya **5 teslimattır** (`NDEL`). Vardiya başında 6 karttan rastgele 3'ü sunulur, birini seçersin; kart bütün vardiya boyunca geçerlidir.
 2. Her teslimatta 3 sipariş sunulur (YAKIN, NORMAL, UZAK). Biri kabul edilir.
 3. Restorandan paketi alıp müşteriye süre dolmadan ve paket dağılmadan götürürsün.
 4. Teslimat bitince kazanç **vardiya kasasına** (pot) girer. Para ana kasaya iki durumda geçer: kasayı alırsan (vardiya yarıda biter) ya da beş teslimatı bitirirsen.
-5. Her teslimattan sonra 3 karttan birini seçersin. Kart yalnızca o vardiya boyunca geçerlidir.
+5. Her teslimattan sonra ya **DEVAM ET** (sıradaki teslimat daha çok öder) ya da **KASAYI AL VE BİTİR**.
 6. **Bir teslimat başarısız olursa** (süre dolar ya da paket dağılır) vardiya biter ve kasaya girmemiş kazanç gider. Ana kasa etkilenmez.
-7. Yalnızca beş teslimatı da bitirilen vardiyalar ilerlemeye sayılır (yeni bölge, yeni kart, ipucu).
+7. Yalnızca beş teslimatı da bitirilen vardiyalar ilerlemeye sayılır (bölge fethi, ipucu, vardiya bonusu).
 
 ## 2. Vardiya, teslimat ve ekonomi
 
@@ -53,11 +52,11 @@ Birimler: hız `km/s` olarak ekranda görünür, tam hız (`maxSpeed`) 130 km/s 
 `d = vardiya no × 3 + teslimat no` (0'dan başlar) ilerleme sayacıdır.
 
 - **Uzunluk:** `min(2400, (600 + d × 90) × tür)` segment (1,2 km ile 4,8 km arası).
-- **Taşıma ücreti:** `(40 + d × 15) × tür × olay × bahşiş kartı × puan çarpanı × vardiya saati × seri çarpanı × kart çarpanları`. Olay varsa ×1,2.
+- **Taşıma ücreti:** `(40 + d × 15) × tür × olay × Bonkör Müşteri kartı × seri çarpanı × (Kara yenildiyse 1,1)`. Olay varsa ×1,2.
 - **Süre:** `uzunluk / (60 × ref) + 10` saniye, bölge çarpanıyla (Karaköy ×1,12, Fatih ×1,08).
   `ref = (0,24 + 0,23 × (motorun üst hızı − 0,48)) × (1 + min(0,2, d × 0,008))`.
   Süre, kullandığın motorun gerçek hızına göre hesaplanır; temiz bir sürüş her motorda sürenin kabaca %65'ini kullanır. Hızlı motor daha çok boş süre bırakır (yıldız ve bahşiş getirir).
-- **Süre bonusu:** kalan her saniye için 1,5 TL (Seri Teslimat kartıyla iki katı).
+- **Süre bonusu:** kalan her saniye için 1,5 TL.
 - **Paket hasarı ücreti düşürür:** ücret × paket durumu yüzdesi.
 
 ### Seri çarpanı (vardiya içinde)
@@ -71,9 +70,9 @@ Birimler: hız `km/s` olarak ekranda görünür, tam hız (`maxSpeed`) 130 km/s 
 - Beş teslimat tamamlanınca: kasa + **vardiya bonusu** (`50 + vardiya no × 25` TL).
 - Kasayı almak (KASAYI AL VE BİTİR) o ana kadarki kazancı bankaya geçirir, vardiya sayılmaz.
 
-### Ücret ayarı: müşteri puanı
+### Gizli çarpan yok
 
-Son 20 puanın ortalaması ücreti etkiler: `1 + 0,05 × (ortalama − 3)`, yani en fazla ±%10. Kara kapatılınca tüm ücretler ayrıca ×1,1.
+Müşteri puanı ve vardiya saati ücreti etkilemez. Yıldızlar sadece bahşişi belirler. Tek kalıcı ücret artışı Kara'yı yenince gelen +%10'dur.
 
 ## 3. Motorlar
 
@@ -94,14 +93,12 @@ Notlar:
 
 ## 4. Parçalar (yükseltmeler)
 
-Her parça 3 seviyeye kadar gelişir. Seviye bedeli: 1. seviye 200 TL, 2. seviye 500 TL, 3. seviye 1.200 TL.
+Üç parça vardır: Motor, Çanta, Nitro. (0.36'da Lastik ve Mont kaldırıldı; etkileri Motor'a geçti, eski kayıtlarda harcanan para iade edilir.) Her parça 3 seviyeye kadar gelişir. Seviye bedeli: 1. seviye 200 TL, 2. seviye 500 TL, 3. seviye 1.200 TL.
 
 | Parça | Seviye başına etki |
 |---|---|
-| Motor | +%5 maksimum hız, daha çabuk kalkış (−%6 hızlanma süresi) |
-| Lastik | Virajda %12 daha az savrulma, direksiyon +%6 |
+| Motor | +%5 maksimum hız, daha çabuk kalkış (−%6 hızlanma süresi), virajda %7 daha az savrulma, direksiyon +%4 |
 | Çanta | Paket hasarı −%12 |
-| Mont | Düşünce toparlanma süresi −%15 |
 | Nitro | Her seviye, teslimat başına 1 nitro hakkı |
 
 ## 5. Silahlar
@@ -119,43 +116,22 @@ Ağır El kartı vuruş menzilini %30 artırır.
 
 ## 6. Kartlar
 
-Her teslimattan sonra 3 kart sunulur (en fazla bir tanesi lanetli). Kartlar vardiya boyunca kalır, vardiya bitince sıfırlanır. İlk 10 kart baştan açıktır; geri kalan 10 kart, tamamlanan her vardiyada sırayla birer birer açılır.
+Vardiya başında 6 karttan rastgele 3'ü sunulur, birini seçersin. Kart vardiyanın beş teslimatı boyunca geçerlidir, vardiya bitince sıfırlanır. Açılım, lanet ya da katlanma yoktur.
 
-**KATLANIR**: aynı kart birden fazla alınırsa etkisi yığılır. **LANETLİ**: güçlü ama bedeli var.
-
-### Baştan açık kartlar
-
-| Kart | Etki | Katlanır |
-|---|---|---|
-| Termos Çanta | Paket hasarı %30 az | evet |
-| Taksici Dayı | Taksiler şerit değiştirmez | hayır |
-| Kısa Yol | Kalan teslimatlara +8 sn | evet |
-| Bonkör Müşteri | Taşıma ücreti +%25 | evet |
-| Karbüratör Ayarı | Maksimum hız +%8 | evet |
-| Ağır El | Vuruş menzili +%30, rakip bonusu iki katı | hayır |
-| Kargo Sigortası | Paket bir kez dağılmaktan kurtulur, %30 ile devam edersin | hayır |
-| Çelik Kask | Düştüğünde iki kat hızlı kalkarsın | hayır |
-| Ara Sokak Bilgisi | Virajda savrulma %25 az | hayır |
-| Sessiz Egzoz | Rakip kurye seni geç fark eder | hayır |
-
-### Vardiya ilerledikçe açılan kartlar (sırayla)
-
-| Sıra | Kart | Etki | Katlanır |
-|---|---|---|---|
-| 1 | Yedek Tüp | Her teslimatta +1 nitro | evet |
-| 2 | Cam Eşya (lanetli) | Taşıma ücreti iki katı, paket iki kat kırılgan | hayır |
-| 3 | Dikiz Ustası | Yere serdiğin her rakip +6 sn kazandırır | hayır |
-| 4 | Seri Teslimat | Süre bonusu iki katı | hayır |
-| 5 | Balata Bitik (lanetli) | Maksimum hız +%15, fren yarı güçte | hayır |
-| 6 | Tatlı Dil | Müşteri puanı +1 yıldız | hayır |
-| 7 | Ekspres Sipariş (lanetli) | Taşıma ücreti +%60, süre %20 kısa | evet |
-| 8 | Tanıdık Polis | Cezalar yarıya iner | hayır |
-| 9 | Kabadayı (lanetli) | Rakip bonusu üç katı, her teslimatta fazladan bir rakip | hayır |
-| 10 | Çelik Tampon | Araçlara hafif sürtünme pakete zarar vermez | hayır |
+| Kart | Etki |
+|---|---|
+| Termos Çanta | Paket hasarı %30 az |
+| Kısa Yol | Her teslimata +8 sn |
+| Bonkör Müşteri | Taşıma ücreti +%25 |
+| Karbüratör Ayarı | Maksimum hız +%8 |
+| Ağır El | Vuruş menzili +%30, rakip bonusu iki katı |
+| Kargo Sigortası | Paket bir kez dağılmaktan kurtulur, %30 ile devam edersin |
 
 ## 7. Bölgeler (biyomlar)
 
-Bölge sayısı: `min(6, 2 + tamamlanan vardiya)`. İlk vardiyada Kadıköy ve Üsküdar açıktır; her tamamlanan vardiya bir bölge ekler. Bir teslimatın bölgesi, açık bölgeler arasından rastgele seçilir.
+**Bölge fethi:** bölgeler sırayla alınır: Kadıköy, Üsküdar, Karaköy, Beşiktaş, Fatih, Şişli. Bir bölgede **2 tam vardiya** bitirince bölge senin olur ve sıradaki açılır; o ana kadar bütün teslimatlar o bölgede geçer. Menüde "SIRADAKİ: Vardiya #3 · Üsküdar 1/2" ve "BÖLGELER: 1/6" görünür. Kasayı erken almak fethe sayılmaz.
+
+Kara yenildikten sonra (serbest sürüş) menüde bölge seçimi açılır; istediğin bölgede vardiya alırsın.
 
 `curv` viraj, `hill` tepe sıklığı, `up` yokuş yukarı oranı, `traf` trafik çarpanı, `pot` çukur/tehlike yoğunluğu, `bus` otobüs çarpanı, `sea` sahil kenarı.
 
@@ -202,12 +178,12 @@ Bahşiş cömertliği (varış mahallesine göre): villa ×1,6, plaza ×1,3, ah�
 
 ### Vardiya saati (vardiya no'ya göre döner)
 
-| Saat | Trafik çarpanı | Ücret çarpanı | Işık |
-|---|---|---|---|
-| SABAH | ×1,15 | ×1,0 | sabah |
-| ÖĞLEN | ×1,0 | ×1,0 | gündüz |
-| AKŞAM | ×1,3 | ×1,1 | gün batımı (Fatih'te altın saat) |
-| GECE | ×0,7 | ×1,2 | gece (Şişli'de neon) |
+| Saat | Trafik çarpanı | Işık |
+|---|---|---|
+| SABAH | ×1,15 | sabah |
+| ÖĞLEN | ×1,0 | gündüz |
+| AKŞAM | ×1,3 | gün batımı (Fatih'te altın saat) |
+| GECE | ×0,7 | gece (Şişli'de neon) |
 
 ### Olaylar
 
@@ -246,7 +222,6 @@ Araç sayısı: `min(17, round((10 + min(4, d/3)) × (1,05 − 0,25 × motor hı
 - Araç şerit değiştirmeden önce **yaklaşık 1 saniye** sağa ya da sola **sinyal** verir (parlak turuncu lamba). Şerit değiştirmeye eğilimli araçlar 0,8 sn sinyal verir.
 - Araç, sürücüye çok yakınsa (yaklaşık 1,5 saniyelik menzil içinde ya da hemen yanında) şerit değiştirmeyi **başlatmaz**; başlamışsa son anda vazgeçer.
 - Önündeki araç yavaşsa ve yan şerit boşsa sollamak için de aynı sinyal kuralı geçerlidir.
-- Taksici Dayı kartı taksilerin şerit değiştirmesini tamamen kapatır.
 
 ### Otobüs ve dolmuş
 
@@ -308,7 +283,7 @@ Hasar = temel değer × motorun dayanıklılık çarpanı × çanta parçası ×
 
 | Olay | Temel hasar | Ek etki |
 |---|---|---|
-| Araca yavaş sürtmek | 6 | Hız ×0,85 (Çelik Tampon kartı: hasar yok) |
+| Araca yavaş sürtmek | 6 | Hız ×0,85 |
 | Araca hızlı çarpmak (fark > üst hızın %45'i) | 14 | Düşme, hız ×0,3 |
 | Duvar | 14 | Düşme |
 | Katı yol kenarı nesnesi | 14 (el arabası 16) | Düşme |
@@ -322,7 +297,7 @@ Hasar = temel değer × motorun dayanıklılık çarpanı × çanta parçası ×
 | Ambulansa yol vermemek | 8 | Bir kez |
 | Rakip kurye çarpması | 6-12 (rakibe göre) | |
 
-Her hasardan sonra 0,8 sn dokunulmazlık vardır (arka arkaya hasar yemezsin). Düşme süresi Mont parçası ve Çelik Kask kartıyla kısalır. Kargo Sigortası kartı paket sıfırlanınca bir kez %30 ile devam ettirir.
+Her hasardan sonra 0,8 sn dokunulmazlık vardır (arka arkaya hasar yemezsin). Kargo Sigortası kartı paket sıfırlanınca bir kez %30 ile devam ettirir.
 
 ### Para cezaları
 
@@ -332,7 +307,7 @@ Her hasardan sonra 0,8 sn dokunulmazlık vardır (arka arkaya hasar yemezsin). D
 | Yayaya çarpmak | 100 TL |
 | Çevirmede 55 km/s üstü | 150 TL |
 
-Cezalar teslimat gelirinden düşer. Aynı liste oyun içinde duraklatma ekranında da yer alır. Tanıdık Polis kartı cezaları yarıya indirir.
+Cezalar teslimat gelirinden düşer. Aynı liste oyun içinde duraklatma ekranında da yer alır.
 
 ## 14. Ambulans ve yol verme
 
@@ -344,9 +319,9 @@ Cezalar teslimat gelirinden düşer. Aynı liste oyun içinde duraklatma ekranı
 
 ## 15. Rakip kuryeler
 
-Rakipler aynı yolda sürer, trafiğe ve yol çalışmasına bakarak şerit seçer, düşerse o teslimat boyunca saf dışı kalır. Onları **vurarak ya da araca/duvara doğru iterek** düşürürsen bonus alırsın: `(15 + HP × 10) × 2 × çarpan` TL (Ağır El ×2, Kabadayı ×3).
+Rakipler aynı yolda sürer, trafiğe ve yol çalışmasına bakarak şerit seçer, düşerse o teslimat boyunca saf dışı kalır. Onları **vurarak ya da araca/duvara doğru iterek** düşürürsen bonus alırsın: `(15 + HP × 10) × 2 × çarpan` TL (Ağır El ×2).
 
-Rakip sayısı: 2 (d ≥ 8 olunca 3), KALABALIK olayı +1, Kabadayı kartı +1; en fazla 4. Hepsi birlikte startın gerisinde, aralıklı ve sırayla sağ/sol tarafta başlar. Her rakibin kendi tarafı vardır ve diğer rakipleri görür: öndekine bindirmez, yanındakinden uzaklaşır, iki rakip üst üste binmez.
+Rakip sayısı: 2 (d ≥ 8 olunca 3), KALABALIK olayı +1; en fazla 4. Hepsi birlikte startın gerisinde, aralıklı ve sırayla sağ/sol tarafta başlar. Her rakibin kendi tarafı vardır ve diğer rakipleri görür: öndekine bindirmez, yanındakinden uzaklaşır, iki rakip üst üste binmez.
 
 | Rakip | Etiket | Hız çarpanı | Saldırganlık | Hasar | Dayanıklılık (HP) | Şerit kesme | İtme gücü | Karakter |
 |---|---|---|---|---|---|---|---|---|
@@ -371,7 +346,7 @@ Puan teslimat sonunda 1-5 yıldız olarak verilir.
 | ≥ 0,35 | 2 |
 | altı | 1 |
 
-- Yayaya çarptıysan −1 yıldız. Tatlı Dil kartı +1 yıldız.
+- Yayaya çarptıysan −1 yıldız.
 - Paket sağlam ve sürenin en az dörtte biri kalmışsa 5 yıldız garantidir; temiz ve zamanında bir sürüş genellikle 4-5 yıldız alır.
 - Sonuç ekranında **Paket durumu** ve **Kalan süre** satırları puanın nedenini gösterir.
 - Başarısız teslimat her zaman 1 yıldız.
@@ -386,55 +361,47 @@ Puan teslimat sonunda 1-5 yıldız olarak verilir.
 
 ## 17. Hikâye: dosya, ipuçları, Kara
 
-Oyuncu, bir gece kendisini yerden kaldıran Usta'nın yanında kurye olarak çalışır; kendisine kimin çarptığını arar. Her tamamlanan vardiyada, vardiya sayısı eşiğe ulaştıkça bir **ipucu** açılır.
+Oyuncu, bir gece kendisini yerden kaldıran Usta'nın yanında kurye olarak çalışır; kendisine kimin çarptığını arar. Her **bölge fethinde** bir **ipucu** açılır (ilk beş bölge). Son bölge Şişli, Kara'nın bölgesidir.
 
 | İpucu | Gereken vardiya |
 |---|---|
-| KIRIK AYNA | 1 |
-| IŞIKLARI KAPALI | 3 |
-| 34 NUMARA | 6 |
-| BÖLGE | 9 |
-| SON TESLİMAT | 12 |
+| KIRIK AYNA | 2 (Kadıköy alındı) |
+| IŞIKLARI KAPALI | 4 (Üsküdar) |
+| 34 NUMARA | 6 (Karaköy) |
+| BÖLGE | 8 (Beşiktaş) |
+| SON TESLİMAT | 10 (Fatih) |
 
-Beş ipucu toplanınca menüde **HESAPLAŞMA** açılır: Kara ile bir kovalamaca. Kara, rakiplerin en güçlüsüdür (hız çarpanı 1,12, saldırganlık 1,7, HP 7). Duvara ya da araca çarpması ona 3 HP kaybettirir. Süre dolarsa Kara kaçar. Yenersen **2.000 TL** ödül alırsın, dosya kapanır ve bölge senin olur: tüm ücretler kalıcı olarak +%10.
+Beş ipucu toplanıp **Şişli de alınınca** (12. vardiya) menüde **HESAPLAŞMA** açılır: Kara ile bir kovalamaca. Kara, rakiplerin en güçlüsüdür (hız çarpanı 1,12, saldırganlık 1,7, HP 7). Duvara ya da araca çarpması ona 3 HP kaybettirir. Süre dolarsa Kara kaçar. Yenersen **2.000 TL** ödül alırsın, dosya kapanır ve bölge senin olur: tüm ücretler kalıcı olarak +%10.
 
 Kara yenilince sonuç ekranında oyunun genel istatistikleri (teslimat, yol, kazanılan para, yere serilen kurye, ödenen ceza, tamamlanan vardiya, sürüş süresi) görünür, ardından **SON** sahnesi gelir. Bundan sonra oyun **serbest sürüş** olarak devam eder: vardiyalar aynı kurallarla sürer, ücretler +%10'dur, Dosya ekranında istatistikler görünür.
 
 ### Oyun süresi ve ekonomi hedefi
 
-`tools/econ_sim.py` oyunun kendi formülleriyle "orta seviye oyuncuyu" (4 yıldız, %85 paket, sürenin %70'i, teslimat başına %8-15 başarısızlık) modeller. Hedef: Kara'ya 2-3 saatte ulaşmak, o noktada 5 motor, 20 kart ve parçaların çoğu açılmış olsun. Mevcut ayarla model medyan 127-166 dakika veriyor; 150'lik motor yaklaşık 4. vardiyada, 250'lik 7., Sport 600 11. vardiyada alınıyor, 20 kartın sonuncusu 10. vardiyada açılıyor. Bu bir model; gerçek oyuncu süresi playtest ile doğrulanmalı.
+`tools/econ_sim.py` oyunun kendi formülleriyle "orta seviye oyuncuyu" (4 yıldız, %85 paket, sürenin %70'i, teslimat başına %8-15 başarısızlık) modeller. Hedef: Kara'ya 2-3 saatte ulaşmak, o noktada 5 motor ve parçaların çoğu alınmış olsun. Mevcut ayarla (0.36) model medyan 127-164 dakika veriyor; 150'lik motor yaklaşık 4. vardiyada, 250'lik 7., Sport 600 11. vardiyada alınıyor. vardiyada alınıyor, 20 kartın sonuncusu 10. vardiyada açılıyor. Bu bir model; gerçek oyuncu süresi playtest ile doğrulanmalı.
 
 Hesaplaşmada yalnızca bu savaşta gergin müzik çalar. Sürüş sırasında telsizden Usta, 34'ün iç sesi ve rakipler hikâye repliklerini ilerleme durumuna göre söyler.
 
-## 18. Günün siparişi
+## 18. Nitro
 
-Menüden günün siparişine girilir. Tarihe göre sabit bir rota üretilir (UZAK türü, rastgele açık bir bölge, rastgele bir olay). Gün içinde istediğin kadar denersin.
-
-- Günün **ilk başarılı teslimatı iki kat öder.**
-- Gün içi en iyi kalan süre rekor olarak tutulur.
-- Süre, normal siparişlerle aynı formüle (motoruna göre) bağlıdır.
-
-## 19. Nitro
-
-- Teslimat başına hakkın: Nitro parçası seviyesi + Yedek Tüp kartı adedi.
+- Teslimat başına hakkın: Nitro parçası seviyesi.
 - Kullanınca **2,5 saniye boyunca** üst hız ×1,25 ve hızlanma ×2.
 - Kamera nitroda hafifçe geri çekilir (Reduce Motion açıksa kamera efektleri kapalıdır).
 
-## 20. Kontroller
+## 19. Kontroller
 
 Gaz otomatiktir. Ekranın alt ortasındaki **hız göstergesi** anlık hızı km/s olarak gösterir. Mobilde sol tarafta direksiyon joystick'i, sağ tarafta VUR, FREN ve (nitro hakkın varsa) NİTRO butonları bulunur; Ayarlar'dan sol el seçilirse yerleşim aynalanır. Masaüstünde klavye: sol/sağ ok ya da A/D ile direksiyon, aşağı ok ya da S ile fren, `Boşluk` veya `K` ile vur (tekme/silah), `N` veya sol `Shift` ile nitro, `P` veya `Esc` ile duraklatma. Sekme arka plana geçince oyun otomatik duraklar.
 
 Ayarlarda ses seviyeleri (müzik, efekt, ortam), dil (Türkçe / İngilizce) ve el seçimi bulunur. Yan aynalarda arkandaki araçlar ve kuryeler görünür.
 
-## 21. Test araçları
+## 20. Test araçları
 
 Hepsi `python3 tools/<test>.py http://127.0.0.1:8765` ile çalışır (headless Chrome, Playwright).
 
 | Araç | Ne test eder |
 |---|---|
 | `street_test` | Işık, yaya, çevirme, köpek, ters yön, ceza, sonuç ekranı |
-| `meta_test` | İpuçları, Kara ile hesaplaşma, günün siparişi, ayarlar |
-| `shift_test` | 5 teslimatlık vardiya, kasa, kart açılışı, lanetli kartlar, telsiz |
+| `meta_test` | Bölge fethi, ipuçları, Kara ile hesaplaşma, bitiş, serbest sürüşte bölge seçimi, ayarlar |
+| `shift_test` | Vardiya kartı, 5 teslimat, kasa, kartların etkisi, Şişli koşulu, parça iadesi, telsiz |
 | `amb_test` | Ambulans 16 rotada sıkışmıyor, geçtikten sonra yakalanmıyor |
 | `rival_test` | Rakiplerin itilmesi ve düşmesi |
 | `camera_test` | Sabit ve dinamik kamerayı tepelik rotada karşılaştırır |

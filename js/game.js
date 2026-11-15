@@ -1,11 +1,11 @@
 import { audioInit, sfx } from './audio.js';
-import { $, BIKES, BRK, CARDS, NDEL, STREAK, CENT, DEC, DISTRICTS, EVENTS, M_PER_SEG, OFFDEC, OFFLIM, PW, RESTS, clamp, el, fmt, lerp, maxSpeed, num, pdesc, pick, playerZ, prof, segL } from './config.js';
+import { $, BIKES, BRK, CARDS, NDEL, ZONE_SHIFTS, STREAK, CENT, DEC, DISTRICTS, EVENTS, M_PER_SEG, OFFDEC, OFFLIM, PW, RESTS, clamp, el, fmt, lerp, maxSpeed, num, pdesc, pick, playerZ, prof, segL } from './config.js';
 import { buzz, hitStop, sparks } from './fx.js';
 import { G } from './g.js';
 import { clearInput, input } from './input.js';
 import { layoutMirrors } from './render.js';
 import { spawnRivals, updateRival } from './rivals.js';
-import { payLabel, payMult, ratingLabel } from './rating.js';
+import { payMult } from './rating.js';
 import { curBike, curWpn, stats, ups } from './save.js';
 import { oncHit, oncTarget, streetClear, streetSetup, streetTick } from './street.js';
 import { SPR, bikeSprites, setTheme } from './sprites.js';
@@ -14,7 +14,7 @@ import { spawnAmb, spawnCars, updateCars } from './traffic.js';
 import { bossEnd } from './meta.js';
 import { tutTick } from './tutorial.js';
 import { radioReset, rivalDownLine, storyTick } from './radio.js';
-import { finish, keepAwake, showScreen, toast } from './ui.js';
+import { finish, keepAwake, showScreen, showShiftCards, toast } from './ui.js';
 
 /* ---------- state ---------- */
 G.W=400;G.H=300;G.K=200;G.HZ=140;G.skyGrad=null;G.sunGrad=null;
@@ -25,38 +25,41 @@ G.timeLeft=0;G.cond=100;G.bonus=0;G.clock=0;G.countT=0;G.lastCount=0;G.playerY=0
 G.cars=[];G.rivals=[];G.debris=[];
 export const card=id=>G.shift?G.shift.cards[id]||0:0;
 // a normal shift: earnings sit in the shift pot until it is banked
-export const inPot=()=>!!(G.shift&&!G.tut&&!G.shift.daily&&!G.shift.boss);
-export const rivalMult=()=>(card('eldiven')>0?2:1)*(card('kabadayi')>0?3:1);
+export const inPot=()=>!!(G.shift&&!G.tut&&!G.shift.boss);
+export const rivalMult=()=>card('eldiven')>0?2:1;
 export const rain=()=>G.route&&G.route.ev==='yagmur'&&G.state!=='menu';
 
 /* ---------- shift flow ---------- */
-export function newShift(){G.shift={L:G.S.shifts,i:0,cards:{},earned:0};prepDelivery();}
-export const unlocked=()=>Math.min(DISTRICTS.length,2+G.S.shifts);
+export function newShift(){G.shift={L:G.S.shifts,i:0,cards:{},earned:0};showShiftCards();}
+// Districts are taken one by one: ZONE_SHIFTS full shifts in a district conquer it and open the next. After the ending
+// the player picks any district (G.S.fz).
+export const conquered=()=>Math.min(DISTRICTS.length,Math.floor(G.S.shifts/ZONE_SHIFTS));
+export const zone=()=>G.S.boss?G.S.fz:Math.min(DISTRICTS.length-1,conquered());
 export const KINDS=[{k:'YAKIN',len:.75,pay:.75},{k:'NORMAL',len:1,pay:1},{k:'UZAK',len:1.35,pay:1.5}];
 // Each shift is a time of day: it sets the light, how busy the roads are and a pay bonus.
 export const TOD=[
-  {k:'SABAH',traf:1.15,pay:1,theme:()=>'morning'},
-  {k:'ÖĞLEN',traf:1,pay:1,theme:()=>'day'},
-  {k:'AKŞAM',traf:1.3,pay:1.1,theme:D=>D.theme==='golden'?'golden':'dusk'},
-  {k:'GECE',traf:.7,pay:1.2,theme:D=>D.theme==='neon'?'neon':'night'}
+  {k:'SABAH',traf:1.15,theme:()=>'morning'},
+  {k:'ÖĞLEN',traf:1,theme:()=>'day'},
+  {k:'AKŞAM',traf:1.3,theme:D=>D.theme==='golden'?'golden':'dusk'},
+  {k:'GECE',traf:.7,theme:D=>D.theme==='neon'?'neon':'night'}
 ];
 export const tod=L=>TOD[L%TOD.length];
 // Time budget from the rider's own bike: a clean run needs about half of its top speed, so faster bikes get more spare time
 // (better stars and tips) and slow bikes are not set up to fail. It tightens a little with progress, not with the payout.
 export function refSpeed(d,cards){const top=stats(curBike(),ups(),cards||{}).top;return(.24+.23*(top-.48))*(1+Math.min(.2,d*.008));}
 export function makeOffer(kind){
-  const L=G.shift.L,i=G.shift.i,d=L*3+i,T=tod(L),D0=DISTRICTS[Math.floor(Math.random()*unlocked())],D=Object.assign({},D0,{theme:T.theme(D0),traf:D0.traf*T.traf}),loop=Math.floor(L/DISTRICTS.length);
+  const L=G.shift.L,i=G.shift.i,d=L*3+i,T=tod(L),D0=DISTRICTS[zone()],D=Object.assign({},D0,{theme:T.theme(D0),traf:D0.traf*T.traf}),loop=Math.floor(L/DISTRICTS.length);
   const len=Math.round(Math.min(2400,(600+d*90)*kind.len)),ref=refSpeed(d,G.shift.cards);
-  const time=Math.round(((len/(60*ref)+10)*D.tmul+8*card('kisayol'))*Math.pow(.8,card('ekspres')));
+  const time=Math.round((len/(60*ref)+10)*D.tmul+8*card('kisayol'));
   const chance=[L>=2?.2:0,.4,.6,.7,.8][i];
   const ev=Math.random()<chance?pick(Math.random,Object.keys(EVENTS)):null;
   const pool=D.pool.slice(),a=pool.splice(Math.floor(Math.random()*pool.length),1)[0],b=pick(Math.random,pool);
   return{D,kind:kind.k,rest:pick(Math.random,RESTS),from:a,to:b,A:prof(a),B:prof(b),len,time,curv:D.curv*(1+loop*.15),hill:D.hill,up:D.up,
-    pay:Math.round((40+d*15)*kind.pay*(ev?1.2:1)*(1+.25*card('bahsis'))*payMult()*T.pay*STREAK[i]*(card('cam')?2:1)*Math.pow(1.6,card('ekspres'))),d,ev,seed:(Math.random()*1e9)|0};
+    pay:Math.round((40+d*15)*kind.pay*(ev?1.2:1)*(1+.25*card('bahsis'))*payMult()*STREAK[i]),d,ev,seed:(Math.random()*1e9)|0};
 }
 export function prepDelivery(){
   const offers=KINDS.map(makeOffer);
-  $('bEyebrow').textContent='VARDİYA #'+(G.shift.L+1)+' · '+tod(G.shift.L).k+(tod(G.shift.L).pay>1?' +%'+Math.round((tod(G.shift.L).pay-1)*100):'')+' · TESLİMAT '+(G.shift.i+1)+'/'+NDEL+(G.shift.i?' · ÜCRET ×'+num(STREAK[G.shift.i],2):'')+' · PUAN '+ratingLabel()+(payLabel()?' · '+payLabel():'');
+  $('bEyebrow').textContent='VARDİYA #'+(G.shift.L+1)+' · '+tod(G.shift.L).k+' · '+DISTRICTS[zone()].name+' · TESLİMAT '+(G.shift.i+1)+'/'+NDEL+(G.shift.i?' · ÜCRET ×'+num(STREAK[G.shift.i],2):'')+(G.S.boss?' · ÜCRETLER +%10':'');
   const box=$('offers');box.textContent='';
   for(const o of offers){
     const b=el('button','order');b.type='button';
@@ -73,7 +76,7 @@ export function prepDelivery(){
   const ids=Object.keys(G.shift.cards).filter(k=>G.shift.cards[k]>0);
   $('bCardsWrap').hidden=!ids.length;
   const ch=$('bCards');ch.textContent='';
-  for(const id of ids){const c=CARDS.find(x=>x.id===id);ch.append(el('span','chip',c.t+(G.shift.cards[id]>1?' ×'+G.shift.cards[id]:'')));}
+  for(const id of ids){const c=CARDS.find(x=>x.id===id);ch.append(el('span','chip',c.t));}
   showScreen('brief');$('brief').scrollTop=0;
 }
 export function startMission(){
@@ -82,7 +85,7 @@ export function startMission(){
   buildTrack(G.route,G.route.seed);
   G.ST=stats(b,ups(b.id),G.shift.cards);G.PSPR=bikeSprites(b,G.S.wpn);
   G.slipT=0;G.bumpT=0;G.graceT=0;G.ambT=15+Math.random()*20;G.pos=0;G.playerX=0;G.speed=0;G.lean=0;G.crashT=0;G.inv=0;G.kickT=0;G.cond=100;G.hits=0;G.bonus=0;G.timeLeft=G.route.time;G.flashT=0;G.shakeT=0;
-  G.playerX=(G.route.side0||1)*.72;G.nitroN=(ups(b.id)[4]||0)+card('nitrokart');G.nitroT=0;G.arriveT=0;
+  G.playerX=(G.route.side0||1)*.72;G.nitroN=ups(b.id)[4]||0;G.nitroT=0;G.arriveT=0;
   radioReset();$('moneyLbl').textContent=inPot()?'VARDİYA':'KASA';
   G.debris=[];G.coneMsg=-9;spawnCars();spawnRivals();streetSetup();
   clearInput();G.paused=false;
@@ -95,7 +98,7 @@ export function startMission(){
   if(G.route.ev){r.append(' · ');r.append(el('em',null,EVENTS[G.route.ev].t));}
 }
 export function demoTrack(){
-  const D=DISTRICTS[unlocked()-1];setTheme(D);
+  const D=DISTRICTS[zone()];setTheme(D);
   G.route={D,A:prof(D.pool[0]),B:prof(D.pool[1]),from:'',to:'',len:1200,time:0,curv:D.curv,hill:D.hill,up:D.up,pay:0,d:0,ev:null,seed:13};
   G.ST=stats(curBike(),ups(G.S.cur));
   buildTrack(G.route,G.route.seed);G.pos=0;spawnCars();G.rivals=[];streetClear();G.PSPR=bikeSprites(curBike(),G.S.wpn);
@@ -155,7 +158,7 @@ export function landHit(best,wp,g){
       if(best.boss){best.down=4;bossEnd(true);return;}
       // second knockdown puts a rival out for the rest of the delivery
       best.kd=(best.kd||0)+1;best.out=best.kd>=2;best.down=best.out?4:(best.p.id==='orange'?3:5);
-      G.S.st.kd++;const add=Math.round((15+best.p.hp*10)*rivalMult()*(best.out?2:1));G.bonus+=add;if(card('aynaci')>0)G.timeLeft+=6;rivalDownLine(best);toast(best.p.n+(best.out?' kurye saf dışı!  +':' kurye yerde!  +')+add+' TL');
+      G.S.st.kd++;const add=Math.round((15+best.p.hp*10)*rivalMult()*(best.out?2:1));G.bonus+=add;rivalDownLine(best);toast(best.p.n+(best.out?' kurye saf dışı!  +':' kurye yerde!  +')+add+' TL');
     }else{best.speed*=.8;best.vx=(best.vx||0)+G.kickSide*(.9+.3*wp.pow);best.stun=.45;best.shoved=2.5;best.cool=Math.max(best.cool,1.2);toast(best.p.n+' kurye sendeledi');}
   }
 }
@@ -196,7 +199,7 @@ export function update(dt){
     G.playerX+=sr*st;
     G.lean=lerp(G.lean,st*.22,Math.min(1,dt*8));
     if(!input.brake)G.brakeK=0;
-    if(input.brake){G.brakeK=Math.min(1,G.brakeK+dt*3);G.speed-=maxSpeed*(.12+.33*G.brakeK)*(card('frensiz')?.5:1)*dt;}
+    if(input.brake){G.brakeK=Math.min(1,G.brakeK+dt*3);G.speed-=maxSpeed*(.12+.33*G.brakeK)*dt;}
     else if(G.speed<top)G.speed=Math.min(top,G.speed+acc*dt*(1.35-.85*G.speed/top));
     else G.speed=Math.max(top,G.speed+DEC*.5*dt);
   }
@@ -251,7 +254,7 @@ export function update(dt){
         const diff=(G.speed-c.speed)/maxSpeed;
         if(G.inv>0)G.speed=c.speed*.9;
         else if(diff>G.ST.top*.45)crash(c.msg,14);
-        else{G.speed=c.speed*.85;sparks(Math.sign(c.x-G.playerX)||1,10);if(card('zirh')>0){sfx('bump');G.shakeT=.12;}else damage(6,c.msg);}
+        else{G.speed=c.speed*.85;sparks(Math.sign(c.x-G.playerX)||1,10);damage(6,c.msg);}
         G.pos=c.z-playerZ-30;break;
       }
     }

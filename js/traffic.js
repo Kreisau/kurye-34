@@ -48,7 +48,7 @@ export function busWant(c,dt,want){
   return want*.6;
 }
 export function updateCars(dt){
-  const pz=G.pos+playerZ,calm=card('taksici')>0;
+  const pz=G.pos+playerZ,calm=false;
   const amb=G.cars.find(o=>o.amb);
   for(const c of G.cars){
     let lead=null,lg=1e9;

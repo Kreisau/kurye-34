@@ -21,7 +21,7 @@ const CAR_NAME = { taxiY: 'taksiye', taxiT: 'taksiye', taxiV: 'taksiye', car: 'a
 // staggered and on alternating sides; each keeps its own side slot so two of them never ride on top of each other.
 export function spawnRivals(){
   G.rivals=[];
-  const quiet=card('sakin')>0,n=Math.min(4,2+((G.route.d||0)>=8?1:0)+(G.route.ev==='rakip2'?1:0)+(card('kabadayi')>0?1:0));
+  const quiet=false,n=Math.min(4,2+((G.route.d||0)>=8?1:0)+(G.route.ev==='rakip2'?1:0));
   const pool=RIVALS.slice();for(let i=pool.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[pool[i],pool[j]]=[pool[j],pool[i]];}
   for(let i=0;i<n;i++){const r=newRival(pool[i],(quiet?-4200:-1500)-i*1300,i%2?-.55:.55,0,(quiet?7:3)+i*2);r.slot=i%2?-1:1;r.lag=i*220;G.rivals.push(r);}
 }
@@ -60,7 +60,7 @@ function crashRival(r,what){
   }
   r.out=true;   // a wrecked rival is out for the rest of this delivery
   if(r.shoved>0){
-    G.S.st.kd++;const add=Math.round((15+r.p.hp*10)*2*rivalMult());G.bonus+=add;if(card('aynaci')>0)G.timeLeft+=6;rivalDownLine(r);
+    G.S.st.kd++;const add=Math.round((15+r.p.hp*10)*2*rivalMult());G.bonus+=add;rivalDownLine(r);
     if(near){sparks(Math.sign(r.x-G.playerX)||1,18);hitStop(.04);buzz(50);}
     toast(r.p.n+' kurye '+what+' çarptı, saf dışı!  +'+add+' TL');
   }else if(near)toast(r.p.n+' kurye '+what+' çarptı, saf dışı');
